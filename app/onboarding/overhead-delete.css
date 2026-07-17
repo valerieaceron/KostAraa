@@ -1,0 +1,1 @@
+.expense-card-actions{display:flex;gap:7px;align-items:center}.overhead-cards .expense-card-actions .delete{border-color:#fecaca;color:#c62828;background:#fff7f7}.overhead-cards .expense-card-actions .delete:hover{background:#c62828;color:white}@media(max-width:520px){.expense-card-actions{flex-direction:column}.expense-card-actions button{width:100%}}

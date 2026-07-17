@@ -1,0 +1,66 @@
+/* Final Kostaraa Calculator type scale. Uses stable Arial weights only. */
+.kostaraa-calculator{
+  --calc-type-ink:#172b4d;
+  --calc-type-body:#344967;
+  --calc-type-muted:#60718a;
+  font-family:Arial,Helvetica,sans-serif!important;
+  font-size:15px!important;
+  font-weight:400;
+  line-height:1.55;
+}
+.kostaraa-calculator h1{font-size:32px!important;font-weight:800!important;line-height:1.15!important;letter-spacing:-.02em!important}
+.kostaraa-calculator h2{font-size:20px!important;font-weight:800!important;line-height:1.25!important;letter-spacing:-.01em!important}
+.kostaraa-calculator h3{font-size:17px!important;font-weight:700!important;line-height:1.35!important}
+.kostaraa-calculator .font-black{font-weight:800!important}
+.kostaraa-calculator .font-bold{font-weight:700!important}
+.kostaraa-calculator .font-semibold{font-weight:600!important}
+.kostaraa-calculator .font-medium{font-weight:500!important}
+.kostaraa-calculator .text-xs{font-size:13px!important;line-height:1.5!important}
+.kostaraa-calculator .text-sm,.kostaraa-calculator .text-base{font-size:15px!important;line-height:1.5!important}
+.kostaraa-calculator .text-xl{font-size:22px!important;line-height:1.2!important}
+.kostaraa-calculator label,.kostaraa-calculator input,.kostaraa-calculator select,.kostaraa-calculator textarea,.kostaraa-calculator button{font-family:inherit!important}
+.kostaraa-calculator label{font-size:14px!important;font-weight:700!important;line-height:1.4!important;color:var(--calc-type-body)!important}
+.kostaraa-calculator input,.kostaraa-calculator select,.kostaraa-calculator textarea{font-size:15px!important;font-weight:600!important;line-height:1.4!important;color:var(--calc-type-ink)!important}
+.kostaraa-calculator button{font-size:14px!important;font-weight:700!important;line-height:1.35!important}
+
+/* Numbered material and packaging sections. */
+.kostaraa-calculator section.rounded-lg>div:first-child h2{font-size:18px!important;font-weight:800!important;line-height:1.3!important}
+.kostaraa-calculator section.rounded-lg>div:first-child p{font-size:14px!important;font-weight:500!important;line-height:1.5!important;color:var(--calc-type-muted)!important}
+.kostaraa-calculator section.rounded-lg [class*="uppercase"]{font-size:12px!important;font-weight:700!important;line-height:1.35!important;letter-spacing:.04em;color:#64748b!important}
+.kostaraa-calculator section.rounded-lg select,.kostaraa-calculator section.rounded-lg input{font-size:14px!important;font-weight:700!important}
+.kostaraa-calculator section.rounded-lg .m-3>span:first-child{font-size:14px!important;font-weight:700!important}
+.kostaraa-calculator section.rounded-lg .m-3>span:last-child{font-size:22px!important;font-weight:800!important}
+
+/* Labor and operation cards use the same hierarchy. */
+.kostaraa-calculator .profile-cost-card h2{font-size:20px!important;font-weight:800!important}
+.kostaraa-calculator .profile-cost-card header p{font-size:14px!important;font-weight:500!important;line-height:1.5!important}
+.kostaraa-calculator .profile-cost-grid p{font-size:14px!important;font-weight:700!important;line-height:1.4!important}
+.kostaraa-calculator .profile-cost-grid b{font-size:25px!important;font-weight:800!important;line-height:1.2!important}
+.kostaraa-calculator .profile-cost-grid small{font-size:13px!important;font-weight:500!important;line-height:1.5!important}
+
+/* Result panel: consistent labels, values, and explanations. */
+.kostaraa-calculator aside>div:first-child h2{font-size:20px!important;font-weight:800!important}
+.kostaraa-calculator aside>div:first-child p{font-size:13px!important;font-weight:500!important;line-height:1.5!important}
+.kostaraa-calculator aside>div[class*="rounded-md"] p.text-xs,.kostaraa-calculator aside>div[class*="rounded-md"] span.text-xs{font-size:13px!important;line-height:1.5!important}
+.kostaraa-calculator aside>div[class*="rounded-md"] p.font-black,.kostaraa-calculator aside>div[class*="rounded-md"] label.font-black{font-size:15px!important;font-weight:700!important;line-height:1.4!important}
+.kostaraa-calculator aside>div[class*="rounded-md"] .text-2xl{font-size:26px!important;font-weight:800!important;line-height:1.2!important}
+.kostaraa-calculator aside>div[class*="rounded-md"] .text-3xl{font-size:30px!important;font-weight:800!important;line-height:1.15!important}
+.kostaraa-calculator aside .rounded-full{font-size:12px!important;font-weight:700!important;line-height:1.25!important}
+.kostaraa-calculator .text-slate-400{color:#718096!important}
+.kostaraa-calculator .text-slate-500{color:var(--calc-type-muted)!important}
+.kostaraa-calculator .text-slate-600{color:var(--calc-type-body)!important}
+
+@media(max-width:600px){
+  .kostaraa-calculator h1{font-size:28px!important}
+  .kostaraa-calculator h2{font-size:19px!important}
+  .kostaraa-calculator section.rounded-lg>div:first-child h2{font-size:18px!important}
+  .kostaraa-calculator label,.kostaraa-calculator input,.kostaraa-calculator select,.kostaraa-calculator textarea,.kostaraa-calculator button{font-size:14px!important}
+}
+
+.kostaraa-calculator .overhead-readonly{display:grid;gap:12px;margin-top:16px;padding:15px;border:1px solid #cbd8e9;border-radius:10px;background:#f5f8fc}
+.kostaraa-calculator .overhead-readonly>div{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.kostaraa-calculator .overhead-readonly span{display:flex;align-items:center;gap:6px;color:#405576;font-size:14px!important;font-weight:800}
+.kostaraa-calculator .overhead-readonly b{color:#10294d;font-size:16px!important;font-weight:800}
+.kostaraa-calculator .overhead-readonly a{color:#1765e8;font-size:14px;font-weight:800;text-decoration:none}
+.kostaraa-calculator .overhead-readonly a:hover{text-decoration:underline}
+@media(max-width:600px){.kostaraa-calculator .overhead-readonly>div{align-items:flex-start;flex-direction:column}}

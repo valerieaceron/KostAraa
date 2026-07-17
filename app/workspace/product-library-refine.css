@@ -1,0 +1,15 @@
+/* Product Library: use a calm neutral treatment for incomplete setup states.
+   Blue remains reserved for the actions so the panel stays recognizably Kostaraa. */
+.border-amber-200.bg-amber-50\/70 {
+  border-color: #d7e1ee !important;
+  background: #f4f7fb !important;
+}
+
+.border-amber-200.bg-amber-50\/70 .text-amber-900 {
+  color: #243b5a !important;
+}
+
+.border-amber-200.bg-amber-50\/70 .text-amber-700 {
+  color: #526783 !important;
+  border: 1px solid #d7e1ee;
+}

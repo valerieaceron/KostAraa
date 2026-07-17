@@ -1,0 +1,30 @@
+{
+  "name": "kostaraa-react",
+  "version": "0.2.26",
+  "private": true,
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "node scripts/guard-no-presentation.mjs && vite build && node scripts/hostinger-routes.mjs",
+    "preview": "vite preview",
+    "start": "vite preview",
+    "test": "npm run build",
+    "lint": "eslint src app"
+  },
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "recharts": "^2.15.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "6.0.2",
+    "eslint": "9.39.4",
+    "tailwindcss": "4.2.1",
+    "vite": "8.0.13"
+  },
+  "type": "module"
+}

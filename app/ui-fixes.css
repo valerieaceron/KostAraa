@@ -1,0 +1,17 @@
+/* Keep the two floating helpers paired and visually consistent. */
+.accessibility{left:auto;right:190px;bottom:22px;z-index:60}
+.access-launcher{height:62px;border:0;border-radius:35px;padding:5px 18px 5px 5px;gap:8px;font-size:14px}
+.access-launcher>span{width:52px;height:52px;flex:0 0 52px;font-size:25px}
+.access-launcher b{font-size:14px;white-space:nowrap}
+.access-panel{left:auto;right:0;bottom:76px}
+
+/* Make the sticky plan summary and comparison table share exact columns. */
+.pricing-page .sticky-plan-bar{grid-template-columns:23% repeat(4,19.25%)}
+.pricing-page .comparison-wrap table{table-layout:fixed}
+.pricing-page .comparison-wrap th:first-child,.pricing-page .comparison-wrap td:first-child{width:23%}
+.pricing-page .comparison-wrap th:not(:first-child),.pricing-page .comparison-wrap td:not(:first-child){width:19.25%}
+.pricing-page .comparison-wrap th,.pricing-page .comparison-wrap td{box-sizing:border-box;overflow-wrap:anywhere;vertical-align:middle}
+.pricing-page .comparison-wrap th:nth-child(5)::after{display:none}
+
+@media(max-width:1000px){.pricing-page .sticky-plan-scroll{display:none}.pricing-page .comparison-wrap{border-radius:12px}.pricing-page .comparison-wrap table{min-width:820px}}
+@media(max-width:500px){.accessibility{left:auto;right:84px;bottom:12px}.access-launcher{width:62px;height:62px;padding:5px}.access-launcher>span{width:52px;height:52px}.access-panel{left:10px;right:10px;bottom:84px}.pricing-page .comparison-wrap table{min-width:760px}.pricing-page .comparison-wrap th,.pricing-page .comparison-wrap td{padding:10px 8px;font-size:12px}}

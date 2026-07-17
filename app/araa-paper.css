@@ -1,0 +1,9 @@
+.araa-message{display:flex;flex-direction:column;align-items:flex-start;margin-bottom:12px}
+.araa-message p{margin:0!important}
+.araa-message.araa p{background:white;border:1px solid #dbe7f7;border-radius:5px 14px 14px 14px;color:#203958}
+.araa-message.user{align-items:flex-end}
+.araa-message.user p{background:#1765e8;color:white;border-radius:14px 5px 14px 14px}
+.araa-message small{max-width:84%;padding:4px 8px 0;color:#6d7e95;font-size:9px;font-weight:700}
+.araa-suggestions button:hover{background:#eaf2ff}
+.araa-panel form button:hover{background:#0e53c9}
+.araa-panel form input::placeholder{color:#8b9ab0}

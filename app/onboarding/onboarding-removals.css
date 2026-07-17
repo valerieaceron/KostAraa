@@ -1,0 +1,2 @@
+.space-checklist{display:none!important}
+.form-grid:has(.and-or-field)>:nth-child(n+7){display:none!important}

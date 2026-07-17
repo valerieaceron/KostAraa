@@ -1,0 +1,49 @@
+.araa{right:18px;bottom:92px}.accessibility{left:auto;right:18px;bottom:18px}.araa-launcher,.access-launcher{width:62px;max-width:62px;height:62px;padding:5px;overflow:hidden;transition:max-width .2s ease,width .2s ease,padding .2s ease}.araa-launcher span,.access-launcher b{display:none;white-space:nowrap}.araa:hover .araa-launcher,.araa:focus-within .araa-launcher,.accessibility:hover .access-launcher,.accessibility:focus-within .access-launcher{width:auto;max-width:220px;padding-right:18px}.araa:hover .araa-launcher span,.araa:focus-within .araa-launcher span,.accessibility:hover .access-launcher b,.accessibility:focus-within .access-launcher b{display:inline}.access-panel,.araa-panel{bottom:72px}@media(max-width:500px){.araa{right:12px;bottom:84px}.accessibility{left:auto;right:12px;bottom:12px}.araa-launcher,.access-launcher,.araa:hover .araa-launcher,.araa:focus-within .araa-launcher,.accessibility:hover .access-launcher,.accessibility:focus-within .access-launcher{width:62px;max-width:62px;padding:5px}.araa:hover .araa-launcher span,.araa:focus-within .araa-launcher span,.accessibility:hover .access-launcher b,.accessibility:focus-within .access-launcher b{display:none}}
+@media(max-width:500px){.araa,.accessibility{display:block!important;right:14px!important;z-index:90!important}.araa{bottom:calc(82px + env(safe-area-inset-bottom))}.accessibility{bottom:calc(16px + env(safe-area-inset-bottom))}.araa-launcher,.access-launcher,.araa:hover .araa-launcher,.araa:focus-within .araa-launcher,.accessibility:hover .access-launcher,.accessibility:focus-within .access-launcher{width:58px;max-width:58px;height:58px;padding:4px}.araa-launcher img,.access-launcher>span{width:48px;height:48px}}
+
+/* The workspace changes to its mobile layout at 800px. Keep both utility
+   launchers visible and reachable throughout that entire range, including
+   tablets and wider phone landscape views. */
+@media(max-width:800px){
+  body:not(.site-locked) .araa,
+  body:not(.site-locked) .accessibility{
+    position:fixed!important;
+    display:block!important;
+    left:auto!important;
+    right:12px!important;
+    z-index:140!important;
+  }
+  body:not(.site-locked) .araa{bottom:calc(84px + env(safe-area-inset-bottom))!important}
+  body:not(.site-locked) .accessibility{bottom:calc(16px + env(safe-area-inset-bottom))!important}
+  body:not(.site-locked) .araa-launcher,
+  body:not(.site-locked) .access-launcher,
+  body:not(.site-locked) .araa:hover .araa-launcher,
+  body:not(.site-locked) .araa:focus-within .araa-launcher,
+  body:not(.site-locked) .accessibility:hover .access-launcher,
+  body:not(.site-locked) .accessibility:focus-within .access-launcher{
+    width:58px!important;
+    min-width:58px!important;
+    max-width:58px!important;
+    height:58px!important;
+    padding:4px!important;
+    justify-content:center!important;
+  }
+  body:not(.site-locked) .araa-launcher span,
+  body:not(.site-locked) .access-launcher b{display:none!important}
+  body:not(.site-locked) .araa-launcher img,
+  body:not(.site-locked) .access-launcher>span{
+    width:48px!important;
+    height:48px!important;
+    flex:0 0 48px!important;
+  }
+  body:not(.site-locked) .araa-panel,
+  body:not(.site-locked) .access-panel{
+    position:fixed!important;
+    left:10px!important;
+    right:10px!important;
+    bottom:150px!important;
+    width:auto!important;
+    max-width:none!important;
+    max-height:calc(100dvh - 170px)!important;
+  }
+}

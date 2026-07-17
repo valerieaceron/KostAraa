@@ -1,0 +1,9 @@
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: { dedupe: ["react", "react-dom"] },
+  build: { outDir: "out", emptyOutDir: true },
+  server: { port: 3000 },
+});

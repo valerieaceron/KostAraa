@@ -1,0 +1,60 @@
+/* Keep the Beta 0.2.26 librarian compact and aligned inside every viewport. */
+.araa-panel.araa-coming-panel{
+  position:fixed!important;
+  left:auto!important;
+  right:18px!important;
+  bottom:164px!important;
+  width:420px!important;
+  max-width:calc(100vw - 36px)!important;
+  height:min(680px,calc(100dvh - 115px));
+  box-sizing:border-box;
+}
+.araa-panel.araa-coming-panel>header{
+  flex:0 0 auto;
+  min-height:76px;
+  padding:12px 14px;
+  box-sizing:border-box;
+}
+.araa-panel.araa-coming-panel>header img{flex:0 0 52px}
+.araa-panel.araa-coming-panel>header div{min-width:0;flex:1}
+.araa-panel.araa-coming-panel>header b{font-size:17px;line-height:1.2}
+.araa-panel.araa-coming-panel>header span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.araa-panel.araa-coming-panel>header button{flex:0 0 31px}
+.araa-summary{
+  min-width:0;
+  overflow-x:hidden;
+  padding:18px;
+}
+.araa-fit dl div{grid-template-columns:70px minmax(0,1fr)}
+.araa-fit dd{min-width:0;overflow-wrap:anywhere}
+.araa-app-guide{width:100%;box-sizing:border-box}
+.araa-guide-title h3{font-size:16px;line-height:1.35}
+.araa-app-guide .araa-messages{
+  width:100%;
+  min-height:0;
+  max-height:210px;
+  box-sizing:border-box;
+}
+.araa-app-guide .araa-message{width:100%;margin:0}
+.araa-app-guide .araa-messages p{
+  width:100%;
+  max-width:none;
+  margin:0!important;
+  box-sizing:border-box;
+  overflow-wrap:anywhere;
+}
+.araa-app-guide .araa-suggestions,
+.araa-app-guide form{width:100%;box-sizing:border-box}
+.araa-app-guide form input{width:0;min-width:0}
+@media(max-width:500px){
+  .araa-panel.araa-coming-panel{
+    left:12px!important;
+    right:12px!important;
+    bottom:158px!important;
+    width:auto!important;
+    max-width:none!important;
+    height:min(690px,calc(100dvh - 174px));
+    border-radius:18px;
+  }
+  .araa-summary{padding:15px}
+}

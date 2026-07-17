@@ -1,0 +1,5 @@
+.araa-insight-card>summary{min-height:48px;padding:9px 12px;gap:10px;box-sizing:border-box}
+.araa-insight-card:not([open])>summary strong{display:none}
+.araa-insight-card:not([open])>summary>span{justify-content:center}
+.araa-insight-card:not([open])>summary small{font-size:10px;line-height:1.25}
+.araa-insight-card>summary>i{flex-basis:24px;width:24px;height:24px;font-size:16px}
