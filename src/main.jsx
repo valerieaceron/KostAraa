@@ -14,6 +14,7 @@ import "../app/ui-fixes.css";
 import "../app/onboarding/onboarding.css";
 import "../app/workspace/business-profile.css";
 import "../app/workspace/calculator-profile-costs.css";
+import "../app/workspace/adaptive-inventory.css";
 import "../app/onboarding/onboarding-refine.css";
 import "../app/floating-refine.css";
 import "../app/onboarding/onboarding-removals.css";

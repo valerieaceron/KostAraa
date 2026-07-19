@@ -6,8 +6,8 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "node scripts/guard-no-presentation.mjs && vite build && node scripts/hostinger-routes.mjs",
+    "dev": "vite --mode development",
+    "build": "node scripts/guard-no-presentation.mjs && vite build --mode production && node scripts/hostinger-routes.mjs",
     "preview": "vite preview",
     "start": "vite preview",
     "test": "npm run build",
@@ -21,6 +21,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "6.0.2",
     "eslint": "9.39.4",
     "tailwindcss": "4.2.1",

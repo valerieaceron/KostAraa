@@ -4,137 +4,72 @@
 -- Rename the referenced tables below if your authentication/profile tables use
 -- different names.
 
-CREATE TABLE inventory_items (
-    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    user_id BIGINT UNSIGNED NOT NULL,
-    business_profile_id BIGINT UNSIGNED NULL,
-
-    -- Item identity
-    material_name VARCHAR(150) NOT NULL,
-    item_type ENUM('ingredient', 'packaging', 'supply', 'other')
-        NOT NULL DEFAULT 'ingredient',
-    category VARCHAR(100) NULL,
-    sku VARCHAR(80) NULL,
-    description TEXT NULL,
-
-    -- Purchase and costing information
-    purchase_cost DECIMAL(14, 2) UNSIGNED NOT NULL,
-    purchase_quantity DECIMAL(14, 4) UNSIGNED NOT NULL,
-    base_unit ENUM(
-        'mg', 'g', 'kg', 'oz', 'lb',
-        'ml', 'l', 'tsp', 'tbsp', 'cup', 'fl oz',
-        'mm', 'cm', 'm', 'inch', 'ft', 'yard',
-        'pcs', 'dozen', 'pack', 'box'
-    ) NOT NULL,
-    -- Optional conversion values for cross-family or packaged materials.
-    -- Example: flour purchased in kg but used in cups needs grams_per_cup.
-    grams_per_cup DECIMAL(14, 4) UNSIGNED NULL,
-    pieces_per_unit DECIMAL(14, 4) UNSIGNED NULL,
-    unit_cost DECIMAL(18, 6)
-        GENERATED ALWAYS AS (
-            purchase_cost / NULLIF(
-                purchase_quantity * CASE base_unit
-                    WHEN 'mg' THEN 0.001 WHEN 'kg' THEN 1000
-                    WHEN 'oz' THEN 28.349523 WHEN 'lb' THEN 453.59237
-                    WHEN 'l' THEN 1000 WHEN 'tsp' THEN 5 WHEN 'tbsp' THEN 15
-                    WHEN 'cup' THEN 240 WHEN 'fl oz' THEN 29.57353
-                    WHEN 'cm' THEN 10 WHEN 'm' THEN 1000 WHEN 'inch' THEN 25.4
-                    WHEN 'ft' THEN 304.8 WHEN 'yard' THEN 914.4
-                    WHEN 'dozen' THEN 12
-                    WHEN 'pack' THEN COALESCE(pieces_per_unit, 1)
-                    WHEN 'box' THEN COALESCE(pieces_per_unit, 1)
-                    ELSE 1
-                END,
-                0
-            )
-        ) STORED,
-    currency_code CHAR(3) NOT NULL DEFAULT 'PHP',
-
-    -- Stock tracking
-    quantity_on_hand DECIMAL(14, 4) UNSIGNED NOT NULL DEFAULT 0,
-    reorder_level DECIMAL(14, 4) UNSIGNED NULL,
-    supplier_name VARCHAR(150) NULL,
-    lot_number VARCHAR(100) NULL,
-    expiry_date DATE NULL,
-    notes TEXT NULL,
-
-    -- Record status and audit fields
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-        ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL DEFAULT NULL,
-
-    PRIMARY KEY (id),
-
-    -- A SKU only needs to be unique inside one user's account.
-    UNIQUE KEY uq_inventory_user_sku (user_id, sku),
-    KEY idx_inventory_user_active (user_id, is_active, deleted_at),
-    KEY idx_inventory_business (business_profile_id),
-    KEY idx_inventory_material (user_id, material_name),
-    KEY idx_inventory_expiry (user_id, expiry_date),
-
-    CONSTRAINT chk_inventory_material_name
-        CHECK (CHAR_LENGTH(TRIM(material_name)) > 0),
-    CONSTRAINT chk_inventory_purchase_cost
-        CHECK (purchase_cost > 0),
-    CONSTRAINT chk_inventory_purchase_quantity
-        CHECK (purchase_quantity > 0),
-    CONSTRAINT chk_inventory_quantity_on_hand
-        CHECK (quantity_on_hand >= 0),
-    CONSTRAINT chk_inventory_reorder_level
-        CHECK (reorder_level IS NULL OR reorder_level >= 0),
-
-    CONSTRAINT fk_inventory_user
-        FOREIGN KEY (user_id) REFERENCES users(id)
-        ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT fk_inventory_business_profile
-        FOREIGN KEY (business_profile_id) REFERENCES business_profiles(id)
-        ON UPDATE CASCADE ON DELETE SET NULL
-) ENGINE=InnoDB
-  DEFAULT CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
+CREATE TABLE `inventory_items` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) unsigned NOT NULL,
+  `business_profile_id` int(10) unsigned DEFAULT NULL,
+  `material_name` varchar(150) NOT NULL,
+  `item_type` enum('ingredient','packaging','supply','other') NOT NULL DEFAULT 'ingredient',
+  `category` varchar(100) DEFAULT NULL,
+  `sku` varchar(80) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `purchase_cost` decimal(14,2) unsigned NOT NULL,
+  `purchase_quantity` decimal(14,4) unsigned NOT NULL,
+  `base_unit` enum('mg','g','kg','oz','lb','ml','l','tsp','tbsp','cup','fl oz','mm','cm','m','inch','ft','yard','pcs','dozen','pack','box') NOT NULL,
+  `grams_per_cup` decimal(14,4) unsigned DEFAULT NULL,
+  `pieces_per_unit` decimal(14,4) unsigned DEFAULT NULL,
+  `unit_cost` decimal(18,6) GENERATED ALWAYS AS (`purchase_cost` / nullif(`purchase_quantity` * case `base_unit` when 'mg' then 0.001 when 'kg' then 1000 when 'oz' then 28.349523 when 'lb' then 453.59237 when 'l' then 1000 when 'tsp' then 5 when 'tbsp' then 15 when 'cup' then 240 when 'fl oz' then 29.57353 when 'cm' then 10 when 'm' then 1000 when 'inch' then 25.4 when 'ft' then 304.8 when 'yard' then 914.4 when 'dozen' then 12 when 'pack' then coalesce(`pieces_per_unit`,1) when 'box' then coalesce(`pieces_per_unit`,1) else 1 end,0)) STORED,
+  `currency_code` char(3) NOT NULL DEFAULT 'PHP',
+  `quantity_on_hand` decimal(14,4) unsigned NOT NULL DEFAULT 0.0000,
+  `reorder_level` decimal(14,4) unsigned DEFAULT NULL,
+  `supplier_name` varchar(150) DEFAULT NULL,
+  `lot_number` varchar(100) DEFAULT NULL,
+  `expiry_date` date DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_inventory_user_sku` (`user_id`,`sku`),
+  KEY `idx_inventory_user_active` (`user_id`,`is_active`,`deleted_at`),
+  KEY `idx_inventory_business` (`business_profile_id`),
+  KEY `idx_inventory_material` (`user_id`,`material_name`),
+  KEY `idx_inventory_expiry` (`user_id`,`expiry_date`),
+  CONSTRAINT `fk_inventory_business_profile` FOREIGN KEY (`business_profile_id`) REFERENCES `business_profiles` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_inventory_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `chk_inventory_material_name` CHECK (char_length(trim(`material_name`)) > 0),
+  CONSTRAINT `chk_inventory_purchase_cost` CHECK (`purchase_cost` > 0),
+  CONSTRAINT `chk_inventory_purchase_quantity` CHECK (`purchase_quantity` > 0),
+  CONSTRAINT `chk_inventory_quantity_on_hand` CHECK (`quantity_on_hand` >= 0),
+  CONSTRAINT `chk_inventory_reorder_level` CHECK (`reorder_level` is null or `reorder_level` >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 
 
 -- Optional stock movement ledger.
 -- Keep this table if you want accurate stock history instead of directly
 -- replacing quantity_on_hand whenever stock is purchased or consumed.
-CREATE TABLE inventory_transactions (
-    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    inventory_item_id BIGINT UNSIGNED NOT NULL,
-    user_id BIGINT UNSIGNED NOT NULL,
-    transaction_type ENUM(
-        'opening_stock',
-        'purchase',
-        'product_usage',
-        'adjustment_in',
-        'adjustment_out',
-        'waste',
-        'return'
-    ) NOT NULL,
-    quantity DECIMAL(14, 4) UNSIGNED NOT NULL,
-    unit_cost DECIMAL(18, 6) UNSIGNED NULL,
-    reference_type VARCHAR(50) NULL,
-    reference_id BIGINT UNSIGNED NULL,
-    notes VARCHAR(500) NULL,
-    occurred_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    PRIMARY KEY (id),
-    KEY idx_inventory_transaction_item_date (inventory_item_id, occurred_at),
-    KEY idx_inventory_transaction_user_date (user_id, occurred_at),
-
-    CONSTRAINT chk_inventory_transaction_quantity
-        CHECK (quantity > 0),
-    CONSTRAINT fk_inventory_transaction_item
-        FOREIGN KEY (inventory_item_id) REFERENCES inventory_items(id)
-        ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT fk_inventory_transaction_user
-        FOREIGN KEY (user_id) REFERENCES users(id)
-        ON UPDATE CASCADE ON DELETE CASCADE
-) ENGINE=InnoDB
-  DEFAULT CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
+CREATE TABLE `inventory_transactions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `inventory_item_id` bigint(20) unsigned NOT NULL,
+  `user_id` int(10) unsigned NOT NULL,
+  `transaction_type` enum('opening_stock','purchase','product_usage','adjustment_in','adjustment_out','waste','return') NOT NULL,
+  `quantity` decimal(14,4) unsigned NOT NULL,
+  `unit_cost` decimal(18,6) unsigned DEFAULT NULL,
+  `reference_type` varchar(50) DEFAULT NULL,
+  `reference_id` bigint(20) unsigned DEFAULT NULL,
+  `notes` varchar(500) DEFAULT NULL,
+  `occurred_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_inventory_transaction_item_date` (`inventory_item_id`,`occurred_at`),
+  KEY `idx_inventory_transaction_user_date` (`user_id`,`occurred_at`),
+  KEY `idx_inventory_transaction_type` (`transaction_type`),
+  KEY `idx_inventory_transaction_reference` (`reference_type`,`reference_id`),
+  CONSTRAINT `fk_inventory_transaction_item` FOREIGN KEY (`inventory_item_id`) REFERENCES `inventory_items` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_inventory_transaction_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `chk_inventory_transaction_quantity` CHECK (`quantity` > 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 
 
 -- Mapping from the current React inventory object:

@@ -1,7 +1,8 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Download, FileUp, PackagePlus, Search, Trash2 } from 'lucide-react';
 import { Button, Card, Modal } from '../components/ui';
 import { formatCurrency, getInventoryCostUnit, getInventoryUnitCost } from '../utils/calculations';
+import { apiJson, getApiItem, isOfflineUser } from '../utils/api';
 
 const baseUnits = ['mg', 'g', 'kg', 'oz', 'lb', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'fl oz', 'mm', 'cm', 'm', 'inch', 'ft', 'yard', 'pcs', 'dozen', 'pack', 'box'];
 const weightUnits = ['mg', 'g', 'kg', 'oz', 'lb'];
@@ -14,6 +15,47 @@ function unitSuffix(unit) {
 
 function unitCostLabel(item) {
   return `${formatCurrency(getInventoryUnitCost(item))}/${getInventoryCostUnit(item)}`;
+}
+
+function inventoryApiPayload(item) {
+  return {
+    material: item.material,
+    itemCost: Number(item.itemCost) || 0,
+    qty: Number(item.qty) || 0,
+    baseUnit: item.baseUnit || '',
+    gramsPerCup: Number(item.gramsPerCup) || 0,
+    piecesPerUnit: Number(item.piecesPerUnit) || 0,
+    item_type: item.item_type || 'ingredient',
+    category: item.category || '',
+    sku: item.sku || '',
+    description: item.description || '',
+    currency_code: item.currency_code || 'PHP',
+    quantity_on_hand: Number(item.qty) || 0,
+    reorder_level: Number(item.reorder_level) || 0,
+    supplier_name: item.supplier_name || '',
+    lot_number: item.lot_number || '',
+    expiry_date: item.expiry_date || null,
+    notes: item.notes || '',
+  };
+}
+
+function normalizeApiInventoryItem(item) {
+  return {
+    ...item,
+    id: item.id || item.inventory_item_id || crypto.randomUUID(),
+    material: item.material || item.material_name || item.name || '',
+    itemCost: Number(item.itemCost ?? item.purchase_cost) || 0,
+    qty: Number(item.qty ?? item.purchase_quantity ?? item.quantity_on_hand) || 0,
+    baseUnit: (item.baseUnit || item.base_unit || item.unit || '') === 'grams' ? 'g' : (item.baseUnit || item.base_unit || item.unit || ''),
+    gramsPerCup: Number(item.gramsPerCup ?? item.grams_per_cup) || 0,
+    piecesPerUnit: Number(item.piecesPerUnit ?? item.pieces_per_unit) || 0,
+  };
+}
+
+function extractInventoryItems(data) {
+  if (Array.isArray(data)) return data;
+  const candidates = [data?.result, data?.data?.result, data?.data?.items, data?.data?.inventory, data?.data?.rows, data?.items, data?.inventory, data?.data];
+  return candidates.find(Array.isArray) || [];
 }
 
 function InventoryInput({ value, onChange, type = 'number', prefix, ariaLabel }) {
@@ -55,20 +97,70 @@ export default function Inventory({ inventory, setInventory }) {
   const [addOpen, setAddOpen] = useState(false);
   const [draft, setDraft] = useState({ material: '', itemCost: '', qty: '', baseUnit: '', gramsPerCup: '', piecesPerUnit: '' });
   const [draftErrors, setDraftErrors] = useState({});
+  const [saveError, setSaveError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [apiError, setApiError] = useState('');
+  const [deletingId, setDeletingId] = useState(null);
   const [importMessage, setImportMessage] = useState('');
   const [importError, setImportError] = useState('');
+  const [loadingInventory, setLoadingInventory] = useState(false);
+  const updateTimers = useRef({});
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (isOfflineUser()) return undefined;
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      setLoadingInventory(true);
+      try {
+        const params = new URLSearchParams({ display: '20', page: '1' });
+        if (search.trim()) params.set('search', search.trim());
+        const data = await apiJson(`/api/inventory/getAll?${params.toString()}`);
+        if (!cancelled) {
+          setInventory(extractInventoryItems(data).map(normalizeApiInventoryItem));
+          setApiError('');
+        }
+      } catch (error) {
+        if (!cancelled) setApiError(error instanceof Error ? error.message : 'Unable to load inventory.');
+      } finally {
+        if (!cancelled) setLoadingInventory(false);
+      }
+    }, search.trim() ? 350 : 0);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [search]);
+
   const updateItem = (id, field, value) => {
-    setInventory(inventory.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
+    const nextInventory = inventory.map((item) => (item.id === id ? { ...item, [field]: value } : item));
+    setInventory(nextInventory);
+    if (isOfflineUser()) return;
+    window.clearTimeout(updateTimers.current[id]);
+    updateTimers.current[id] = window.setTimeout(async () => {
+      const item = nextInventory.find((entry) => String(entry.id) === String(id));
+      if (!item) return;
+      try {
+        setApiError('');
+        await apiJson(`/api/inventory/update/${encodeURIComponent(id)}`, {
+          method: 'PATCH',
+          body: JSON.stringify(inventoryApiPayload(item)),
+        });
+      } catch (error) {
+        setApiError(error instanceof Error ? error.message : 'Unable to update this material.');
+      }
+    }, 500);
   };
 
   const openAddMaterial = () => {
     setDraft({ material: '', itemCost: '', qty: '', baseUnit: '', gramsPerCup: '', piecesPerUnit: '' });
     setDraftErrors({});
+    setSaveError('');
+    setApiError('');
     setAddOpen(true);
   };
 
-  const addItem = () => {
+  const addItem = async () => {
     const errors = {
       material: !draft.material.trim() ? 'Material name is required' : '',
       itemCost: Number(draft.itemCost) <= 0 ? 'Purchase amount must be greater than 0' : '',
@@ -77,23 +169,61 @@ export default function Inventory({ inventory, setInventory }) {
     };
     setDraftErrors(errors);
     if (Object.values(errors).some(Boolean)) return;
-    setInventory([
-      ...inventory,
-      {
-        id: crypto.randomUUID(),
-        material: draft.material.trim(),
-        itemCost: Number(draft.itemCost),
-        qty: Number(draft.qty),
-        baseUnit: draft.baseUnit,
-        gramsPerCup: Number(draft.gramsPerCup) || 0,
-        piecesPerUnit: Number(draft.piecesPerUnit) || 0,
-      },
-    ]);
-    setAddOpen(false);
+    const localItem = {
+      id: crypto.randomUUID(),
+      material: draft.material.trim(),
+      itemCost: Number(draft.itemCost),
+      qty: Number(draft.qty),
+      baseUnit: draft.baseUnit,
+      gramsPerCup: Number(draft.gramsPerCup) || 0,
+      piecesPerUnit: Number(draft.piecesPerUnit) || 0,
+    };
+    if (isOfflineUser()) {
+      setInventory([...inventory, localItem]);
+      setAddOpen(false);
+      return;
+    }
+    setSaving(true);
+    setSaveError('');
+    try {
+      const data = await apiJson('/api/inventory/add', {
+        method: 'POST',
+        body: JSON.stringify(inventoryApiPayload(localItem)),
+      });
+      const saved = getApiItem(data);
+      setInventory([...inventory, {
+        ...localItem,
+        id: saved?.id || saved?.inventory_item_id || data?.id || localItem.id,
+        material: saved?.material || saved?.material_name || localItem.material,
+        itemCost: Number(saved?.itemCost ?? saved?.purchase_cost) || localItem.itemCost,
+        qty: Number(saved?.qty ?? saved?.purchase_quantity ?? saved?.quantity_on_hand) || localItem.qty,
+        baseUnit: saved?.baseUnit || saved?.base_unit || localItem.baseUnit,
+        gramsPerCup: Number(saved?.gramsPerCup ?? saved?.grams_per_cup) || localItem.gramsPerCup,
+        piecesPerUnit: Number(saved?.piecesPerUnit ?? saved?.pieces_per_unit) || localItem.piecesPerUnit,
+      }]);
+      setAddOpen(false);
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Unable to save this material.');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const removeItem = (id) => {
-    setInventory(inventory.filter((item) => item.id !== id));
+  const removeItem = async (id) => {
+    if (isOfflineUser()) {
+      setInventory(inventory.filter((item) => item.id !== id));
+      return;
+    }
+    setDeletingId(id);
+    setApiError('');
+    try {
+      await apiJson(`/api/inventory/delete/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      setInventory(inventory.filter((item) => item.id !== id));
+    } catch (error) {
+      setApiError(error instanceof Error ? error.message : 'Unable to delete this material.');
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const totalInventoryCost = inventory.reduce((sum, item) => sum + (Number(item.itemCost) || 0), 0);
@@ -210,6 +340,8 @@ export default function Inventory({ inventory, setInventory }) {
 
       {importMessage ? <p className="rounded-md border border-teal-200 bg-teal-50 px-3 py-2 text-sm font-semibold text-teal-700">{importMessage}</p> : null}
       {importError ? <p className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700">{importError}</p> : null}
+      {apiError ? <p className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700">{apiError}</p> : null}
+      {loadingInventory ? <p className="rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700">Loading inventory…</p> : null}
 
       <div className="flex flex-wrap gap-2">
         <span className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-black text-navy">{inventory.length} Materials</span>
@@ -280,6 +412,7 @@ export default function Inventory({ inventory, setInventory }) {
                   <div className="flex h-9 justify-center px-1">
                     <button
                       className="grid h-9 w-9 place-items-center rounded-md border border-slate-200 bg-white text-slate-700 transition hover:border-accent"
+                      disabled={deletingId === item.id}
                       onClick={() => removeItem(item.id)}
                       type="button"
                     >
@@ -302,6 +435,7 @@ export default function Inventory({ inventory, setInventory }) {
 
       {addOpen ? (
         <Modal title="Add Material" onClose={() => setAddOpen(false)}>
+          {saveError ? <p className="mb-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700">{saveError}</p> : null}
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="grid gap-1.5 text-sm font-semibold text-slate-600 sm:col-span-2">
               Material
@@ -339,7 +473,7 @@ export default function Inventory({ inventory, setInventory }) {
           </div>
           <div className="mt-5 flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setAddOpen(false)}>Cancel</Button>
-            <Button onClick={addItem}><PackagePlus className="h-4 w-4" /> Add Material</Button>
+            <Button disabled={saving} onClick={addItem}><PackagePlus className="h-4 w-4" /> {saving ? 'Saving…' : 'Add Material'}</Button>
           </div>
         </Modal>
       ) : null}

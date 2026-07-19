@@ -13,6 +13,10 @@ npm run dev
 
 Open `http://localhost:3000`.
 
+Development uses `http://localhost:8000` as the API by default. Change the
+port in `.env.development` with `VITE_API_BASE_URL` if your local backend uses
+a different port. Production uses `https://api.kostaraa.com` by default.
+
 ## Production build
 
 ```bash

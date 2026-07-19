@@ -1,5 +1,2 @@
-@import "tailwindcss";
-@source "../../src/bizcost";
-
 .dotted-canvas{background-color:#f8fbff;background-image:radial-gradient(#d6e2f1 1px,transparent 1px);background-size:22px 22px}
 #recharts_measurement_span{opacity:0!important;pointer-events:none!important}

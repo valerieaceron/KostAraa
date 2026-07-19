@@ -161,7 +161,7 @@ export default function Calculator({ product, setProduct, results, inventory = [
     });
   };
   const updateIngredientMaterial = (id, materialId) => {
-    const material = inventory.find((item) => item.id === materialId);
+    const material = inventory.find((item) => String(item.id) === String(materialId));
     setProduct({
       ...product,
       ingredients: product.ingredients.map((item) => (item.id === id ? { ...item, materialId, name: material?.material || '', usedUnit: material?.baseUnit || item.usedUnit || 'pcs' } : item)),
@@ -174,7 +174,7 @@ export default function Calculator({ product, setProduct, results, inventory = [
     });
   };
   const updatePackagingMaterial = (id, materialId) => {
-    const material = inventory.find((item) => item.id === materialId);
+    const material = inventory.find((item) => String(item.id) === String(materialId));
     setProduct({
       ...product,
       packaging: (product.packaging || []).map((item) => (item.id === id ? { ...item, materialId, name: material?.material || '', usedUnit: material?.baseUnit || item.usedUnit || 'pcs' } : item)),
@@ -186,12 +186,12 @@ export default function Calculator({ product, setProduct, results, inventory = [
     setRowError('');
   };
   const updateRowDraftMaterial = (materialId) => {
-    const material = inventory.find((item) => item.id === materialId);
+    const material = inventory.find((item) => String(item.id) === String(materialId));
     setRowDraft({ ...rowDraft, materialId, usedUnit: material?.baseUnit || 'pcs' });
     setRowError('');
   };
   const saveNewRow = () => {
-    const material = inventory.find((item) => item.id === rowDraft.materialId);
+    const material = inventory.find((item) => String(item.id) === String(rowDraft.materialId));
     if (!material) {
       setRowError('Please choose a material from Inventory.');
       return;
