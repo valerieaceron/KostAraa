@@ -1,3 +1,4 @@
+import {isOfflineUser} from './api';
 import { demoBusiness, demoInventory, demoProduct, demoSavedItems } from '../data/demoData';
 
 const keys = {
@@ -9,11 +10,13 @@ const keys = {
 };
 
 export function loadState() {
-  const business = JSON.parse(localStorage.getItem(keys.business) || JSON.stringify(demoBusiness));
-  const inventory = normalizeInventory(JSON.parse(localStorage.getItem(keys.inventory) || JSON.stringify(demoInventory)));
+  const demo = isOfflineUser();
+  const emptyBusiness = {...demoBusiness, labor:{staffCount:0, monthlyCost:0, workingDays:0, outputPerDay:0}, overhead:{rent:0, utilities:0, miscellaneous:0}};
+  const business = JSON.parse(localStorage.getItem(keys.business) || JSON.stringify(demo ? demoBusiness : emptyBusiness));
+  const inventory = normalizeInventory(JSON.parse(localStorage.getItem(keys.inventory) || JSON.stringify(demo ? demoInventory : [])));
   const product = normalizeProduct(JSON.parse(localStorage.getItem(keys.product) || JSON.stringify(demoProduct)));
   const storedItems = localStorage.getItem(keys.savedItems);
-  const savedItems = storedItems ? JSON.parse(storedItems) : demoSavedItems;
+  const savedItems = storedItems ? JSON.parse(storedItems) : demo ? demoSavedItems : [];
 
   if (!storedItems) localStorage.setItem(keys.savedItems, JSON.stringify(savedItems));
   if (!localStorage.getItem(keys.business)) localStorage.setItem(keys.business, JSON.stringify(business));

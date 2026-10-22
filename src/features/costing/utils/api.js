@@ -1,4 +1,4 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://localhost:8000' : 'https://api.kostaraa.com')).replace(/\/+$/, '');
+const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL || (import.meta.env?.DEV ? 'http://localhost:8000' : 'https://api.kostaraa.com')).replace(/\/+$/, '');
 
 export function getSessionUser() {
   try {
@@ -30,7 +30,7 @@ export async function apiJson(path, options = {}) {
   } catch {
     data = { message: text };
   }
-  if (!response.ok) throw new Error(data.message || data.error || 'Unable to connect to the API.');
+  if (!response.ok || data.type === 'error' || data.success === false) throw new Error(data.message || data.error || 'Unable to connect to the API.');
   return data;
 }
 
@@ -44,6 +44,17 @@ export function getApiItem(data) {
 export function getApiList(data) {
   if (Array.isArray(data)) return data;
   return [data?.result, data?.data?.result, data?.data?.items, data?.items, data?.inventory, data?.data].find(Array.isArray) || [];
+}
+
+export async function getAllApiItems(path) {
+  const items = [];
+  for (let page = 1; ; page++) {
+    const data = await apiJson(`${path}?display=100&page=${page}`);
+    const rows = getApiList(data);
+    items.push(...rows);
+    const total = Number(data.total_rows ?? data.data?.total_rows);
+    if (!rows.length || (Number.isFinite(total) ? items.length >= total : rows.length < 100)) return items;
+  }
 }
 
 export function normalizeInventoryItem(item) {

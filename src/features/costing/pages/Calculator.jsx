@@ -130,6 +130,8 @@ function ResultPanelCard({ label, value, tone = 'default' }) {
 }
 
 export default function Calculator({ product, setProduct, results, inventory = [], onSaveItem, onDuplicateCurrent, onReset, editingItem, operationCostsCard = null }) {
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const [saveOpen, setSaveOpen] = useState(false);
   const [meta, setMeta] = useState({ itemType: 'Product', category: product.productCategory || 'Drinks' });
   const [taxPercentage, setTaxPercentage] = useState(0);
@@ -229,8 +231,12 @@ export default function Calculator({ product, setProduct, results, inventory = [
   const finalProfitPerUnit = hasTargetPrice ? targetProfitPerUnit : profitPerUnit;
   const finalGrossMargin = hasTargetPrice ? targetGrossMargin : grossMargin;
   const breakEvenUnits = finalProfitPerUnit > 0 ? Math.ceil(results.overheadMonthly / finalProfitPerUnit) : Infinity;
-  const saveWithMeta = (statusOverride) => {
-    onSaveItem({
+  const saveWithMeta = async (statusOverride) => {
+    if (saving) return;
+    setSaving(true);
+    setSaveError('');
+    try {
+    await onSaveItem({
       ...meta,
       status: statusOverride || 'Active',
       pricing: {
@@ -251,6 +257,8 @@ export default function Calculator({ product, setProduct, results, inventory = [
       },
     }, statusOverride);
     setSaveOpen(false);
+    } catch (error) { setSaveError(error.message || 'Unable to save your calculation.'); }
+    finally { setSaving(false); }
   };
   const resetAll = () => {
     setTaxPercentage(0);
@@ -653,7 +661,8 @@ export default function Calculator({ product, setProduct, results, inventory = [
       )}
 
       {saveOpen && (
-        <Modal title="Save calculation to Library" onClose={() => setSaveOpen(false)}>
+        <Modal title="Save calculation to Library" onClose={() => !saving && setSaveOpen(false)}>
+          {saveError && <p role="alert" className="text-red-700">{saveError}</p>}
           <div className="grid gap-4 md:grid-cols-2">
             <Field label="Product Name" value={product.productName} onChange={(value) => update('productName', value)} />
             <Select label="Item type" value={meta.itemType} onChange={(e) => setMeta({ ...meta, itemType: e.target.value })}>{itemTypes.map((item) => <option key={item}>{item}</option>)}</Select>
@@ -676,7 +685,7 @@ export default function Calculator({ product, setProduct, results, inventory = [
             <div className="rounded-md border border-slate-200 bg-slate-50 p-3"><p className="text-xs font-bold uppercase text-slate-500">Profit / Margin</p><p className="mt-1 font-black text-navy">{formatCurrency(finalProfitPerUnit)} / {formatNumber(finalGrossMargin)}%</p></div>
           </div>
           <div className="mt-5 flex justify-end">
-            <Button onClick={() => saveWithMeta()}>{editingItem ? 'Update Library Item' : 'Add to Library'}</Button>
+            <Button disabled={saving} onClick={() => saveWithMeta()}>{saving ? 'Saving…' : editingItem ? 'Update Library Item' : 'Add to Library'}</Button>
           </div>
         </Modal>
       )}

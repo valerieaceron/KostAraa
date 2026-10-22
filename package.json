@@ -10,7 +10,8 @@
     "build": "node scripts/guard-no-presentation.mjs && vite build --mode production && node scripts/hostinger-routes.mjs",
     "preview": "vite preview",
     "start": "vite preview",
-    "test": "npm run build",
+    "test": "npm run test:contracts && npm run build",
+    "test:contracts": "node --experimental-strip-types --test tests/*.test.mjs",
     "lint": "eslint src scripts vite.config.js",
     "check": "npm run lint && npm run build"
   },

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Copy, Download, FileUp, MoreHorizontal, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
 import { formatCurrency, getInventoryCostUnit, getInventoryUnitCost } from '../utils/calculations';
-import { apiJson, getApiItem, isOfflineUser } from '../utils/api';
+import { apiJson, getAllApiItems, getApiItem, isOfflineUser } from '../utils/api';
 import '../styles/inventory.css';
 
 const ALL_UNITS = ['mg', 'g', 'kg', 'oz', 'lb', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'fl oz', 'mm', 'cm', 'm', 'inch', 'ft', 'yard', 'pcs', 'dozen', 'pack', 'box'];
@@ -154,8 +154,8 @@ export default function Inventory({ inventory, setInventory, unitOptions = ALL_U
     if (isOfflineUser()) return undefined;
     let cancelled = false;
     setLoadingInventory(true);
-    apiJson('/api/inventory/getAll?display=100&page=1').then((data) => {
-      if (!cancelled) { setInventory(extractInventoryItems(data).map(normalizeApiInventoryItem)); setApiError(''); }
+    getAllApiItems('/api/inventory/getAll').then((data) => {
+      if (!cancelled) { setInventory(data.map(normalizeApiInventoryItem)); setApiError(''); }
     }).catch((error) => { if (!cancelled) setApiError(error instanceof Error ? error.message : 'Unable to load inventory.'); }).finally(() => { if (!cancelled) setLoadingInventory(false); });
     return () => { cancelled = true; };
   }, []);

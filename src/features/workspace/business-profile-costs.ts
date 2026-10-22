@@ -15,6 +15,7 @@ function monthlyAmount(expense: any, defaultFrequency = "Monthly") {
 }
 
 export function monthlyOperationCost(profile: any) {
+  const space = ["monthlyRent", "associationDues", "parkingFees", "storageFees", "otherLocationExpenses"].reduce((sum, key) => sum + (Number(profile?.locationExpenses?.[key]) || 0), 0);
   const fixed = profile?.overhead?.fixed || [];
   const variable = profile?.overhead?.variable || [];
   const periodic = profile?.overhead?.periodic || [];
@@ -22,14 +23,16 @@ export function monthlyOperationCost(profile: any) {
   const hasRecordedExpense = rows.some((expense: any) => Number(expense?.amount) > 0);
 
   if (hasRecordedExpense) {
-    return fixed.reduce((sum: number, expense: any) => sum + monthlyAmount(expense), 0)
+    return space + fixed.reduce((sum: number, expense: any) => sum + monthlyAmount(expense), 0)
       + variable.reduce((sum: number, expense: any) => sum + monthlyAmount(expense), 0)
       + periodic.reduce((sum: number, expense: any) => sum + monthlyAmount(expense, "Annual"), 0);
   }
 
-  return Number(profile?.overhead?.monthlyOverheadPool)
+  if (!rows.length && !profile?.locationExpenses) return Number(profile?.overhead?.monthlyOverheadPool)
     || Number(profile?.calculatorCosts?.overheadMonthly)
     || 0;
+  return space;
+
 }
 
 export function withSynchronizedOperationCost(profile: any) {

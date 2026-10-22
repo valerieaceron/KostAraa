@@ -19,6 +19,7 @@ function businessStageLabel(value) {
     still_planning: 'Still planning',
     newly_operating: 'Newly operating',
     operating_and_growing: 'Operating and growing',
+    operating_breaking_even: 'Operating but breaking even',
     operating_but_breaking_even: 'Operating but breaking even',
     operating_but_struggling: 'Operating but struggling',
     temporarily_inactive: 'Temporarily inactive',
@@ -31,6 +32,7 @@ const expenseCategoryLabels = {
   rent_and_space: 'Rent and space costs',
   internet_and_communication: 'Internet and communication',
   utilities: 'Electricity, water, and utilities',
+  staff_and_admin_pay:'Staff and admin pay', marketing_and_promotions:'Marketing and promotions', software_and_subscriptions:'Software and subscriptions', permits_licenses_government_fees:'Permits, licenses, and government fees', professional_services:'Professional services', repairs_and_maintenance:'Repairs and maintenance', office_and_store_supplies:'Office and store supplies', transportation_and_business_travel:'Transportation and business travel', bank_and_payment_fees:'Bank and payment fees', insurance:'Insurance', equipment_and_tools:'Equipment and tools',
   other_business_expense: 'Other business expense',
 };
 
@@ -50,19 +52,19 @@ function groupOverhead(rows, fallback) {
   const grouped = { fixed: [], variable: [], periodic: [] };
   (Array.isArray(rows) ? rows : []).forEach((row) => {
     const group = String(row.expense_group || row.group || '').toLowerCase();
-    const target = group.includes('annual') || group.includes('occasional') || group.includes('periodic') ? 'periodic' : 'fixed';
+    const target = group.includes('variable') ? 'variable' : group.includes('annual') || group.includes('occasional') || group.includes('periodic') ? 'periodic' : 'fixed';
     grouped[target].push({
       id: row.id || crypto.randomUUID(),
       group: target,
       name: row.expense_name || row.name || '',
       category: expenseCategoryLabel(row.expense_category || row.category),
       amount: number(row.amount),
-      frequency: row.frequency === 'annual' ? 'Annual' : (row.frequency || 'Monthly'),
+      frequency: ({daily:'Daily',weekly:'Weekly',monthly:'Monthly',quarterly:'Quarterly',semi_annual:'Semi-annual',annual:'Annual',one_time:'One-time'})[row.frequency] || row.frequency || 'Monthly',
       startDate: row.start_date || row.startDate || '',
       notes: row.notes || '',
     });
   });
-  if (!grouped.fixed.length && !grouped.periodic.length && fallback?.overhead) return fallback.overhead;
+  if (!Array.isArray(rows) && fallback?.overhead) return fallback.overhead;
   return { ...grouped, monthlyOverheadPool: number(fallback?.overhead?.monthlyOverheadPool) };
 }
 
@@ -79,7 +81,7 @@ export function normalizeBusinessProfile(data, fallback = {}) {
       ...(fallback.identity || {}),
       businessName: api.business_name ?? fallback.identity?.businessName ?? '',
       description: api.business_description ?? fallback.identity?.description ?? '',
-      category: api.business_category ?? fallback.identity?.category ?? '',
+      category: ({food_and_beverage:'Food and Beverage',handmade_and_crafts:'Handmade and Crafts',customized_products:'Customized Products',retail_and_ecommerce:'Retail and E-Commerce',small_scale_manufacturing:'Small-Scale Manufacturing',other_product_business:'Other Product-Based Business'})[api.business_category] || api.business_category || fallback.identity?.category || '',
       country: api.country_code === 'PH' ? 'Philippines' : (api.country_code ?? fallback.identity?.country ?? ''),
       currency: api.currency_code === 'PHP' ? 'PHP (₱)' : (api.currency_code ?? fallback.identity?.currency ?? ''),
       city: api.province_or_city ?? fallback.identity?.city ?? '',
@@ -88,10 +90,12 @@ export function normalizeBusinessProfile(data, fallback = {}) {
       ...(fallback.businessStage || {}),
       stage: businessStageLabel(api.business_stage ?? fallback.businessStage?.stage ?? ''),
       startYear: api.year_started ?? fallback.businessStage?.startYear ?? '',
-      plannedStartYear: api.year_started ?? fallback.businessStage?.plannedStartYear ?? '',
+      plannedStartYear: api.planned_start_year ?? fallback.businessStage?.plannedStartYear ?? '',
     },
+    locationExpenses: api.business_operations?.locationExpenses || fallback.locationExpenses || {},
     operations: {
       ...(fallback.operations || {}),
+      ...(api.business_operations || {}),
       monthlySalesUnits: hasMonthlySalesTarget
         ? number(api.monthly_sales_target_units)
         : number(fallback.operations?.monthlySalesUnits),
@@ -100,22 +104,22 @@ export function normalizeBusinessProfile(data, fallback = {}) {
         : number(fallback.operations?.monthlySalesTarget),
     },
     manpower: (api.manpower || fallback.manpower || []).map((row) => ({
-      id: row.id || crypto.randomUUID(), nameOrRole: row.name_or_role || row.nameOrRole || '', position: row.position_name || row.position || '', employmentType: row.employment_type || row.employmentType || 'Owner', rateType: row.pay_type || row.rateType || 'Monthly salary', amount: number(row.pay_amount ?? row.amount), workingDays: number(row.working_days_per_month ?? row.workingDays), workingHours: number(row.working_hours_per_day ?? row.workingHours), benefits: number(row.benefits_and_allowances ?? row.benefits), contributions: number(row.employer_contributions ?? row.contributions), productionPercent: number(row.production_time_percentage ?? row.productionPercent), classification: row.labor_classification || row.classification || 'Direct labor',
+      id: row.id || crypto.randomUUID(), nameOrRole: row.name_or_role || row.nameOrRole || '', position: row.position_name || row.position || '', employmentType: ({owner:'Owner',family_member:'Family member',full_time_employee:'Full-time employee',part_time_employee:'Part-time employee',freelancer:'Freelancer',contractual_worker:'Contractual worker'})[row.employment_type] || row.employmentType || 'Owner', rateType: ({monthly:'Monthly salary',daily:'Daily rate',hourly:'Hourly rate',project:'Project-based'})[row.pay_type] || row.rateType || 'Monthly salary', amount: number(row.pay_amount ?? row.amount), workingDays: number(row.working_days_per_month ?? row.workingDays), workingHours: number(row.working_hours_per_day ?? row.workingHours), benefits: number(row.benefits_and_allowances ?? row.benefits), contributions: number(row.employer_contributions ?? row.contributions), productionPercent: number(row.production_time_percentage ?? row.productionPercent), classification: row.labor_classification === 'indirect_labor' ? 'Indirect labor' : row.classification || 'Direct labor',
     })),
     ownerLabor: {
       ...(fallback.ownerLabor || {}),
-      includeOwnTime: owner.include_owner_pay === true ? 'Yes' : owner.include_owner_pay === false ? 'No' : (fallback.ownerLabor?.includeOwnTime || 'No'),
-      desiredMonthlyCompensation: number(owner.desired_monthly_owner_pay) || number(fallback.ownerLabor?.desiredMonthlyCompensation),
-      workingHoursPerMonth: number(owner.working_hours_per_month) || number(fallback.ownerLabor?.workingHoursPerMonth),
-      productionPercent: number(owner.production_time_percentage) || number(fallback.ownerLabor?.productionPercent),
-      administrationPercent: number(owner.management_time_percentage) || number(fallback.ownerLabor?.administrationPercent),
+      includeOwnTime: owner.include_owner_pay != null ? (Number(owner.include_owner_pay) ? 'Yes' : 'No') : (fallback.ownerLabor?.includeOwnTime || 'No'),
+      desiredMonthlyCompensation: number(owner.desired_monthly_owner_pay ?? fallback.ownerLabor?.desiredMonthlyCompensation),
+      workingHoursPerMonth: number(owner.working_hours_per_month ?? fallback.ownerLabor?.workingHoursPerMonth),
+      productionPercent: number(owner.production_time_percentage ?? fallback.ownerLabor?.productionPercent),
+      administrationPercent: number(owner.management_time_percentage ?? fallback.ownerLabor?.administrationPercent),
     },
     overhead: groupOverhead(api.overhead, fallback),
     targetMarket: {
-      ...(fallback.targetMarket || {}), customerGroups: target.customer_groups || fallback.targetMarket?.customerGroups || [], frequentGroup: target.most_frequent_customer_group || fallback.targetMarket?.frequentGroup || '', ageGroup: target.typical_age_group || fallback.targetMarket?.ageGroup || '', locationType: target.customer_location_type || fallback.targetMarket?.locationType || '', customerLocation: target.main_city_or_area || fallback.targetMarket?.customerLocation || '', spendingPerOrder: number(target.usual_spending_per_order) || number(fallback.targetMarket?.spendingPerOrder), purchaseFrequency: target.purchase_frequency || fallback.targetMarket?.purchaseFrequency || '', buyingReasons: target.buying_reasons || fallback.targetMarket?.buyingReasons || [], priceSensitivity: target.price_sensitivity || fallback.targetMarket?.priceSensitivity || '', willingnessToPay: target.willingness_to_pay ?? fallback.targetMarket?.willingnessToPay ?? '', priorities: target.customer_priorities || fallback.targetMarket?.priorities || [],
+      ...(fallback.targetMarket || {}), customerGroups: target.customer_groups || fallback.targetMarket?.customerGroups || [], frequentGroup: target.most_frequent_customer_group || fallback.targetMarket?.frequentGroup || '', ageGroup: target.typical_age_group || fallback.targetMarket?.ageGroup || '', locationType: target.customer_location_type || fallback.targetMarket?.locationType || '', customerLocation: target.main_city_or_area || fallback.targetMarket?.customerLocation || '', spendingPerOrder: number(target.usual_spending_per_order ?? fallback.targetMarket?.spendingPerOrder), purchaseFrequency: target.purchase_frequency || fallback.targetMarket?.purchaseFrequency || '', buyingReasons: target.buying_reasons || fallback.targetMarket?.buyingReasons || [], priceSensitivity: target.price_sensitivity || fallback.targetMarket?.priceSensitivity || '', willingnessToPay: target.willingness_to_pay ?? fallback.targetMarket?.willingnessToPay ?? '', priorities: target.customer_priorities || fallback.targetMarket?.priorities || [],
     },
     pricingStrategy: {
-      ...(fallback.pricingStrategy || {}), decisionMethods: pricing.pricing_decision_methods || fallback.pricingStrategy?.decisionMethods || [], pricePosition: pricing.desired_price_position || fallback.pricingStrategy?.pricePosition || 'Not sure yet', lowestUsualPrice: number(pricing.lowest_usual_price) || number(fallback.pricingStrategy?.lowestUsualPrice), highestUsualPrice: number(pricing.highest_usual_price) || number(fallback.pricingStrategy?.highestUsualPrice), profitPlan: pricing.profit_plan || fallback.pricingStrategy?.profitPlan || 'Recommended', desiredProfitMargin: number(pricing.desired_profit_margin) || number(fallback.pricingStrategy?.desiredProfitMargin), discountPractice: pricing.discount_practice || fallback.pricingStrategy?.discountPractice || 'No, rarely', biggestDiscount: pricing.biggest_discount || fallback.pricingStrategy?.biggestDiscount || 'Not sure', sellingType: pricing.selling_type || fallback.pricingStrategy?.sellingType || 'Retail only', retailPrice: number(pricing.usual_retail_price) || number(fallback.pricingStrategy?.retailPrice), wholesalePrice: number(pricing.usual_wholesale_price) || number(fallback.pricingStrategy?.wholesalePrice), minimumWholesaleOrder: number(pricing.minimum_wholesale_order) || number(fallback.pricingStrategy?.minimumWholesaleOrder),
+      ...(fallback.pricingStrategy || {}), decisionMethods: pricing.pricing_decision_methods || fallback.pricingStrategy?.decisionMethods || [], pricePosition: ({affordable:'Affordable',good_value:'Good value',premium:'Premium',not_sure:'Not sure yet'})[pricing.desired_price_position] || fallback.pricingStrategy?.pricePosition || 'Not sure yet', lowestUsualPrice: number(pricing.lowest_usual_price ?? fallback.pricingStrategy?.lowestUsualPrice), highestUsualPrice: number(pricing.highest_usual_price ?? fallback.pricingStrategy?.highestUsualPrice), profitPlan: ({recommended:'Recommended',has_profit_target:'I already have a profit target'})[pricing.profit_plan] || fallback.pricingStrategy?.profitPlan || 'Recommended', desiredProfitMargin: number(pricing.desired_profit_margin ?? fallback.pricingStrategy?.desiredProfitMargin), discountPractice: pricing.discount_practice || fallback.pricingStrategy?.discountPractice || 'No, rarely', biggestDiscount: pricing.biggest_discount || fallback.pricingStrategy?.biggestDiscount || 'Not sure', sellingType: ({retail_only:'Retail only',wholesale_only:'Wholesale only',retail_and_wholesale:'Both retail and wholesale',not_sure:'Not sure yet'})[pricing.selling_type] || fallback.pricingStrategy?.sellingType || 'Retail only', retailPrice: number(pricing.usual_retail_price ?? fallback.pricingStrategy?.retailPrice), wholesalePrice: number(pricing.usual_wholesale_price ?? fallback.pricingStrategy?.wholesalePrice), minimumWholesaleOrder: number(pricing.minimum_wholesale_order ?? fallback.pricingStrategy?.minimumWholesaleOrder),
     },
     salesChannels: (api.sales_channels || fallback.salesChannels || []).map((row) => ({ id: row.id || crypto.randomUUID(), name: row.channel_name || row.name || '', commissionPercentage: number(row.commission_percentage ?? row.commissionPercentage), transactionFeePercentage: number(row.transaction_fee_percentage ?? row.transactionFeePercentage), listingFee: number(row.listing_fee ?? row.listingFee), deliverySubsidy: number(row.delivery_subsidy ?? row.deliverySubsidy), advertisingCost: number(row.advertising_cost ?? row.advertisingCost), packagingRequirement: row.packaging_requirement || row.packagingRequirement || '', refundAllowance: number(row.refund_allowance ?? row.refundAllowance), otherCosts: number(row.other_costs ?? row.otherCosts) })),
     meta: { ...(fallback.meta || {}), businessProfileId, status: api.setup_status || fallback.meta?.status || 'draft', onboardingStep: api.onboarding_step || fallback.meta?.onboardingStep || 0, updatedAt: api.updated_at || new Date().toISOString() },
@@ -125,10 +129,11 @@ export function normalizeBusinessProfile(data, fallback = {}) {
 
 export function businessProfilePayload(profile, setupStatus, onboardingStep) {
   const overhead = ['fixed', 'variable', 'periodic'].flatMap((group) => (profile.overhead?.[group] || []).map((row) => ({
-    expense_name: row.name || '', expense_category: expenseCategoryCode(row.category), expense_group: group === 'periodic' ? 'Annual or occasional' : 'Regular monthly', amount: number(row.amount), frequency: row.frequency || (group === 'periodic' ? 'Annual' : 'Monthly'), start_date: row.startDate || undefined, notes: row.notes || '',
+    expense_name: row.name || '', expense_category: expenseCategoryCode(row.category), expense_group: group === 'periodic' ? 'Annual or occasional' : group === 'variable' ? 'Variable monthly' : 'Regular monthly', amount: number(row.amount), frequency: row.frequency || (group === 'periodic' ? 'Annual' : 'Monthly'), start_date: row.startDate || undefined, notes: row.notes || '',
   })));
   return {
-    business_name: profile.identity?.businessName || '', business_description: profile.identity?.description || '', business_category: profile.identity?.category || '', country_code: countryCode(profile.identity?.country), currency_code: currencyCode(profile.identity?.currency), province_or_city: profile.identity?.city || '', business_stage: profile.businessStage?.stage || '', year_started: profile.businessStage?.startYear || profile.businessStage?.plannedStartYear ? number(profile.businessStage.startYear || profile.businessStage.plannedStartYear) : null, monthly_sales_target_units: number(profile.operations?.monthlySalesUnits || profile.operations?.monthlySalesTarget || profile.operations?.monthlyUnitEstimate), setup_status: setupStatus || profile.meta?.status || 'draft', onboarding_step: onboardingStep || profile.meta?.onboardingStep || 1,
+    business_operations: {...(profile.operations || {}), locationExpenses:profile.locationExpenses || {}}, planned_start_year: profile.businessStage?.plannedStartYear ? number(profile.businessStage.plannedStartYear) : null,
+    business_name: profile.identity?.businessName || '', business_description: profile.identity?.description || '', business_category: profile.identity?.category || '', country_code: countryCode(profile.identity?.country), currency_code: currencyCode(profile.identity?.currency), province_or_city: profile.identity?.city || '', business_stage: profile.businessStage?.stage || '', year_started: profile.businessStage?.startYear ? number(profile.businessStage.startYear) : null, monthly_sales_target_units: number(profile.operations?.monthlySalesUnits || profile.operations?.monthlySalesTarget || profile.operations?.monthlyUnitEstimate), setup_status: setupStatus || profile.meta?.status || 'draft', onboarding_step: onboardingStep || profile.meta?.onboardingStep || 1,
     manpower: (profile.manpower || []).map((row) => ({ name_or_role: row.nameOrRole || '', position_name: row.position || '', employment_type: row.employmentType || 'Owner', labor_classification: row.classification || 'Direct labor', pay_type: row.rateType || 'Monthly salary', pay_amount: number(row.amount), working_days_per_month: number(row.workingDays), working_hours_per_day: number(row.workingHours), benefits_and_allowances: number(row.benefits), employer_contributions: number(row.contributions), production_time_percentage: number(row.productionPercent) })),
     owner_labor: { include_owner_pay: profile.ownerLabor?.includeOwnTime === 'Yes', owner_pay_status: profile.ownerLabor?.includeOwnTime === 'Yes' ? 'included' : 'not_included', desired_monthly_owner_pay: number(profile.ownerLabor?.desiredMonthlyCompensation), working_hours_per_month: number(profile.ownerLabor?.workingHoursPerMonth), production_time_percentage: number(profile.ownerLabor?.productionPercent), management_time_percentage: number(profile.ownerLabor?.administrationPercent) },
     overhead, target_market: { customer_groups: profile.targetMarket?.customerGroups || [], most_frequent_customer_group: profile.targetMarket?.frequentGroup || '', typical_age_group: profile.targetMarket?.ageGroup || '', customer_location_type: profile.targetMarket?.locationType || '', main_city_or_area: profile.targetMarket?.customerLocation || '', usual_spending_per_order: number(profile.targetMarket?.spendingPerOrder), purchase_frequency: profile.targetMarket?.purchaseFrequency || '', buying_reasons: profile.targetMarket?.buyingReasons || [], price_sensitivity: profile.targetMarket?.priceSensitivity || '', willingness_to_pay: profile.targetMarket?.willingnessToPay || 0, customer_priorities: profile.targetMarket?.priorities || [] },
