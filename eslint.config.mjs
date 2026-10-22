@@ -1,18 +1,52 @@
 import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
 
-const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
-  // Override default ignores of eslint-config-next.
-  globalIgnores([
-    // Default ignores of eslint-config-next:
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-  ]),
+const browserGlobals = {
+  Blob: "readonly",
+  FileReader: "readonly",
+  FormData: "readonly",
+  URL: "readonly",
+  URLSearchParams: "readonly",
+  clearTimeout: "readonly",
+  console: "readonly",
+  crypto: "readonly",
+  document: "readonly",
+  fetch: "readonly",
+  localStorage: "readonly",
+  navigator: "readonly",
+  sessionStorage: "readonly",
+  setTimeout: "readonly",
+  window: "readonly",
+};
+
+const nodeGlobals = {
+  URL: "readonly",
+  console: "readonly",
+  process: "readonly",
+};
+
+export default defineConfig([
+  globalIgnores(["node_modules/**", "out/**", "dist/**"]),
+  {
+    files: ["src/**/*.{js,jsx}"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      parserOptions: { ecmaFeatures: { jsx: true } },
+      globals: browserGlobals,
+    },
+    rules: {
+      "no-undef": "error",
+    },
+  },
+  {
+    files: ["scripts/**/*.mjs", "vite.config.js"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: nodeGlobals,
+    },
+    rules: {
+      "no-undef": "error",
+    },
+  },
 ]);
-
-export default eslintConfig;

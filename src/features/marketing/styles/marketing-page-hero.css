@@ -1,0 +1,109 @@
+.marketing-gradient-page .marketing-nav-overlay {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  height: 76px;
+  border-bottom: 1px solid rgba(255, 255, 255, .18);
+  background: rgba(18, 55, 94, .68);
+  color: #fff;
+  box-shadow: 0 12px 34px rgba(7, 27, 52, .12);
+  backdrop-filter: blur(22px) saturate(135%);
+  -webkit-backdrop-filter: blur(22px) saturate(135%);
+  transition: background-color .2s ease, box-shadow .2s ease;
+}
+
+.marketing-gradient-page .marketing-nav-overlay.is-scrolled {
+  background: rgba(18, 55, 94, .88);
+  box-shadow: 0 14px 36px rgba(7, 27, 52, .2);
+}
+
+.marketing-gradient-page .marketing-nav-overlay :is(.desktop-nav a, .nav-actions .login) {
+  color: rgba(255, 255, 255, .9);
+}
+
+.marketing-gradient-page .marketing-nav-overlay .desktop-nav .active {
+  color: #fff;
+}
+
+.marketing-gradient-page .marketing-nav-overlay .button.small {
+  border: 1px solid rgba(255, 255, 255, .9);
+  background: rgba(255, 255, 255, .94);
+  color: #153a64;
+}
+
+.marketing-gradient-page .marketing-page-hero {
+  position: relative;
+  display: grid;
+  min-height: 300px;
+  place-items: center;
+  overflow: hidden;
+  padding: 52px max(5vw, 32px) 96px;
+  background:
+    radial-gradient(circle at 82% 12%, rgba(150, 193, 234, .58), transparent 24rem),
+    radial-gradient(circle at 12% 92%, rgba(91, 151, 211, .42), transparent 25rem),
+    linear-gradient(135deg, #12365f 0%, #245b93 52%, #3a74ba 100%);
+  color: #fff;
+}
+
+.marketing-gradient-page .marketing-page-hero::before,
+.marketing-gradient-page .marketing-page-hero::after {
+  position: absolute;
+  border: 1px solid rgba(255, 255, 255, .13);
+  border-radius: 50%;
+  content: "";
+}
+
+.marketing-gradient-page .marketing-page-hero::before {
+  top: -245px;
+  right: -110px;
+  width: 520px;
+  height: 520px;
+}
+
+.marketing-gradient-page .marketing-page-hero::after {
+  bottom: -260px;
+  left: -120px;
+  width: 430px;
+  height: 430px;
+}
+
+.marketing-gradient-page .marketing-page-hero-inner {
+  position: relative;
+  z-index: 1;
+  width: min(var(--marketing-hero-content-width, 1172px), 100%);
+}
+
+.marketing-gradient-page .marketing-page-hero h1 {
+  margin: 0;
+  color: #fff;
+  font-family: "Poppins", Arial, sans-serif;
+  font-size: var(--marketing-heading-size);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -.04em;
+}
+
+@media (max-width: 760px) {
+  .marketing-gradient-page .marketing-nav-overlay {
+    height: 66px;
+  }
+
+  .marketing-gradient-page .marketing-nav-overlay .mobile-menu > div {
+    top: 66px;
+    background: rgba(18, 55, 94, .96);
+    color: #fff;
+    backdrop-filter: blur(20px);
+  }
+
+  .marketing-gradient-page .marketing-page-hero {
+    min-height: 250px;
+    padding: 42px 20px 78px;
+  }
+}
+
+@media (max-width: 420px) {
+  .marketing-gradient-page .marketing-page-hero {
+    min-height: 232px;
+    padding-inline: 17px;
+  }
+}

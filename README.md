@@ -1,8 +1,18 @@
-# Kostaraa Beta 0.2.26
+# Kostaraa web app
 
-Kostaraa is a React and Vite web application that helps product-based small businesses understand product costs, review pricing, organize materials, and plan with clearer business information.
+Kostaraa is a React and Vite application that helps product-based small
+businesses understand costs, review pricing, organize materials, and make
+clearer business decisions.
 
-This repository contains only the public landing page and authenticated Kostaraa workspace. The admin application and business-plan presentation are maintained separately.
+This repository owns **`kostaraa.com`**: the public website and authenticated
+customer workspace. The CMS, Admin portal, and API remain independent
+deployments. See [Platform architecture](docs/ARCHITECTURE.md) for the domain
+map and code boundaries.
+
+## Requirements
+
+- Node.js 22.13 or newer
+- npm (the repository uses `package-lock.json` as its canonical lockfile)
 
 ## Local development
 
@@ -13,35 +23,30 @@ npm run dev
 
 Open `http://localhost:3000`.
 
-Development uses `http://localhost:8000` as the API by default. Change the
-port in `.env.development` with `VITE_API_BASE_URL` if your local backend uses
-a different port. Production uses `https://api.kostaraa.com` by default.
+Set `VITE_API_BASE_URL` in `.env.development` to the API used for local
+development. Production uses `https://api.kostaraa.com`.
 
-## Production build
+## Quality checks
 
 ```bash
+npm run lint
 npm run build
+# or run both
+npm run check
 ```
 
 The Hostinger-ready static build is generated in `out/`. Build output is intentionally excluded from Git because it can be regenerated from source.
 
-## Main areas
+## Source map
 
-- Landing page and public information pages
-- Account login and registration
-- Guided Business Profile onboarding
-- Dashboard
-- Inventory and measurement conversions
-- Product costing Calculator
-- Product Library
-- Business Health Simulator placeholder
-- Araa guidance and accessibility controls
+```text
+src/
+├── app/          route selection and application composition
+├── components/   shared cross-feature UI
+├── features/     auth, costing, marketing, onboarding, and workspace
+├── styles/       global styles and the ordered stylesheet manifest
+└── main.jsx      Vite entry point
+```
 
-## Project separation
-
-The following are intentionally not included in this repository:
-
-- Admin application
-- Thesis or business-plan presentation
-- Presentation password gate
-- Generated build folders and dependencies
+Database files at the repository root are reference schemas for coordination
+with the independently deployed API; they are not executed by the browser.

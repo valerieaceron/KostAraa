@@ -1,0 +1,53 @@
+/*
+ * Application stylesheet manifest.
+ *
+ * The order is intentional: foundational styles load first, followed by
+ * feature styles and the small refinement layers that currently depend on
+ * the cascade.
+ */
+@import "./globals.css";
+@import "./nav-polish.css";
+@import "../features/marketing/styles/pricing-clarity.css";
+@import "../features/marketing/styles/pricing-redesign.css";
+@import "../features/marketing/styles/pricing-sticky.css";
+@import "../features/workspace/styles/workspace-tailwind.css";
+@import "../features/workspace/styles/workspace-bizcost.css";
+@import "../features/workspace/styles/kostaraa-branding.css";
+@import "../features/auth/auth-api.css";
+@import "./ui-fixes.css";
+@import "../features/onboarding/styles/onboarding.css";
+@import "../features/workspace/styles/business-profile.css";
+@import "../features/workspace/styles/calculator-profile-costs.css";
+@import "../features/workspace/styles/adaptive-inventory.css";
+@import "../features/onboarding/styles/onboarding-refine.css";
+@import "./floating-refine.css";
+@import "../features/onboarding/styles/onboarding-removals.css";
+@import "../features/onboarding/styles/manpower-clean.css";
+@import "../features/onboarding/styles/owner-pay-note.css";
+@import "../features/onboarding/styles/overhead-clean.css";
+@import "../features/onboarding/styles/overhead-no-tags.css";
+@import "../features/onboarding/styles/overhead-delete.css";
+@import "../features/onboarding/styles/overhead-list-design.css";
+@import "../features/onboarding/styles/overhead-backend-only.css";
+@import "../features/onboarding/styles/profile-buttons.css";
+@import "../features/onboarding/styles/overhead-group-removal.css";
+@import "../features/onboarding/styles/target-market.css";
+@import "../features/onboarding/styles/profile-width-target-icons.css";
+@import "../features/onboarding/styles/target-market-stacked.css";
+@import "../features/onboarding/styles/target-market-soft-badges.css";
+@import "../features/workspace/styles/readable-typography.css";
+@import "../features/onboarding/styles/pricing-review.css";
+@import "../features/onboarding/styles/business-operations-layout.css";
+@import "./araa-coming.css";
+@import "../features/workspace/styles/calculator-mobile.css";
+@import "./landing-fix.css";
+@import "./araa-layout-fix.css";
+@import "../features/workspace/styles/beta-support.css";
+@import "../features/workspace/styles/getting-started-guide.css";
+@import "./araa-accordions.css";
+@import "./araa-accordion-compact.css";
+@import "../features/workspace/styles/calculator-amount-fields.css";
+@import "../features/workspace/styles/calculator-typography-unified.css";
+@import "../features/workspace/styles/product-library-refine.css";
+@import "./brand-system.css";
+@import "./home-refresh.css";

@@ -1,1 +1,0 @@
-import { AuthShell } from "../AuthForm";export const metadata={title:"Log in — Kostaraa",description:"Log in to your Kostaraa account."};export default function Login(){return <AuthShell mode="login"/>}

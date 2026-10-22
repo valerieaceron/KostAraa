@@ -1,0 +1,363 @@
+/* Kostaraa brand pilot: Dashboard only.
+   Component styles continue to own every font-weight declaration. */
+@font-face{font-family:"Poppins";src:url("/fonts/Poppins-Regular.ttf") format("truetype");font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:"Poppins";src:url("/fonts/Poppins-Medium.ttf") format("truetype");font-style:normal;font-weight:500;font-display:swap}
+@font-face{font-family:"Poppins";src:url("/fonts/Poppins-SemiBold.ttf") format("truetype");font-style:normal;font-weight:600;font-display:swap}
+@font-face{font-family:"Poppins";src:url("/fonts/Poppins-Bold.ttf") format("truetype");font-style:normal;font-weight:700;font-display:swap}
+@font-face{font-family:"Omnes";src:url("/fonts/Omnes-Regular.ttf") format("truetype");font-style:normal;font-weight:400;font-display:swap}
+@font-face{font-family:"Omnes";src:url("/fonts/Omnes-Medium.ttf") format("truetype");font-style:normal;font-weight:500;font-display:swap}
+@font-face{font-family:"Omnes";src:url("/fonts/Omnes-SemiBold.ttf") format("truetype");font-style:normal;font-weight:600;font-display:swap}
+@font-face{font-family:"Omnes";src:url("/fonts/Omnes-Bold.ttf") format("truetype");font-style:normal;font-weight:700;font-display:swap}
+
+.business-dashboard{
+  --dashboard-primary:#3a74ba;
+  --dashboard-secondary:#96c1ea;
+  --dashboard-base:#faf8f5;
+  --dashboard-ink:#252525;
+  --dashboard-body:#494949;
+  --dashboard-muted:#707070;
+  --dashboard-line:rgba(58,116,186,.2);
+  color:var(--dashboard-ink);
+  font-family:"Omnes","Avenir Next","Segoe UI",sans-serif!important;
+}
+
+.business-dashboard h1,
+.business-dashboard h2,
+.business-dashboard h3,
+.business-dashboard button,
+.business-dashboard label,
+.business-dashboard dt,
+.business-dashboard .bd-metrics small,
+.business-dashboard .bd-card>small,
+.business-dashboard .bd-card header small,
+.business-dashboard .bd-target-analysis small{
+  font-family:"Poppins",Arial,sans-serif!important;
+}
+
+.business-dashboard p,
+.business-dashboard dd,
+.business-dashboard span,
+.business-dashboard em{
+  font-family:"Omnes","Avenir Next","Segoe UI",sans-serif;
+}
+
+.business-dashboard .bd-heading h1,
+.business-dashboard .bd-card h2,
+.business-dashboard .bd-target-analysis h2,
+.business-dashboard .bd-metrics b,
+.business-dashboard .bd-target-analysis article b,
+.business-dashboard .bd-cost-pie strong{
+  color:var(--dashboard-ink);
+}
+
+.business-dashboard .bd-heading p,
+.business-dashboard .bd-card p,
+.business-dashboard .bd-target-analysis p,
+.business-dashboard .bd-fit dt,
+.business-dashboard .bd-profit article span,
+.business-dashboard .bd-complete p,
+.business-dashboard .bd-disclaimer{
+  color:var(--dashboard-muted);
+}
+
+.business-dashboard .bd-heading>button{
+  border-color:var(--dashboard-primary);
+  background:var(--dashboard-primary);
+  color:#fff;
+}
+
+.business-dashboard .bd-card button{
+  border-color:rgba(58,116,186,.42);
+  color:var(--dashboard-primary);
+}
+
+.business-dashboard .bd-target-analysis,
+.business-dashboard .bd-card,
+.business-dashboard .bd-metrics article{
+  border-color:var(--dashboard-line);
+  box-shadow:0 8px 24px rgba(37,37,37,.045);
+}
+
+.business-dashboard .bd-target-analysis>header{
+  border-bottom-color:var(--dashboard-line);
+  background:rgba(150,193,234,.16);
+}
+
+.business-dashboard .bd-pricing-overview>header{
+  border-bottom:0;
+  background:transparent;
+}
+
+.business-dashboard .bd-pricing-overview .bd-metrics article,
+.business-dashboard .bd-target-analysis article{
+  border-color:var(--dashboard-line);
+}
+
+.business-dashboard .bd-heading small,
+.business-dashboard .bd-card>small,
+.business-dashboard .bd-card header small,
+.business-dashboard .bd-target-analysis small,
+.business-dashboard .bd-profit article strong,
+.business-dashboard .bd-cost-legend article strong,
+.business-dashboard .bd-attention em{
+  color:var(--dashboard-primary);
+}
+
+.business-dashboard .analysis-tip{
+  border-color:rgba(58,116,186,.35);
+  color:var(--dashboard-primary);
+}
+
+.business-dashboard .bd-costs article i{
+  background:rgba(150,193,234,.24);
+}
+
+.business-dashboard .bd-costs article i b{
+  background:var(--dashboard-primary);
+}
+
+.business-dashboard ::selection{
+  background:rgba(150,193,234,.55);
+  color:var(--dashboard-ink);
+}
+
+.business-dashboard :focus-visible{
+  outline-color:var(--dashboard-primary);
+}
+
+/* Dashboard pricing area: one consistent 14px type scale.
+   Weight, color, and spacing continue to provide hierarchy. */
+.kws-content .business-dashboard .bd-pricing-overview :is(h2,small,b,p,span),
+.kws-content .business-dashboard .bd-pricing-grid :is(h2,p,button,b,span,em,dt,dd){
+  font-size:14px;
+}
+
+.kws-content .business-dashboard .bd-cost-legend :is(span,b,strong){
+  font-size:14px;
+}
+
+.kws-content .business-dashboard .bd-target-analysis :is(h2,p,small,b,strong,span),
+.kws-content .business-dashboard .bd-secondary-grid :is(h2,p,small,b,strong,span,dt,dd,button,i){
+  font-size:14px;
+}
+
+.kws-content .business-dashboard .bd-pricing-overview>header h2,
+.kws-content .business-dashboard .bd-attention>header h2,
+.kws-content .business-dashboard .bd-next-action>h2,
+.kws-content .business-dashboard .bd-costs>h2,
+.kws-content .business-dashboard .bd-target-analysis>header h2,
+.kws-content .business-dashboard .bd-fit>small,
+.kws-content .business-dashboard .bd-complete header small,
+.kws-content .business-dashboard .bd-announcement>small{
+  font-size:16px;
+}
+
+/* Shared workspace navigation: branded after the Dashboard pilot. */
+.kws-sidebar nav,
+.kws-mobile-menu nav{
+  font-family:"Poppins",Arial,sans-serif;
+}
+
+.kws-sidebar .kws-nav-group>button span,
+.kws-mobile-menu .kws-nav-group>button span{
+  font-family:"Poppins",Arial,sans-serif;
+  font-size:16px;
+}
+
+.kws-nav-label{
+  color:#707070;
+  font-family:"Poppins",Arial,sans-serif;
+}
+
+.kws-sidebar nav button:hover,
+.kws-mobile-menu nav button:hover{
+  background:rgba(150,193,234,.18);
+  color:#3a74ba;
+}
+
+.kws-sidebar nav button.active,
+.kws-mobile-menu nav button.active{
+  background:#3a74ba;
+  color:#fff;
+}
+
+/* Compact workspace navigation hierarchy. */
+.kws-sidebar{
+  width:280px;
+  padding:0 24px 20px;
+  box-sizing:border-box;
+}
+
+.kws-sidebar .kws-brand,
+.kws-mobile-menu .kws-brand{
+  height:88px;
+  padding:0 10px;
+}
+
+.kws-sidebar .kws-brand img,
+.kws-mobile-menu .kws-brand img{
+  width:154px;
+  max-width:100%;
+}
+
+.kws-sidebar nav,
+.kws-mobile-menu nav{
+  gap:0;
+  margin-top:18px;
+}
+
+.kws-sidebar .kws-nav-group,
+.kws-mobile-menu .kws-nav-group{
+  gap:5px;
+}
+
+.kws-sidebar .kws-nav-group+.kws-nav-group,
+.kws-mobile-menu .kws-nav-group+.kws-nav-group{
+  margin-top:22px;
+}
+
+.kws-sidebar .kws-nav-label,
+.kws-mobile-menu .kws-nav-label{
+  margin:0 12px 5px;
+  color:#7b8593;
+  font-size:11px;
+  font-weight:500;
+  line-height:1.35;
+  letter-spacing:.08em;
+  text-transform:none;
+}
+
+.kws-sidebar .kws-nav-group>button,
+.kws-mobile-menu .kws-nav-group>button{
+  position:relative;
+  min-height:46px;
+  border-radius:10px;
+  padding:0 15px;
+  color:#536783;
+  font-weight:500;
+  transition:background-color .16s ease,color .16s ease;
+}
+
+.kws-sidebar .kws-nav-group>button span,
+.kws-mobile-menu .kws-nav-group>button span{
+  font-size:15px;
+  font-weight:500;
+  line-height:1.3;
+}
+
+.kws-sidebar nav button:hover,
+.kws-mobile-menu nav button:hover{
+  background:rgba(150,193,234,.16);
+  color:#3a74ba;
+}
+
+.kws-sidebar nav button.active,
+.kws-mobile-menu nav button.active{
+  background:rgba(150,193,234,.22);
+  color:#2f67aa;
+  font-weight:600;
+}
+
+.kws-sidebar nav button.active::before,
+.kws-mobile-menu nav button.active::before{
+  content:"";
+  position:absolute;
+  top:10px;
+  bottom:10px;
+  left:0;
+  width:3px;
+  border-radius:0 999px 999px 0;
+  background:#3a74ba;
+}
+
+.kws-sidebar nav button.active span,
+.kws-mobile-menu nav button.active span{
+  font-weight:600;
+}
+
+.kws-sidebar .kws-bottom-actions,
+.kws-mobile-menu .kws-bottom-actions{
+  gap:2px;
+  padding-top:10px;
+  border-top:1px solid rgba(58,116,186,.16);
+}
+
+.kws-sidebar .kws-bottom-actions{
+  right:24px;
+  bottom:20px;
+  left:24px;
+}
+
+.kws-sidebar .kws-tour,
+.kws-sidebar .kws-support,
+.kws-mobile-menu .kws-tour,
+.kws-mobile-menu .kws-support{
+  min-height:48px;
+  gap:10px;
+  border:0;
+  border-radius:9px;
+  background:transparent;
+  padding:7px 10px;
+  color:#536783;
+  box-shadow:none;
+}
+
+.kws-sidebar .kws-tour:hover,
+.kws-sidebar .kws-support:hover,
+.kws-mobile-menu .kws-tour:hover,
+.kws-mobile-menu .kws-support:hover{
+  border:0;
+  background:rgba(150,193,234,.16);
+  color:#3a74ba;
+}
+
+.kws-sidebar .kws-tour>i,
+.kws-sidebar .kws-support>i,
+.kws-mobile-menu .kws-tour>i,
+.kws-mobile-menu .kws-support>i{
+  width:28px;
+  height:28px;
+  flex:0 0 28px;
+  border-radius:8px;
+  background:rgba(150,193,234,.2);
+  color:#3a74ba;
+  font-size:11px;
+}
+
+.kws-sidebar .kws-tour b,
+.kws-sidebar .kws-support b,
+.kws-mobile-menu .kws-tour b,
+.kws-mobile-menu .kws-support b{
+  color:#405572;
+  font-family:"Poppins",Arial,sans-serif;
+  font-size:13px;
+  font-weight:500;
+}
+
+.kws-sidebar .kws-tour small,
+.kws-sidebar .kws-support small,
+.kws-mobile-menu .kws-tour small,
+.kws-mobile-menu .kws-support small{
+  color:#7a899d;
+  font-family:"Omnes","Avenir Next","Segoe UI",sans-serif;
+  font-size:10px;
+}
+
+.kws-sidebar .kws-bottom-actions .kws-logout,
+.kws-mobile-menu .kws-bottom-actions .kws-logout{
+  min-height:42px;
+  margin-top:3px;
+  border:0;
+  border-radius:9px;
+  background:transparent;
+  color:#66768d;
+  font-family:"Poppins",Arial,sans-serif;
+  font-size:13px;
+  font-weight:500;
+}
+
+.kws-sidebar .kws-bottom-actions .kws-logout:hover,
+.kws-mobile-menu .kws-bottom-actions .kws-logout:hover{
+  background:#f5f7fa;
+  color:#384b66;
+}

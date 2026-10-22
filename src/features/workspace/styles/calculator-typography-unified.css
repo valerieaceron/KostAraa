@@ -1,0 +1,302 @@
+/*
+ * Calculator typography
+ *
+ * One semantic scale for the calculator. Supporting copy stays regular,
+ * controls use medium weight, labels use semibold, and bold is reserved for
+ * headings and important financial results.
+ */
+.kostaraa-calculator {
+  --calc-ink: #252525;
+  --calc-body: #40536f;
+  --calc-muted: #687991;
+  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--calc-ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Normalize imported utility classes to the calculator's restrained scale. */
+.kostaraa-calculator .font-black { font-weight: 700 !important; }
+.kostaraa-calculator .font-bold { font-weight: 600 !important; }
+.kostaraa-calculator .font-semibold { font-weight: 500 !important; }
+.kostaraa-calculator .font-medium { font-weight: 400 !important; }
+
+/*
+ * Keep the results panel out of the costing cards. The workspace sidebar
+ * removes 280px from the viewport, so Tailwind's default xl breakpoint does
+ * not leave enough room for the calculator's 800px costing table.
+ */
+.kostaraa-calculator .calculator-layout {
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-items: start;
+}
+
+.kostaraa-calculator .calculator-cost-column,
+.kostaraa-calculator .calculator-cost-section,
+.kostaraa-calculator .calculator-results {
+  min-width: 0;
+}
+
+.kostaraa-calculator .calculator-results {
+  position: static;
+}
+
+@media (min-width: 1600px) {
+  .kostaraa-calculator .calculator-layout {
+    grid-template-columns: minmax(800px, 1.45fr) minmax(330px, .75fr) !important;
+  }
+
+  .kostaraa-calculator .calculator-results {
+    position: sticky;
+    top: 24px;
+  }
+}
+
+.kostaraa-calculator .text-xs { font-size: 12px !important; line-height: 1.5 !important; }
+.kostaraa-calculator .text-sm { font-size: 14px !important; line-height: 1.5 !important; }
+.kostaraa-calculator .text-base { font-size: 15px !important; line-height: 1.45 !important; }
+.kostaraa-calculator .text-xl { font-size: 20px !important; line-height: 1.25 !important; }
+.kostaraa-calculator .text-slate-400 { color: #7a889b !important; }
+.kostaraa-calculator .text-slate-500 { color: var(--calc-muted) !important; }
+.kostaraa-calculator .text-slate-600 { color: var(--calc-body) !important; }
+
+/* Page and section hierarchy. */
+.kostaraa-calculator h1,
+.kws-content .kostaraa-calculator .calculator-page-title {
+  margin: 5px 0 0;
+  color: var(--calc-ink) !important;
+  font-size: 32px !important;
+  font-weight: 700 !important;
+  line-height: 1.15 !important;
+  letter-spacing: -.02em;
+}
+
+.kostaraa-calculator h2 {
+  color: var(--calc-ink) !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+  letter-spacing: -.01em;
+}
+
+.kostaraa-calculator h3 {
+  color: var(--calc-ink) !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+}
+
+.kostaraa-calculator .calculator-results > div:first-child h2 {
+  font-size: 20px !important;
+}
+
+.kostaraa-calculator .calculator-section-header h2,
+.kostaraa-calculator .profile-cost-card h2 {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+}
+
+.kostaraa-calculator .profile-cost-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.kostaraa-calculator .profile-cost-card {
+  overflow: visible;
+}
+
+.kostaraa-calculator .calculator-section-header p,
+.kostaraa-calculator .profile-cost-card header p {
+  color: var(--calc-muted) !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+}
+
+/* Inputs, labels, and actions. */
+.kostaraa-calculator label,
+.kostaraa-calculator input,
+.kostaraa-calculator select,
+.kostaraa-calculator textarea,
+.kostaraa-calculator button {
+  font-family: inherit !important;
+}
+
+.kostaraa-calculator label {
+  color: var(--calc-body) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.4 !important;
+}
+
+.kostaraa-calculator input,
+.kostaraa-calculator select,
+.kostaraa-calculator textarea {
+  color: var(--calc-ink) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+}
+
+.kostaraa-calculator button {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+}
+
+/* Costing tables and section totals. */
+.kostaraa-calculator .calculator-cost-section [class*="uppercase"] {
+  color: #718096 !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+  letter-spacing: .06em;
+}
+
+.kostaraa-calculator .calculator-cost-section .m-3 > span:first-child {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+.kostaraa-calculator .calculator-cost-section .m-3 > span:last-child {
+  font-size: 20px !important;
+  font-weight: 700 !important;
+}
+
+/* Labor and operation costs. */
+.kostaraa-calculator .profile-cost-grid p {
+  color: var(--calc-muted) !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0;
+}
+
+.kostaraa-calculator .profile-cost-grid .profile-cost-value {
+  color: var(--calc-ink);
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+}
+
+.kostaraa-calculator .profile-cost-grid small {
+  color: var(--calc-muted) !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+}
+
+/* Right-side results: labels stay quiet; only financial values are bold. */
+.kostaraa-calculator .calculator-result-card > p:first-child {
+  color: var(--calc-muted) !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0;
+}
+
+.kostaraa-calculator .calculator-result-card > p:last-child {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+}
+
+.kostaraa-calculator .calculator-result-card--accent > p:last-child {
+  font-size: 18px !important;
+}
+
+.kostaraa-calculator .calculator-breakdown-pill p:first-child {
+  color: var(--calc-muted) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+.kostaraa-calculator .calculator-breakdown-pill p:last-child {
+  color: var(--calc-ink) !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+}
+
+.kostaraa-calculator .calculator-results .rounded-full {
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  line-height: 1.3 !important;
+}
+
+.kostaraa-calculator .calculator-results p.text-xs:not(.font-black):not(.font-bold),
+.kostaraa-calculator .calculator-results span.text-xs:not(.font-black):not(.font-bold) {
+  font-weight: 400 !important;
+}
+
+/* Final comparison uses an eyebrow, heading, explanation, then input. */
+.kostaraa-calculator .calculator-final-comparison > p:first-child {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: .07em;
+}
+
+.kostaraa-calculator .calculator-final-comparison h3 {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+}
+
+.kostaraa-calculator .calculator-final-comparison h3 span,
+.kostaraa-calculator .calculator-final-comparison > p:nth-child(3) {
+  font-weight: 400 !important;
+}
+
+.kostaraa-calculator .overhead-readonly span {
+  color: var(--calc-body);
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+.kostaraa-calculator .overhead-readonly b,
+.kostaraa-calculator .overhead-readonly a {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+}
+
+@media (max-width: 600px) {
+  .kostaraa-calculator h1,
+  .kws-content .kostaraa-calculator .calculator-page-title { font-size: 28px !important; }
+  .kostaraa-calculator h2,
+  .kostaraa-calculator .calculator-section-header h2,
+  .kostaraa-calculator .profile-cost-card h2 { font-size: 18px !important; }
+  .kostaraa-calculator .calculator-result-card > p:last-child,
+  .kostaraa-calculator .calculator-result-card--accent > p:last-child { font-size: 18px !important; }
+  .kostaraa-calculator .calculator-info-tip > span { right: -12px; left: auto; transform: none; }
+}
+
+/* Align inventory selectors and keep their chevrons centered consistently. */
+.kostaraa-calculator .calculator-material-select {
+  min-width: 0;
+  padding: 0 38px 0 12px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2340536f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 11px center;
+  background-size: 15px;
+  cursor: pointer;
+}
+
+/* All calculator section numbers use one consistent badge. */
+.kostaraa-calculator .calculator-step-badge {
+  display: grid;
+  width: 28px !important;
+  height: 28px !important;
+  flex: 0 0 28px !important;
+  place-items: center;
+  border-radius: 6px !important;
+  background: #3a74ba;
+  color: #fff;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+}

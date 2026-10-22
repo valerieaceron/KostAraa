@@ -1,0 +1,194 @@
+.kws-tour {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 10px 11px;
+  border: 1px solid #d7e3f2;
+  border-radius: 9px;
+  background: #fff;
+  color: #252525;
+  text-align: left;
+  cursor: pointer;
+}
+
+.kws-tour > i {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: #edf4ff;
+  color: #3a74ba;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-style: normal;
+}
+
+.kws-tour span { display: grid; }
+.kws-tour b { font-size: 14px; font-weight: 600; line-height: 1.35; }
+.kws-tour small { color: #687991; font-size: 12px; font-weight: 400; line-height: 1.4; }
+
+.kws-tour:hover {
+  border-color: #b9cff0;
+  background: #f8fbff;
+}
+
+.getting-started-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  pointer-events: none;
+}
+
+.getting-started-scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(17, 42, 78, .58);
+  pointer-events: auto;
+}
+
+.getting-started-modal > article {
+  position: absolute;
+  top: 50%;
+  left: clamp(24px, 18.65vw, 382px);
+  width: min(480px, calc(100vw - 48px));
+  transform: translateY(-50%);
+  overflow: hidden;
+  border: 1px solid #d7e3f2;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 20px 55px rgba(4, 25, 58, .22);
+  pointer-events: auto;
+}
+
+.getting-started-modal > article > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 24px 14px;
+}
+
+.getting-started-modal header strong {
+  color: #3a74ba;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.getting-started-modal header button {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 0;
+  border-radius: 9px;
+  background: #edf4ff;
+  color: #3a74ba;
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.guide-step-card {
+  min-height: 0;
+  margin: 0 24px;
+  padding: 2px 0 24px;
+  border-bottom: 1px solid #dbe7f7;
+}
+
+.guide-step-card h2 {
+  margin: 0 0 8px;
+  color: #10284a;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -.02em;
+}
+
+.guide-step-card p {
+  max-width: 455px;
+  margin: 0;
+  color: #536784;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.getting-started-modal footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px 24px;
+  background: #fff;
+  color: #252525;
+}
+
+.getting-started-modal footer button {
+  min-width: 104px;
+  min-height: 42px;
+  padding: 9px 16px;
+  border: 1px solid #b9d1f5;
+  border-radius: 8px;
+  background: #fff;
+  color: #173158;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+.getting-started-modal footer button:disabled {
+  color: #9aabc2;
+  background: #fbfdff;
+  cursor: not-allowed;
+}
+
+.getting-started-modal footer .primary {
+  border-color: #3a74ba;
+  background: #3a74ba;
+  color: #fff;
+}
+
+.getting-started-modal.is-araa > article {
+  top: auto;
+  right: 6.25vw;
+  bottom: 24px;
+  left: auto;
+  transform: none;
+}
+
+@media (max-width: 900px) {
+  .getting-started-modal > article,
+  .getting-started-modal.is-araa > article {
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    left: 50%;
+    width: min(560px, calc(100vw - 32px));
+    transform: translate(-50%, -50%);
+  }
+}
+
+@media (max-width: 600px) {
+  .getting-started-modal > article,
+  .getting-started-modal.is-araa > article {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    transform: none;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .getting-started-modal > article > header { padding: 20px 18px 12px; }
+  .getting-started-modal header strong { font-size: 11px; }
+  .getting-started-modal header button { width: 36px; height: 36px; }
+  .guide-step-card { margin: 0 18px; padding-bottom: 20px; }
+  .guide-step-card h2 { font-size: 22px; }
+  .guide-step-card p { font-size: 14px; }
+  .getting-started-modal footer { gap: 8px; padding: 14px 18px 20px; }
+  .getting-started-modal footer button { min-width: 96px; min-height: 42px; font-size: 14px; }
+}

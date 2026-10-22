@@ -1,6 +1,10 @@
 import { readFileSync } from "node:fs";
 
-const protectedEntries = ["src/App.jsx", "src/pages/Home.jsx", "app/page.tsx", "app/AraaChat.tsx"];
+const protectedEntries = [
+  "src/app/App.jsx",
+  "src/features/marketing/pages/Home.tsx",
+  "src/components/araa-chat/AraaChat.tsx",
+];
 const forbidden = [
   /BusinessPlan/,
   /business-plan\.css/,
@@ -21,7 +25,7 @@ for (const file of protectedEntries) {
 if (violations.length) {
   console.error("\nBuild stopped: presentation code is connected to the Kostaraa landing/workspace app.");
   for (const violation of violations) console.error(`- ${violation}`);
-  console.error("Keep presentation files isolated from src/App.jsx, app/page.tsx, and Araa.\n");
+  console.error("Keep presentation files isolated from the application shell, Home page, and Araa.\n");
   process.exit(1);
 }
 

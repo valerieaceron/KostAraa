@@ -10,4 +10,25 @@ for (const route of routes) {
   mkdirSync(directory, { recursive: true });
   copyFileSync(source, resolve(directory, "index.html"));
 }
-console.log(`Created Hostinger fallback pages for ${routes.length} routes.`);
+
+let articleRoutes = 0;
+try {
+  const endpoint = new URL("https://cms.kostaraa.com/wp-json/wp/v2/posts");
+  endpoint.searchParams.set("per_page", "100");
+  endpoint.searchParams.set("_fields", "slug");
+  const response = await globalThis.fetch(endpoint, { headers: { Accept: "application/json" } });
+  if (!response.ok) throw new Error(`WordPress returned ${response.status}`);
+
+  const posts = await response.json();
+  for (const post of posts) {
+    if (!post?.slug || post.slug === "hello-world") continue;
+    const directory = resolve(out, "blog", post.slug);
+    mkdirSync(directory, { recursive: true });
+    copyFileSync(source, resolve(directory, "index.html"));
+    articleRoutes += 1;
+  }
+} catch (error) {
+  console.warn(`Could not create CMS article fallback pages: ${error instanceof Error ? error.message : error}`);
+}
+
+console.log(`Created Hostinger fallback pages for ${routes.length} routes and ${articleRoutes} published articles.`);

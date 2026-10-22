@@ -1,0 +1,315 @@
+.contact-page {
+  --contact-blue: #3a74ba;
+  --contact-blue-deep: #153a64;
+  --contact-ink: #252525;
+  --contact-body: #52647d;
+  --marketing-hero-content-width: 1172px;
+  display: flex;
+  min-height: 100svh;
+  flex-direction: column;
+  overflow-x: clip;
+  background: #f7f9fc;
+  color: var(--contact-ink);
+  font-family: "Omnes", "Avenir Next", "Segoe UI", sans-serif;
+}
+
+.contact-page :is(h1, h2, .button, .marketing-nav a, .contact-form label) {
+  font-family: "Poppins", Arial, sans-serif;
+}
+
+.contact-page .marketing-nav-overlay {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  height: 76px;
+  border-bottom: 1px solid rgba(255, 255, 255, .18);
+  background: rgba(18, 55, 94, .68);
+  color: #fff;
+  box-shadow: 0 12px 34px rgba(7, 27, 52, .12);
+  backdrop-filter: blur(22px) saturate(135%);
+  -webkit-backdrop-filter: blur(22px) saturate(135%);
+  transition: background-color .2s ease, box-shadow .2s ease;
+}
+
+.contact-page .marketing-nav-overlay.is-scrolled {
+  background: rgba(18, 55, 94, .88);
+  box-shadow: 0 14px 36px rgba(7, 27, 52, .2);
+}
+
+.contact-page .marketing-nav-overlay :is(.desktop-nav a, .nav-actions .login) {
+  color: rgba(255, 255, 255, .9);
+}
+
+.contact-page .marketing-nav-overlay .desktop-nav .active {
+  color: #fff;
+}
+
+.contact-page .marketing-nav-overlay .button.small {
+  border: 1px solid rgba(255, 255, 255, .9);
+  background: rgba(255, 255, 255, .94);
+  color: var(--contact-blue-deep);
+}
+
+.contact-hero {
+  position: relative;
+  display: grid;
+  min-height: 300px;
+  place-items: center;
+  overflow: hidden;
+  padding: 52px max(5vw, 32px) 96px;
+  background:
+    radial-gradient(circle at 82% 12%, rgba(150, 193, 234, .58), transparent 24rem),
+    radial-gradient(circle at 12% 92%, rgba(91, 151, 211, .42), transparent 25rem),
+    linear-gradient(135deg, #12365f 0%, #245b93 52%, #3a74ba 100%);
+  color: #fff;
+}
+
+.contact-hero::before,
+.contact-hero::after {
+  position: absolute;
+  border: 1px solid rgba(255, 255, 255, .13);
+  border-radius: 50%;
+  content: "";
+}
+
+.contact-hero::before {
+  top: -245px;
+  right: -110px;
+  width: 520px;
+  height: 520px;
+}
+
+.contact-hero::after {
+  bottom: -260px;
+  left: -120px;
+  width: 430px;
+  height: 430px;
+}
+
+.contact-hero-inner {
+  position: relative;
+  z-index: 1;
+  width: min(764px, 100%);
+}
+
+.contact-hero h1 {
+  max-width: 900px;
+  margin: 0;
+  color: #fff;
+  font-size: var(--marketing-heading-size);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: -.04em;
+}
+
+.contact-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 820px;
+  flex: 1 0 auto;
+  margin: -52px auto 0;
+  padding: 0 28px 88px;
+}
+
+.contact-form,
+.contact-success {
+  border: 1px solid rgba(255, 255, 255, .9);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, .9);
+  box-shadow: 0 24px 58px rgba(35, 76, 124, .14);
+  backdrop-filter: blur(22px) saturate(125%);
+  -webkit-backdrop-filter: blur(22px) saturate(125%);
+}
+
+.contact-form {
+  display: grid;
+  padding: 36px 38px;
+}
+
+.contact-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+  color: #40536f;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.contact-form :is(input, select, textarea) {
+  width: 100%;
+  border: 1px solid rgba(58, 116, 186, .22);
+  border-radius: 11px;
+  background: rgba(247, 249, 252, .82);
+  padding: 11px 13px;
+  color: var(--contact-ink);
+  font-family: "Omnes", "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  transition: border-color .18s ease, background-color .18s ease, box-shadow .18s ease;
+}
+
+.contact-form :is(input, select) {
+  min-height: 46px;
+}
+
+.contact-form textarea {
+  min-height: 128px;
+  resize: vertical;
+}
+
+.contact-form :is(input, select, textarea):focus {
+  border-color: var(--contact-blue);
+  background: #fff;
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(58, 116, 186, .1);
+}
+
+.contact-form .contact-consent {
+  flex-direction: row;
+  align-items: flex-start;
+  color: var(--contact-body);
+  font-family: "Omnes", "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.contact-consent input {
+  width: 17px;
+  min-height: 17px;
+  flex: 0 0 17px;
+  margin-top: 2px;
+  padding: 0;
+}
+
+.contact-consent a {
+  color: var(--contact-blue);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.contact-form > .button {
+  min-height: 46px;
+  justify-self: start;
+  border: 1px solid var(--contact-blue);
+  border-radius: 10px;
+  background: var(--contact-blue);
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 13px 28px rgba(58, 116, 186, .2);
+}
+
+.contact-success {
+  display: grid;
+  min-height: 310px;
+  place-items: center;
+  align-content: center;
+  padding: 48px 38px;
+  text-align: center;
+}
+
+.contact-success i {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border-radius: 50%;
+  background: #dff7ed;
+  color: #12865a;
+  font-size: 27px;
+  font-style: normal;
+}
+
+.contact-success h2 {
+  margin: 19px 0 4px;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -.025em;
+}
+
+.contact-success p {
+  max-width: 540px;
+  margin: 0 0 23px;
+  color: var(--contact-body);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.contact-success button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@media (max-width: 760px) {
+  .contact-page .marketing-nav-overlay {
+    height: 66px;
+  }
+
+  .contact-page .marketing-nav-overlay .mobile-menu > div {
+    top: 66px;
+    background: rgba(18, 55, 94, .96);
+    color: #fff;
+    backdrop-filter: blur(20px);
+  }
+
+  .contact-hero {
+    min-height: 250px;
+    padding: 42px 20px 78px;
+  }
+
+  .contact-content {
+    margin-top: -42px;
+    padding: 0 18px 70px;
+  }
+
+  .contact-form {
+    padding: 26px 22px;
+  }
+
+  .field-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .contact-form > .button {
+    width: 100%;
+  }
+
+  .contact-success {
+    min-height: 290px;
+    padding: 40px 22px;
+  }
+}
+
+@media (max-width: 420px) {
+  .contact-hero {
+    min-height: 232px;
+    padding-inline: 17px;
+  }
+
+  .contact-content {
+    padding-inline: 14px;
+  }
+
+  .contact-form,
+  .contact-success {
+    border-radius: 20px;
+  }
+
+  .contact-form {
+    padding: 23px 18px;
+  }
+}

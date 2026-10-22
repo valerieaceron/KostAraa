@@ -1,1 +1,0 @@
-import { AuthShell } from "../AuthForm";export const metadata={title:"Create Account — Kostaraa",description:"Create your free Kostaraa account."};export default function Signup(){return <AuthShell mode="signup"/>}

@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "start": "vite preview",
     "test": "npm run build",
-    "lint": "eslint src app"
+    "lint": "eslint src scripts vite.config.js",
+    "check": "npm run lint && npm run build"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
