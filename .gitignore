@@ -42,8 +42,3 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
-
-env
-.env
-.env.*
-!.env.example
