@@ -28,11 +28,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-#.env*
-#!.env
-#!.env.development
-#!.env.production
+# environment files
+.env
+.env.*
+!.env.example
 
 # vercel
 .vercel
@@ -43,3 +42,8 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
+
+env
+.env
+.env.*
+!.env.example

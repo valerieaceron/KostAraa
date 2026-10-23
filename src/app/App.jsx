@@ -11,7 +11,10 @@ import Terms from "../features/marketing/pages/Terms";
 import Onboarding from "../features/onboarding/OnboardingPage";
 import Workspace from "../features/workspace/WorkspacePage";
 
+import VerifyEmail from "../features/auth/VerifyEmailPage";
+
 const routes = {
+  "/verify-email": VerifyEmail,
   "/": Home,
   "/about": About,
   "/blog": Blog,

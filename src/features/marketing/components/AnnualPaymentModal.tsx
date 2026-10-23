@@ -1,112 +1,82 @@
-import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import { ArrowRight, Check, Clock3, FileImage, QrCode, Upload, X } from "lucide-react";
-import "../styles/annual-payment.css";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { X, Upload, Clock3 } from "lucide-react";
+import { API_BASE_URL } from "../../costing/utils/api";
 import { receiptValidationError } from "../lib/payment-receipt";
-
-export function AnnualPaymentModal({ onClose }: { onClose: () => void }) {
+import "../styles/annual-payment.css";
+export function AnnualPaymentModal({
+  onClose,
+  onSubmitted,
+  instructions
+}: {
+  onClose: () => void;
+  onSubmitted: (result: {acknowledgment_email_sent: boolean}) => void;
+  instructions: {
+    qr_url: string;
+    account_name: string;
+    amount: number;
+  };
+}) {
   const dialog = useRef<HTMLDialogElement>(null);
-  const reviewHeading = useRef<HTMLHeadingElement>(null);
-  const [receipt, setReceipt] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState("");
-  const [imageReady, setImageReady] = useState(false);
-  const [error, setError] = useState("");
-  const [reviewPreview, setReviewPreview] = useState(false);
-
+  const [receipt, setReceipt] = useState<File | null>(null),
+    [reference, setReference] = useState(""),
+    [error, setError] = useState(""),
+    [busy, setBusy] = useState(false),
+    [preview, setPreview] = useState("");
   useEffect(() => {
     const element = dialog.current;
     element?.showModal();
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      element?.close();
-      document.body.style.overflow = previousOverflow;
-    };
+    return () => element?.close();
   }, []);
-
   useEffect(() => {
     if (!receipt) {
-      setPreviewUrl("");
+      setPreview("");
       return;
     }
     const url = URL.createObjectURL(receipt);
-    setPreviewUrl(url);
+    setPreview(url);
     return () => URL.revokeObjectURL(url);
   }, [receipt]);
-
-  useEffect(() => {
-    if (reviewPreview) {
-      reviewHeading.current?.focus();
-      dialog.current?.scrollTo({ top: 0 });
-    }
-  }, [reviewPreview]);
-
-  function selectReceipt(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.currentTarget.files?.[0];
-    event.currentTarget.value = "";
-    if (!file) return;
-    setImageReady(false);
-    setReceipt(null);
-    const validationError = receiptValidationError(file);
-    setError(validationError);
-    if (!validationError) setReceipt(file);
-  }
-
-  function previewReview(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent) {
     event.preventDefault();
-    if (receipt && previewUrl && imageReady && !error) setReviewPreview(true);
+    const invalid = receiptValidationError(receipt);
+    if (invalid) {
+      setError(invalid);
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      const body = new FormData();
+      body.append("receipt", receipt!);
+      body.append("reference_number", reference);
+      const response = await fetch(`${API_BASE_URL}/api/payments`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem("kostaraa.token")}`
+        },
+        body
+      });
+      const data = await response.json();
+      if (!response.ok || data.type !== "success") throw new Error(data.message || "Unable to submit payment.");
+      onSubmitted(data.result);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
   }
-
-  return <dialog className="annual-payment" ref={dialog} aria-labelledby="annual-payment-title" onCancel={onClose}>
-    <button className="annual-payment-close" type="button" onClick={onClose} aria-label="Close payment instructions"><X aria-hidden="true"/></button>
-    <header className="annual-payment-header">
-      <h2 id="annual-payment-title" ref={reviewHeading} tabIndex={-1}>{reviewPreview ? "Your verification preview" : "Grow at your own pace."}</h2>
-      <p>{reviewPreview ? "After a receipt is submitted, our team reviews it within 12 hours. You can use Free while you wait." : "We’re setting up automated payments. In the meantime, pay via our GCash QR, send your receipt, and start with Free while we verify your payment."}</p>
-    </header>
-
-    {reviewPreview ? <div className="annual-payment-review">
-      <div className="annual-payment-review-icon"><Clock3 aria-hidden="true"/></div>
-      <h3>Review within 12 hours</h3>
-      <p>Your Annual plan starts after payment is verified. Until then, you can create an account and use the Free plan.</p>
-      <div className="annual-payment-file-summary"><FileImage aria-hidden="true"/><div><b>{receipt?.name}</b><span>Selected for preview · not submitted</span></div></div>
-      <ol className="annual-payment-timeline">
-        <li><Check aria-hidden="true"/><span>Receipt selected for preview</span></li>
-        <li><Clock3 aria-hidden="true"/><span>Once submitted, review takes up to 12 hours</span></li>
-        <li><ArrowRight aria-hidden="true"/><span>Annual access begins after verification</span></li>
-      </ol>
-      <a className="button annual-payment-primary" href="/signup?plan=annual">Create a free account<ArrowRight aria-hidden="true"/></a>
-      <button className="annual-payment-text-button" type="button" onClick={() => setReviewPreview(false)}>Back to receipt</button>
-    </div> : <>
-      <div className="annual-payment-total"><div><b>Annual membership</b><span>One payment for 12 months</span></div><strong>₱899</strong></div>
-      <div className="annual-payment-steps">
-        <section className="annual-payment-step" aria-labelledby="annual-payment-pay">
-          <h3 id="annual-payment-pay"><span>1</span>Pay with GCash</h3>
-          <p>When payments are available, scan our QR in GCash and send exactly ₱899. Save the receipt after paying.</p>
-          <div className="annual-payment-qr" aria-label="Sample QR illustration. Not a valid payment code.">
-            <QrCode aria-hidden="true" strokeWidth={1}/>
-            <span>QR placeholder</span>
-            <small>Not for payment</small>
-          </div>
-        </section>
-        <form className="annual-payment-step" onSubmit={previewReview}>
-          <h3><span>2</span>Add your receipt</h3>
-          <p>Use a clear image showing the amount, date, and GCash reference number.</p>
-          <label className="annual-payment-file" htmlFor="annual-receipt">
-            <Upload aria-hidden="true"/><b>{receipt ? "Replace receipt" : "Choose receipt image"}</b><span id="annual-receipt-hint">JPG or PNG · up to 5 MB</span>
-            <input id="annual-receipt" type="file" accept="image/jpeg,image/png" onChange={selectReceipt} aria-describedby={`annual-receipt-hint${error ? " annual-receipt-error" : ""}`} aria-invalid={Boolean(error)}/>
-          </label>
-          {error && <p className="annual-payment-error" id="annual-receipt-error" role="alert">{error}</p>}
-          {receipt && previewUrl && <div className="annual-payment-receipt">
-            <img src={previewUrl} alt="Selected receipt preview" onLoad={() => setImageReady(true)} onError={() => { setImageReady(false); setReceipt(null); setError("This image could not be opened. Choose another JPG or PNG receipt."); }}/>
-            <div className="annual-payment-file-summary"><FileImage aria-hidden="true"/><div><b>{receipt.name}</b><span>{Math.max(1, Math.round(receipt.size / 1024))} KB · not submitted</span></div><button type="button" onClick={() => { setReceipt(null); setError(""); }} aria-label="Remove selected receipt"><X aria-hidden="true"/></button></div>
-          </div>}
-          <button className="button annual-payment-primary" type="submit" disabled={!receipt || !previewUrl || !imageReady || Boolean(error)}>Preview verification<ArrowRight aria-hidden="true"/></button>
-          <p className="annual-payment-small"><Clock3 aria-hidden="true"/>Review within 12 hours of receipt submission.</p>
-        </form>
-      </div>
-      <footer className="annual-payment-footer">
-        <div><h3>Prefer to start free?</h3><p>Create your account now. Upgrade to Annual when you’re ready.</p></div>
-        <a href="/signup?plan=annual">Start with Free</a>
-      </footer>
-    </>}
-  </dialog>;
+  return <dialog className="annual-payment" ref={dialog} aria-labelledby="annual-payment-title" onCancel={event => {
+    if (busy) event.preventDefault();else onClose();
+  }}><button className="annual-payment-close" disabled={busy} onClick={onClose} aria-label="Close payment form"><X /></button><header className="annual-payment-header"><h2 id="annual-payment-title">Upgrade to Annual</h2><p>Pay ₱899 for 12 months. We manually verify your payment within 12 hours. Continue using Free while you wait.</p></header><div className="annual-payment-steps"><section className="annual-payment-step"><h3>1. Scan and pay with PayMaya</h3>{instructions.qr_url ? <><img style={{
+            width: "100%",
+            maxWidth: 280
+          }} src={instructions.qr_url} alt="Kostaraa PayMaya payment QR code" /><p>Recipient: <b>{instructions.account_name || "Check the recipient shown in PayMaya"}</b></p><p>Send exactly <b>₱899</b> and save your receipt.</p></> : <p role="status">Payment instructions are being prepared. Please wait for our official QR code before paying. If you have already paid, you can submit your receipt here.</p>}</section><form className="annual-payment-step" onSubmit={submit}><h3>2. Submit your payment</h3><label>PayMaya reference number<input required inputMode="numeric" pattern="[0-9]{10,32}" minLength={10} maxLength={32} value={reference} onChange={event => setReference(event.target.value.trim())} /></label><label className="annual-payment-file"><Upload /><b>Choose receipt image</b><span>JPG or PNG · up to 5 MB</span><input type="file" accept="image/png,image/jpeg" onChange={event => {
+            const file = event.target.files?.[0] || null;
+            const invalid = receiptValidationError(file);
+            setError(invalid);
+            setReceipt(invalid ? null : file);
+          }} /></label>{preview && <div className="annual-payment-receipt"><img src={preview} alt="Your payment receipt" onError={() => {
+            setReceipt(null);
+            setError("Choose a valid image that can be opened.");
+          }} /><small>{receipt?.name}</small></div>}{error && <p role="alert" className="annual-payment-error">{error}</p>}<button className="button annual-payment-primary" disabled={busy || !receipt}>{busy ? "Submitting…" : "Submit for verification"}</button><p className="annual-payment-small"><Clock3 />Review within 12 hours. Annual starts after confirmation.</p></form></div></dialog>;
 }
