@@ -64,28 +64,6 @@
   color: #fff;
 }
 
-.contact-hero::before,
-.contact-hero::after {
-  position: absolute;
-  border: 1px solid rgba(255, 255, 255, .13);
-  border-radius: 50%;
-  content: "";
-}
-
-.contact-hero::before {
-  top: -245px;
-  right: -110px;
-  width: 520px;
-  height: 520px;
-}
-
-.contact-hero::after {
-  bottom: -260px;
-  left: -120px;
-  width: 430px;
-  height: 430px;
-}
-
 .contact-hero-inner {
   position: relative;
   z-index: 1;

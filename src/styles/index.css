@@ -9,7 +9,6 @@
 @import "./nav-polish.css";
 @import "../features/marketing/styles/pricing-clarity.css";
 @import "../features/marketing/styles/pricing-redesign.css";
-@import "../features/marketing/styles/pricing-sticky.css";
 @import "../features/workspace/styles/workspace-tailwind.css";
 @import "../features/workspace/styles/workspace-bizcost.css";
 @import "../features/workspace/styles/kostaraa-branding.css";
@@ -51,3 +50,4 @@
 @import "../features/workspace/styles/product-library-refine.css";
 @import "./brand-system.css";
 @import "./home-refresh.css";
+@import "../features/marketing/styles/pricing-typography.css";

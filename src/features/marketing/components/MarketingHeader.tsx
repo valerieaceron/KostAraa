@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import "../styles/marketing-header.css";
 
 type MarketingHeaderProps = {
-  active?: "insights" | "about" | "contact";
+  active?: "pricing" | "insights" | "about" | "contact";
   overlay?: boolean;
 };
 
 const links = [
-  { label: "How it works", href: "/#how", key: "how" },
+  { label: "How it works", href: "/#how-it-works", key: "how" },
+  { label: "Pricing", href: "/pricing", key: "pricing" },
   { label: "Insights", href: "/blog", key: "insights" },
   { label: "About Us", href: "/about", key: "about" },
   { label: "Contact Us", href: "/contact", key: "contact" },

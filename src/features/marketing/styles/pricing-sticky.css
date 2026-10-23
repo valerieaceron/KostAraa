@@ -1,5 +1,5 @@
 .sticky-plan-scroll{position:sticky;top:82px;z-index:15;margin-bottom:0;background:rgba(255,255,255,.97);backdrop-filter:blur(14px);border:1px solid #dbe7f7;border-bottom:0;border-radius:14px 14px 0 0;box-shadow:0 14px 30px rgba(13,39,80,.1);overflow-x:auto}
-.sticky-plan-bar{display:grid;grid-template-columns:1.15fr repeat(4,1fr);min-width:900px}
+.sticky-plan-bar{display:grid;grid-template-columns:1.15fr repeat(2,1fr);min-width:620px}
 .sticky-plan-bar>div{position:relative;min-height:154px;padding:16px 13px;border-right:1px solid #e1e8f2;display:flex;flex-direction:column;align-items:flex-start}
 .sticky-plan-bar>div:last-child{border-right:0}
 .sticky-plan-bar .sticky-label{justify-content:center;color:#536783;font-size:14px;font-weight:800}
@@ -8,7 +8,7 @@
 .sticky-plan-bar a{width:100%;margin-top:auto;border:1px solid #3a74ba;border-radius:7px;padding:8px;color:#3a74ba;text-align:center;font-size:10px;font-weight:800}.sticky-plan-bar .best{background:#f2f6ff}.sticky-plan-bar .best a{background:#3a74ba;color:#fff}
 .sticky-plan-bar em{position:absolute;top:0;right:0;background:#3a74ba;color:#fff;padding:3px 7px;border-radius:0 0 0 7px;font-size:7px;font-style:normal}.sticky-plan-scroll+.comparison-wrap{border-radius:0 0 12px 12px}
 @media(max-width:1000px){.sticky-plan-scroll{position:relative;top:auto;z-index:1;box-shadow:none;backdrop-filter:none}}
-@media(max-width:700px){.sticky-plan-scroll{position:relative;top:auto;box-shadow:none}.sticky-plan-bar{min-width:760px;grid-template-columns:115px repeat(4,1fr)}.sticky-plan-bar>div{min-height:145px;padding:13px 10px}}
+@media(max-width:700px){.sticky-plan-scroll{position:relative;top:auto;box-shadow:none}.sticky-plan-bar{min-width:560px;grid-template-columns:115px repeat(2,1fr)}.sticky-plan-bar>div{min-height:145px;padding:13px 10px}.pricing-page .comparison-wrap table{min-width:560px}}
 
 /* Give the pricing introduction and plan cards room to breathe. */
 .pricing-page .pricing-hero{padding-bottom:28px}

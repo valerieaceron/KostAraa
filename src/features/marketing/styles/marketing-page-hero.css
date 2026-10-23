@@ -45,28 +45,6 @@
   color: #fff;
 }
 
-.marketing-gradient-page .marketing-page-hero::before,
-.marketing-gradient-page .marketing-page-hero::after {
-  position: absolute;
-  border: 1px solid rgba(255, 255, 255, .13);
-  border-radius: 50%;
-  content: "";
-}
-
-.marketing-gradient-page .marketing-page-hero::before {
-  top: -245px;
-  right: -110px;
-  width: 520px;
-  height: 520px;
-}
-
-.marketing-gradient-page .marketing-page-hero::after {
-  bottom: -260px;
-  left: -120px;
-  width: 430px;
-  height: 430px;
-}
-
 .marketing-gradient-page .marketing-page-hero-inner {
   position: relative;
   z-index: 1;

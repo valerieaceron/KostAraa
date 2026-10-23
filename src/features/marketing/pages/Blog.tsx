@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { MarketingHeader } from "../components/MarketingHeader";
 import { MarketingFooter } from "../components/MarketingFooter";
 import { CMS_POSTS_ENDPOINT, isPlaceholderPost, postDate, textFromHtml, type WordPressPost } from "../lib/wordpress";
+import "../styles/marketing-page-hero.css";
 import "../styles/blog.css";
 
 export const metadata = {
@@ -66,10 +67,15 @@ export default function Blog() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  return <main className="blog-page insights-page">
-    <MarketingHeader active="insights"/>
+  return <main className="blog-page insights-page marketing-gradient-page">
+    <MarketingHeader active="insights" overlay/>
+    <section className="insights-hero marketing-page-hero" aria-labelledby="insights-title">
+      <div className="insights-hero-inner marketing-page-hero-inner">
+        <h1 id="insights-title">Insights</h1>
+      </div>
+    </section>
     <section className="insights-content" aria-labelledby="insights-title" aria-live="polite">
-      <header className="insights-heading"><h1 id="insights-title">Insights</h1><p>Practical guides for costing, pricing, and growing a product business.</p></header>
+      <p className="insights-intro">Practical guides for costing, pricing, and growing a product business.</p>
 
       {loading && <div className="insights-loading" aria-label="Loading insights">{[1,2,3,4,5,6].map(item => <span key={item}/>)}</div>}
 
@@ -82,10 +88,10 @@ export default function Blog() {
             {media?.source_url ? <img src={media.source_url} alt={media.alt_text || ""} loading="lazy"/> : <span><img src="/brand/kostaraa-white-logo.png" alt=""/></span>}
           </a>
           <div className="insight-card-copy">
-            <div className="insight-card-meta">{category && category !== "Uncategorized" && <span>{category}</span>}<time dateTime={post.date_gmt}>{postDate(post.date_gmt)}</time></div>
             <h2><a href={articlePath}>{textFromHtml(post.title.rendered)}</a></h2>
+            <div className="insight-card-meta">{category && category !== "Uncategorized" && <span>{category}</span>}<time dateTime={post.date_gmt}>{postDate(post.date_gmt)}</time></div>
             <p>{textFromHtml(post.excerpt.rendered)}</p>
-            <a className="insight-card-link" href={articlePath}>Read insight <ArrowRight aria-hidden="true"/></a>
+            <a className="insight-card-link" href={articlePath}>Read more <ArrowRight aria-hidden="true"/></a>
           </div>
         </article>;
       })}</div>}

@@ -1,0 +1,142 @@
+/* Marketing typography above the table; docs/TYPOGRAPHY.md roles inside it. */
+.pricing-page :is(.pricing-hero, .pricing-content) {
+  color: #252525;
+  font-family: "Omnes", "Avenir Next", "Segoe UI", sans-serif;
+}
+
+.pricing-page .pricing-hero h1 {
+  color: #252525;
+  font-family: "Poppins", Arial, sans-serif;
+  font-size: 42px !important;
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -.04em;
+}
+
+.pricing-page .pricing-hero p {
+  color: #52647d;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.68;
+}
+
+.pricing-page .plan-name small,
+.pricing-page .pricing-cards article > em {
+  font-family: "Poppins", Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.pricing-page .plan-name h2 {
+  color: #252525;
+  font-family: "Poppins", Arial, sans-serif;
+  font-size: 26px !important;
+  font-weight: 600;
+  line-height: 1.24;
+  letter-spacing: -.025em;
+}
+
+.pricing-page .plan-audience {
+  color: #52647d;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.65;
+}
+
+.pricing-page .price-box strong {
+  color: #252525;
+  font-family: "Poppins", Arial, sans-serif;
+  font-size: 38px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.18;
+}
+
+.pricing-page :is(.price-box small, .price-box span, .plan-storage span) {
+  color: #687991;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.pricing-page .plan-storage b {
+  font-family: "Poppins", Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.pricing-page .pricing-cards .button {
+  font-family: "Poppins", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.pricing-page .plan-benefits b {
+  color: #304863;
+  font-family: "Poppins", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.pricing-page .plan-benefits li {
+  color: #52647d;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.pricing-page .comparison-title h2 {
+  color: #252525;
+  font-family: "Poppins", Arial, sans-serif;
+  font-size: 36px !important;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -.035em;
+}
+
+.pricing-page .comparison-title p {
+  color: #52647d;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.65;
+}
+
+.pricing-page .comparison-wrap {
+  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.pricing-page .comparison-wrap th {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.pricing-page .comparison-wrap td {
+  color: #172b4d;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.pricing-page .comparison-wrap td:first-child {
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+@media (max-width: 600px) {
+  .pricing-page .pricing-hero h1 {
+    font-size: 36px !important;
+  }
+
+  .pricing-page .comparison-title h2 {
+    font-size: 30px !important;
+  }
+}

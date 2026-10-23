@@ -4,6 +4,7 @@ import {
   Calculator,
   Target,
 } from "lucide-react";
+import { useEffect } from "react";
 import { MarketingHeader } from "../components/MarketingHeader";
 import { MarketingFooter } from "../components/MarketingFooter";
 
@@ -62,6 +63,16 @@ export const metadata = {
 };
 
 export default function Home() {
+  useEffect(() => {
+    if (window.location.hash !== "#how-it-works") return;
+
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById("how-it-works")?.scrollIntoView({ block: "start" });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
   return <main className="landing-page home-refresh">
     <MarketingHeader overlay/>
 
@@ -94,8 +105,8 @@ export default function Home() {
       </div>
     </section>
 
-    <section className="home-decisions" id="how" aria-labelledby="decisions-title">
-      <div className="home-section-intro"><h2 id="decisions-title">How it works.</h2><p>Add your costs, calculate your true product cost, and check whether your price can support your business.</p></div>
+    <section className="home-decisions" id="how-it-works" aria-labelledby="decisions-title">
+      <div className="home-section-intro"><h2 id="decisions-title">How it works.</h2><p>Getting started is simple: add your costs, let Kostaraa calculate your true product cost, then see whether your price can support the business you’re building.</p></div>
       <div className="home-product-flow">{workflowSteps.map(([number,title,copy,alt,video])=><article key={number}>
         <div className="home-product-step"><span>{number}</span><div><h3>{title}</h3><p>{copy}</p></div></div>
         <figure className="home-workflow-preview">{video

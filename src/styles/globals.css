@@ -13,3 +13,6 @@
 
 /* Shared marketing-page rule: primary page headings remain 42px at every viewport. */
 .pricing-page .pricing-hero h1,.legal-page .legal-hero h1{font-size:var(--marketing-heading-size)}
+
+/* Shared marketing typography: keep every public-facing H2 at one size. */
+:is(.landing-page,.about-page,.contact-page,.insights-page,.pricing-page,.legal-page) h2{font-size:36px!important}
