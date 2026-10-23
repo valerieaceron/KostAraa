@@ -1,4 +1,8 @@
-.kws-account-menu { position: relative; }
+.kws-account-menu { position: relative; display: flex; align-items: center; gap: 4px; }
+.kws-account-menu .kws-notifications { display: grid; width: 40px; height: 40px; flex: 0 0 40px; place-items: center; border: 1px solid transparent; border-radius: 9px; background: transparent; padding: 0; color: #526580; cursor: pointer; transition: background-color .16s ease, color .16s ease; }
+.kws-account-menu .kws-notifications:hover,
+.kws-account-menu .kws-notifications[aria-expanded="true"] { background: #f0f5fc; color: #2f67aa; }
+.kws-account-menu .kws-notifications svg { width: 19px; height: 19px; stroke-width: 1.8; }
 .kws-account-menu .kws-welcome { display: flex; min-height: 44px; align-items: center; gap: 5px; border: 1px solid transparent; border-radius: 9px; background: transparent; padding: 10px 12px; font-family: inherit; cursor: pointer; transition: background-color .16s ease; }
 .kws-account-menu .kws-welcome:hover,
 .kws-account-menu .kws-welcome[aria-expanded="true"] { background: #f0f5fc; }
@@ -10,4 +14,11 @@
 .kws-account-dropdown button:focus { outline: none; background: #edf4fc; color: #2f67aa; }
 .kws-account-dropdown button + button { margin-top: 3px; }
 .kws-account-dropdown svg { width: 18px; height: 18px; flex-shrink: 0; }
-.kws-account-menu .kws-welcome:focus-visible { outline: 3px solid #91b6e3; outline-offset: 3px; }
+.kws-notification-dropdown { position: absolute; top: calc(100% + 8px); right: 0; z-index: 2; width: min(300px, calc(100vw - 32px)); border: 1px solid #dce5ef; border-radius: 12px; background: #fff; padding: 18px; box-shadow: 0 12px 32px rgba(13, 39, 80, .12); }
+.kws-notification-dropdown header { display: flex; align-items: center; gap: 9px; color: #304761; }
+.kws-notification-dropdown header svg { width: 17px; height: 17px; color: #3a74ba; }
+.kws-notification-dropdown header b { font-size: 14px; font-weight: 500; }
+.kws-notification-dropdown p { margin: 16px 0 3px; color: #304761; font-size: 13px; font-weight: 500; }
+.kws-notification-dropdown small { color: #718198; font-size: 11px; line-height: 1.5; }
+.kws-account-menu .kws-welcome:focus-visible,
+.kws-account-menu .kws-notifications:focus-visible { outline: 3px solid #91b6e3; outline-offset: 3px; }

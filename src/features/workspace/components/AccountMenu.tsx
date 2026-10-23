@@ -1,9 +1,10 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
-import { ChevronDown, LogOut, Settings2 } from "lucide-react";
+import { Bell, ChevronDown, LogOut, Settings2 } from "lucide-react";
 import "../styles/account-menu.css";
 
 export function AccountMenu({ firstName, onSettings, onLogout }: { firstName: string; onSettings: () => void; onLogout: () => void }) {
   const [open, setOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const menuId = useId();
   const container = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -11,14 +12,14 @@ export function AccountMenu({ firstName, onSettings, onLogout }: { firstName: st
   const initialItem = useRef(0);
 
   useEffect(() => {
-    if (!open) return;
-    items.current[initialItem.current]?.focus();
+    if (!open && !notificationsOpen) return;
+    if (open) items.current[initialItem.current]?.focus();
     const closeOutside = (event: PointerEvent) => {
-      if (!container.current?.contains(event.target as Node)) setOpen(false);
+      if (!container.current?.contains(event.target as Node)) { setOpen(false); setNotificationsOpen(false); }
     };
     document.addEventListener("pointerdown", closeOutside);
     return () => document.removeEventListener("pointerdown", closeOutside);
-  }, [open]);
+  }, [open, notificationsOpen]);
 
   function menuKeys(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === "Escape") {
@@ -38,10 +39,11 @@ export function AccountMenu({ firstName, onSettings, onLogout }: { firstName: st
   }
 
   return <div className="kws-account-menu" ref={container} onBlur={event => {
-    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setOpen(false);
+    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) { setOpen(false); setNotificationsOpen(false); }
   }}>
+    <button className="kws-notifications" type="button" aria-label="Notifications" aria-expanded={notificationsOpen} aria-controls={notificationsOpen ? `${menuId}-notifications` : undefined} onClick={() => { setOpen(false); setNotificationsOpen(value => !value); }}><Bell aria-hidden="true"/></button>
     <button className="kws-welcome" type="button" ref={trigger} aria-haspopup="menu" aria-expanded={open} aria-controls={open ? menuId : undefined}
-      onClick={() => { initialItem.current = 0; setOpen(value => !value); }}
+      onClick={() => { initialItem.current = 0; setNotificationsOpen(false); setOpen(value => !value); }}
       onKeyDown={event => {
         if (event.key === "ArrowDown" || event.key === "ArrowUp") {
           event.preventDefault();
@@ -51,6 +53,7 @@ export function AccountMenu({ firstName, onSettings, onLogout }: { firstName: st
       }}>
       <span>Welcome back,</span><strong>{firstName}</strong><ChevronDown aria-hidden="true"/>
     </button>
+    {notificationsOpen && <div className="kws-notification-dropdown" id={`${menuId}-notifications`} role="status"><header><Bell aria-hidden="true"/><b>Notifications</b></header><p>You’re all caught up.</p><small>New account and billing updates will appear here.</small></div>}
     {open && <div className="kws-account-dropdown" id={menuId} role="menu" aria-label="Account" onKeyDown={menuKeys}>
       <button type="button" role="menuitem" tabIndex={-1} ref={element => { items.current[0] = element; }} onClick={() => { setOpen(false); onSettings(); }}><Settings2 aria-hidden="true"/>Account settings</button>
       <button type="button" role="menuitem" tabIndex={-1} ref={element => { items.current[1] = element; }} onClick={() => { setOpen(false); onLogout(); }}><LogOut aria-hidden="true"/>Log out</button>

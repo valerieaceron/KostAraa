@@ -732,6 +732,18 @@
   color:#3a74ba;
   font-weight:600;
 }
+
+/* Keep dashboard emphasis calm and consistent with the medium-weight UI system. */
+.kws-content .business-dashboard :is(h1,h2,h3,h4,h5,h6,b,strong,button,small,dd),
+.kws-content .business-dashboard .bd-attention i,
+.kws-content .business-dashboard .bd-complete i,
+.kws-content .business-dashboard .bd-opportunity-list button em,
+.kws-content .business-dashboard .bd-next-action dt,
+.kws-content .business-dashboard .bd-pricing-overview .bd-metrics article>span,
+.kws-content .business-dashboard .bd-target-analysis>header>span,
+.kws-content .business-dashboard .analysis-tip>span{
+  font-weight:500!important;
+}
 .kws-content .bd-announcement h2{margin:7px 0 5px}
 .kws-content .bd-announcement p{
   max-width:460px;
@@ -747,4 +759,110 @@
     min-height:0;
     border:1px solid #dce6f2;
   }
+}
+
+/* Give every dashboard card a calmer, more breathable spatial rhythm. */
+.kws-content .business-dashboard{
+  gap:24px;
+}
+.kws-content .bd-pricing-overview .bd-metrics{
+  gap:16px;
+}
+.kws-content .bd-pricing-overview .bd-metrics article{
+  min-height:228px;
+  padding:24px;
+}
+.kws-content .bd-metric-icon{
+  width:36px;
+  height:36px;
+  flex-basis:36px;
+}
+.kws-content .bd-pricing-overview .bd-metrics b{
+  margin:10px 0 6px;
+}
+.kws-content .bd-pricing-overview .bd-metrics article>span{
+  margin-top:12px;
+}
+.kws-content .bd-pricing-overview .bd-metrics article>button{
+  min-height:40px;
+  padding:9px 14px;
+}
+.kws-content .bd-setup-track{
+  margin-top:18px;
+}
+.kws-content .bd-insights-grid,
+.kws-content .bd-secondary-grid{
+  gap:16px;
+}
+.kws-content .bd-insights-grid>.bd-card{
+  min-height:270px;
+  padding:24px;
+}
+.kws-content .bd-quick-actions{
+  padding:24px;
+}
+.kws-content .bd-quick-actions h2{
+  margin-bottom:16px;
+}
+.kws-content .bd-quick-actions>div{
+  gap:12px;
+}
+.kws-content .bd-quick-actions>div>button{
+  min-height:80px;
+  padding:14px 16px;
+}
+.kws-content .bd-target-analysis>header,
+.kws-content .bd-target-analysis.healthy>header,
+.kws-content .bd-target-analysis.watch>header,
+.kws-content .bd-target-analysis.tight>header,
+.kws-content .bd-target-analysis.negative>header{
+  padding:22px 24px;
+}
+.kws-content .bd-target-analysis>div{
+  gap:16px;
+  padding:20px;
+}
+.kws-content .bd-target-analysis article,
+.kws-content .bd-target-analysis article:nth-child(2),
+.kws-content .bd-target-analysis article:last-child{
+  min-height:180px;
+  padding:22px;
+}
+.kws-content .bd-secondary-grid>.bd-card{
+  padding:24px;
+}
+.kws-content .bd-announcement{
+  min-height:180px;
+}
+
+@media(max-width:750px){
+  .kws-content .business-dashboard{gap:18px}
+  .kws-content .bd-pricing-overview .bd-metrics{gap:12px}
+  .kws-content .bd-pricing-overview .bd-metrics article{
+    min-height:200px;
+    padding:20px;
+  }
+  .kws-content .bd-insights-grid>.bd-card,
+  .kws-content .bd-secondary-grid>.bd-card{
+    min-height:0;
+    padding:20px;
+  }
+  .kws-content .bd-target-analysis>header,
+  .kws-content .bd-target-analysis.healthy>header,
+  .kws-content .bd-target-analysis.watch>header,
+  .kws-content .bd-target-analysis.tight>header,
+  .kws-content .bd-target-analysis.negative>header{
+    padding:20px;
+  }
+  .kws-content .bd-target-analysis>div{
+    gap:12px;
+    padding:14px;
+  }
+  .kws-content .bd-target-analysis article,
+  .kws-content .bd-target-analysis article:nth-child(2),
+  .kws-content .bd-target-analysis article:last-child{
+    min-height:156px;
+    padding:18px;
+  }
+  .kws-content .bd-announcement{min-height:160px}
 }

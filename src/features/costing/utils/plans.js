@@ -5,5 +5,5 @@ const benefit = (value, singular, plural) => `${allowanceLabel(value)} ${value !
 export const planBenefits = plan => [
   benefit(plan.inventory_limit, 'inventory record', 'inventory records'),
   benefit(plan.products_limit, 'registered product', 'registered products'),
-  `${benefit(plan.competitor_crawl_limit, 'competitor crawl', 'competitor crawls')} (coming soon)`,
+  `${allowanceLabel(plan.competitor_crawl_limit)} Competitor ${plan.competitor_crawl_limit !== null && Number(plan.competitor_crawl_limit) === 1 ? 'Analysis' : 'Analyses'} (coming soon)`,
 ];

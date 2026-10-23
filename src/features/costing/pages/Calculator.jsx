@@ -12,6 +12,8 @@ const costColumns = [
   { key: 'unitCost', label: 'Cost/Unit' },
   { key: 'totalCost', label: 'Total' },
 ];
+const isPackagingInventoryItem = (item) => String(item?.category || '').trim().toLowerCase() === 'packaging'
+  || String(item?.item_type || '').trim().toLowerCase() === 'packaging';
 
 function Field({ label, value, onChange, type = 'text', prefix, suffix, icon: Icon }) {
   return (
@@ -143,6 +145,7 @@ export default function Calculator({ product, setProduct, results, inventory = [
   const [rowModal, setRowModal] = useState(null);
   const [rowDraft, setRowDraft] = useState({ materialId: '', usedQuantity: '', usedUnit: 'pcs' });
   const [rowError, setRowError] = useState('');
+  const packagingInventory = inventory.filter(isPackagingInventoryItem);
 
   useEffect(() => {
     if (editingItem) {
@@ -181,7 +184,7 @@ export default function Calculator({ product, setProduct, results, inventory = [
     });
   };
   const updatePackagingMaterial = (id, materialId) => {
-    const material = inventory.find((item) => String(item.id) === String(materialId));
+    const material = packagingInventory.find((item) => String(item.id) === String(materialId));
     setProduct({
       ...product,
       packaging: (product.packaging || []).map((item) => (item.id === id ? { ...item, materialId, name: material?.material || '', usedUnit: material?.baseUnit || item.usedUnit || 'pcs' } : item)),
@@ -193,14 +196,16 @@ export default function Calculator({ product, setProduct, results, inventory = [
     setRowError('');
   };
   const updateRowDraftMaterial = (materialId) => {
-    const material = inventory.find((item) => String(item.id) === String(materialId));
+    const availableInventory = rowModal === 'packaging' ? packagingInventory : inventory;
+    const material = availableInventory.find((item) => String(item.id) === String(materialId));
     setRowDraft({ ...rowDraft, materialId, usedUnit: material?.baseUnit || 'pcs' });
     setRowError('');
   };
   const saveNewRow = () => {
-    const material = inventory.find((item) => String(item.id) === String(rowDraft.materialId));
+    const availableInventory = rowModal === 'packaging' ? packagingInventory : inventory;
+    const material = availableInventory.find((item) => String(item.id) === String(rowDraft.materialId));
     if (!material) {
-      setRowError('Please choose a material from Inventory.');
+      setRowError(rowModal === 'packaging' ? 'Please choose a Packaging item from Inventory.' : 'Please choose a material from Inventory.');
       return;
     }
     if (!(Number(rowDraft.usedQuantity) > 0)) {
@@ -292,7 +297,7 @@ export default function Calculator({ product, setProduct, results, inventory = [
     const updateRow = kind === 'ingredient' ? updateIngredient : updatePackaging;
     const updateMaterial = kind === 'ingredient' ? updateIngredientMaterial : updatePackagingMaterial;
     if (key === 'item') {
-      return <MaterialSelect inventory={inventory} label={kind === 'ingredient' ? 'material' : 'packaging item'} value={row.materialId || ''} currentName={row.name} onChange={(value) => updateMaterial(row.id, value)} />;
+      return <MaterialSelect inventory={kind === 'packaging' ? packagingInventory : inventory} label={kind === 'ingredient' ? 'material' : 'packaging item'} value={row.materialId || ''} currentName={row.name} onChange={(value) => updateMaterial(row.id, value)} />;
     }
     if (key === 'quantity') {
       return (
@@ -616,7 +621,7 @@ export default function Calculator({ product, setProduct, results, inventory = [
                 {rowModal === 'ingredient' ? 'Choose a material' : 'Choose a packaging item'}
               </label>
               <MaterialSelect
-                inventory={inventory}
+                inventory={rowModal === 'packaging' ? packagingInventory : inventory}
                 label={rowModal === 'ingredient' ? 'material' : 'packaging item'}
                 value={rowDraft.materialId}
                 currentName=""

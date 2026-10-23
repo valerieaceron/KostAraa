@@ -1,0 +1,27 @@
+.araa-librarian-summary {
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+  padding: 14px;
+  background: #fff;
+}
+
+.araa-librarian-summary .araa-app-guide {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  margin: 0;
+}
+
+.araa-librarian-summary .araa-guide-title p {
+  margin: 5px 0 0;
+  color: #687991;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.araa-librarian-summary .araa-messages {
+  min-height: 150px;
+  max-height: none;
+}

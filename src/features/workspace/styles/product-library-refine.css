@@ -876,3 +876,24 @@
     height: 44px !important;
   }
 }
+
+/* Keep Product Library emphasis calm and consistent with the medium-weight UI system. */
+.kws-content .product-library-page :is(h1,h2,h3,h4,h5,h6,b,strong,label,button),
+.kws-content .product-library-page :is(.font-black,.font-extrabold,.font-bold,.font-semibold,.font-medium),
+.kws-content .product-library-page :is(
+  .library-column-label,
+  .library-page-title,
+  .library-summary-value,
+  .library-item-name,
+  .library-item-meta-value,
+  .library-help-tip,
+  .library-section-label,
+  .library-plan-status > span,
+  .library-price-fit > p,
+  .library-tip-card > p span,
+  .library-detail-secondary-metrics > div > p,
+  .library-selection-bar.has-selection .library-select-all b,
+  .library-product-name
+) {
+  font-weight: 500 !important;
+}

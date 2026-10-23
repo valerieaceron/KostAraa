@@ -1,60 +1,98 @@
-/* Keep the Beta 0.2.26 librarian compact and aligned inside every viewport. */
+/* Keep the workspace librarian compact and aligned inside every viewport. */
 .araa-panel.araa-coming-panel{
-  position:fixed!important;
+  position:absolute!important;
   left:auto!important;
-  right:18px!important;
-  bottom:164px!important;
-  width:420px!important;
-  max-width:calc(100vw - 36px)!important;
-  height:min(680px,calc(100dvh - 115px));
+  right:0!important;
+  bottom:68px!important;
+  width:360px!important;
+  max-width:calc(100vw - 32px)!important;
+  height:min(500px,calc(100dvh - 180px))!important;
+  min-height:min(320px,calc(100dvh - 180px));
   box-sizing:border-box;
+  border-color:#d8e3f1;
+  border-radius:16px;
+  box-shadow:0 18px 48px rgba(13,39,80,.18);
 }
 .araa-panel.araa-coming-panel>header{
   flex:0 0 auto;
-  min-height:76px;
-  padding:12px 14px;
+  min-height:62px;
+  padding:10px 12px;
   box-sizing:border-box;
+  background:#fff;
+  color:#253a58;
+  border-bottom:1px solid #e3eaf4;
 }
-.araa-panel.araa-coming-panel>header img{flex:0 0 52px}
+.araa-panel.araa-coming-panel>header img{width:40px;height:40px;flex:0 0 40px;border:1px solid #dce7f5}
 .araa-panel.araa-coming-panel>header div{min-width:0;flex:1}
-.araa-panel.araa-coming-panel>header b{font-size:17px;line-height:1.2}
-.araa-panel.araa-coming-panel>header span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.araa-panel.araa-coming-panel>header button{flex:0 0 31px}
+.araa-panel.araa-coming-panel>header b{font-size:15px;font-weight:500;line-height:1.2}
+.araa-panel.araa-coming-panel>header span{color:#718198;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.araa-panel.araa-coming-panel>header button{width:32px;height:32px;flex:0 0 32px;background:#f1f5fa;color:#526580;font-size:18px}
 .araa-summary{
   min-width:0;
   overflow-x:hidden;
-  padding:18px;
+  padding:0;
 }
 .araa-fit dl div{grid-template-columns:70px minmax(0,1fr)}
 .araa-fit dd{min-width:0;overflow-wrap:anywhere}
-.araa-app-guide{width:100%;box-sizing:border-box}
-.araa-guide-title h3{font-size:16px;line-height:1.35}
+.araa-librarian-summary{padding:0!important;background:#fff!important}
+.araa-app-guide{width:100%;box-sizing:border-box;border:0!important;border-radius:0!important}
+.araa-guide-title{padding:17px 16px 14px;background:#fff;border-bottom:1px solid #e8eef6}
+.araa-guide-title h3{font-size:17px;font-weight:500;line-height:1.35}
 .araa-app-guide .araa-messages{
   width:100%;
   min-height:0;
-  max-height:210px;
+  max-height:none;
+  flex:1;
+  padding:14px 16px;
   box-sizing:border-box;
+  background:#f7f9fc;
 }
-.araa-app-guide .araa-message{width:100%;margin:0}
+.araa-app-guide .araa-message{width:100%;margin:0 0 9px}
+.araa-app-guide .araa-message.araa{position:static;background:transparent;border:0;border-radius:0}
+.araa-app-guide .araa-message.user{background:transparent;border:0;border-radius:0}
 .araa-app-guide .araa-messages p{
-  width:100%;
-  max-width:none;
+  width:auto;
+  max-width:88%;
   margin:0!important;
   box-sizing:border-box;
   overflow-wrap:anywhere;
 }
-.araa-app-guide .araa-suggestions,
-.araa-app-guide form{width:100%;box-sizing:border-box}
+.araa-app-guide .araa-suggestions{display:flex;width:100%;flex-wrap:wrap;gap:6px;padding:10px 12px 7px;box-sizing:border-box;background:#fff;overflow:visible}
+.araa-app-guide .araa-suggestions button{padding:6px 9px;border-color:#cfddf0;border-radius:8px;background:#f8fbff;font-size:10px;white-space:normal;text-align:left}
+.araa-app-guide form{width:100%;box-sizing:border-box;padding:8px 12px 5px;border-top:0}
 .araa-app-guide form input{width:0;min-width:0}
+.araa-beta-note{padding:2px 12px 11px;font-weight:400;letter-spacing:0;color:#8491a4}
+.kws-shell>.araa .araa-launcher{width:56px;max-width:56px;height:56px;padding:4px;box-shadow:0 10px 28px rgba(13,39,80,.22)}
+.kws-shell>.araa .araa-launcher img{width:46px;height:46px}
+.kws-shell>.araa:hover .araa-launcher,.kws-shell>.araa:focus-within .araa-launcher{width:auto;max-width:190px;padding-right:15px}
+.kws-shell>.araa.open .araa-launcher{display:none!important}
+@media(min-width:801px){
+  .kws-shell>.araa.open .araa-panel.araa-coming-panel{bottom:0!important}
+}
+@media(max-width:800px){
+  body:not(.site-locked) .araa-panel.araa-coming-panel{
+    position:fixed!important;
+    left:auto!important;
+    right:12px!important;
+    bottom:154px!important;
+    width:360px!important;
+    max-width:calc(100vw - 24px)!important;
+    height:min(500px,calc(100dvh - 172px))!important;
+    min-height:min(320px,calc(100dvh - 172px));
+  }
+  body:not(.site-locked) .araa.open .araa-panel.araa-coming-panel{bottom:calc(84px + env(safe-area-inset-bottom))!important}
+}
 @media(max-width:500px){
-  .araa-panel.araa-coming-panel{
+  body:not(.site-locked) .araa-panel.araa-coming-panel{
     left:12px!important;
     right:12px!important;
-    bottom:158px!important;
+    bottom:154px!important;
     width:auto!important;
     max-width:none!important;
-    height:min(690px,calc(100dvh - 174px));
-    border-radius:18px;
+    height:min(520px,calc(100dvh - 172px))!important;
+    min-height:min(300px,calc(100dvh - 172px));
+    border-radius:16px;
   }
-  .araa-summary{padding:15px}
+  .araa-guide-title{padding:15px 14px 12px}
+  .araa-app-guide .araa-messages{padding:12px 14px}
 }

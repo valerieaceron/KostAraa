@@ -1,14 +1,196 @@
-.sticky-plan-scroll{position:sticky;top:82px;z-index:15;margin-bottom:0;background:rgba(255,255,255,.97);backdrop-filter:blur(14px);border:1px solid #dbe7f7;border-bottom:0;border-radius:14px 14px 0 0;box-shadow:0 14px 30px rgba(13,39,80,.1);overflow-x:auto}
-.sticky-plan-bar{display:grid;grid-template-columns:1.15fr repeat(2,1fr);min-width:620px}
-.sticky-plan-bar>div{position:relative;min-height:154px;padding:16px 13px;border-right:1px solid #e1e8f2;display:flex;flex-direction:column;align-items:flex-start}
-.sticky-plan-bar>div:last-child{border-right:0}
-.sticky-plan-bar .sticky-label{justify-content:center;color:#536783;font-size:14px;font-weight:800}
-.sticky-plan-bar b{font-size:14px}.sticky-plan-bar strong{font-size:21px;margin-top:2px}.sticky-plan-bar small{color:#71839d;font-size:9px;line-height:1.3;min-height:25px}
-.sticky-plan-bar span{font-size:9px;font-weight:800;padding:3px 7px;border-radius:12px;margin:5px 0}.sticky-plan-bar span.local{background:#fff3e8;color:#b45309}.sticky-plan-bar span.cloud{background:#e8f7f2;color:#087a58}
-.sticky-plan-bar a{width:100%;margin-top:auto;border:1px solid #3a74ba;border-radius:7px;padding:8px;color:#3a74ba;text-align:center;font-size:10px;font-weight:800}.sticky-plan-bar .best{background:#f2f6ff}.sticky-plan-bar .best a{background:#3a74ba;color:#fff}
-.sticky-plan-bar em{position:absolute;top:0;right:0;background:#3a74ba;color:#fff;padding:3px 7px;border-radius:0 0 0 7px;font-size:7px;font-style:normal}.sticky-plan-scroll+.comparison-wrap{border-radius:0 0 12px 12px}
-@media(max-width:1000px){.sticky-plan-scroll{position:relative;top:auto;z-index:1;box-shadow:none;backdrop-filter:none}}
-@media(max-width:700px){.sticky-plan-scroll{position:relative;top:auto;box-shadow:none}.sticky-plan-bar{min-width:560px;grid-template-columns:115px repeat(2,1fr)}.sticky-plan-bar>div{min-height:145px;padding:13px 10px}.pricing-page .comparison-wrap table{min-width:560px}}
+.pricing-tier-sticky{
+  position:sticky;
+  top:0;
+  z-index:45;
+  width:100vw;
+  margin-left:calc(50% - 50vw);
+  border-block:1px solid rgba(58,116,186,.18);
+  border-radius:0;
+  background:rgba(255,255,255,.97);
+  box-shadow:0 14px 34px rgba(13,39,80,.12);
+  backdrop-filter:blur(18px) saturate(135%);
+  -webkit-backdrop-filter:blur(18px) saturate(135%);
+}
+
+.pricing-tier-grid{
+  display:grid;
+  grid-template-columns:37.5% 31.25% 31.25%;
+  width:min(calc(100% - 56px),1164px);
+  min-height:126px;
+  margin:0 auto;
+  padding:0;
+}
+
+.pricing-tier-grid>div{
+  min-width:0;
+  border-right:1px solid #e2eaf4;
+  padding:15px 20px;
+}
+
+.pricing-tier-grid>div:last-child{border-right:0}
+
+.pricing-tier-intro{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:2px;
+  color:#304863;
+}
+
+.pricing-tier-intro b,
+.pricing-tier-name b{
+  font-family:"Poppins",Arial,sans-serif;
+  font-size:14px;
+  font-weight:600;
+}
+
+.pricing-tier-intro span{
+  color:#71839d;
+  font-size:12px;
+}
+
+.pricing-tier-summary{
+  display:grid;
+  grid-template-columns:1fr auto;
+  grid-template-areas:"name price" "action action";
+  align-items:center;
+  gap:8px 14px;
+}
+
+.pricing-tier-summary.recommended{background:#f4f8fe}
+.pricing-tier-name{grid-area:name;display:flex;align-items:center;gap:8px}
+.pricing-tier-name span{border-radius:999px;background:#e8f1fc;padding:3px 7px;color:#2f639f;font-size:9px;font-weight:600;white-space:nowrap}
+.pricing-tier-price{grid-area:price;display:flex;align-items:baseline;gap:5px;white-space:nowrap}
+.pricing-tier-price strong{font-family:"Poppins",Arial,sans-serif;font-size:22px;font-weight:600;line-height:1}
+.pricing-tier-price small{color:#71839d;font-size:10px}
+.pricing-tier-summary .button{grid-area:action;width:100%;min-height:38px;border:1px solid #3a74ba;border-radius:8px;padding:9px 13px;box-shadow:none;font-family:"Poppins",Arial,sans-serif;font-size:11px;font-weight:600}
+.pricing-tier-summary .button svg{width:14px;height:14px}
+.pricing-tier-summary .button:hover{transform:none}
+.pricing-tier-summary .button.ghost{background:#fff;color:#3a74ba}
+
+.comparison-table-head{
+  position:absolute;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+  clip:rect(0 0 0 0);
+  clip-path:inset(50%);
+  white-space:nowrap;
+}
+
+.pricing-page .comparison-wrap{
+  border-radius:0;
+}
+
+.pricing-page .comparison-wrap table{
+  table-layout:fixed;
+}
+
+.pricing-page .comparison-wrap .comparison-feature-column{width:37.5%}
+.pricing-page .comparison-wrap .comparison-plan-column{width:31.25%}
+.pricing-tier-sticky+.comparison-wrap{border-top:0;border-radius:0}
+
+.pricing-why{
+  padding:88px max(5vw,28px);
+  background:#f7faff;
+}
+
+.pricing-why-inner{
+  display:grid;
+  grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);
+  align-items:start;
+  gap:72px;
+  width:min(1100px,100%);
+  margin:0 auto;
+}
+
+.pricing-why-copy small{
+  display:block;
+  margin-bottom:12px;
+  color:#3a74ba;
+  font-family:"Poppins",Arial,sans-serif;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.08em;
+}
+
+.pricing-why-copy h2{
+  margin:0;
+  color:#252525;
+  font-family:"Poppins",Arial,sans-serif;
+  font-size:clamp(30px,3.2vw,42px);
+  font-weight:600;
+  line-height:1.18;
+  letter-spacing:-.035em;
+}
+
+.pricing-why-copy p{margin:18px 0 22px;color:#52647d;font-size:15px;line-height:1.75}
+.pricing-why-copy a{display:inline-flex;align-items:center;gap:9px;color:#2f6fbd;font-family:"Poppins",Arial,sans-serif;font-size:13px;font-weight:600}
+.pricing-why-copy a svg{width:15px;height:15px;transition:transform .2s ease}
+.pricing-why-copy a:hover svg{transform:translateX(3px)}
+.pricing-why-points{display:grid;border-top:1px solid #d8e4f2}
+.pricing-why-points article{display:grid;grid-template-columns:36px 1fr;gap:16px;padding:22px 0;border-bottom:1px solid #d8e4f2}
+.pricing-why-points article>svg{width:28px;height:28px;margin-top:2px;border-radius:50%;background:#e7f1fc;padding:6px;color:#3a74ba}
+.pricing-why-points h3{margin:0;color:#253b58;font-family:"Poppins",Arial,sans-serif;font-size:16px;font-weight:600}
+.pricing-why-points p{margin:6px 0 0;color:#60728c;font-size:14px;line-height:1.65}
+
+.pricing-final-cta{
+  padding:84px max(5vw,28px);
+  background:linear-gradient(135deg,#12365f 0%,#245b93 58%,#3a74ba 100%);
+  color:#fff;
+}
+
+.pricing-final-cta-inner{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:56px;
+  width:min(1100px,100%);
+  margin:0 auto;
+}
+
+.pricing-final-cta h2{
+  max-width:680px;
+  margin:0;
+  color:#fff;
+  font-family:"Poppins",Arial,sans-serif;
+  font-size:clamp(30px,3.4vw,44px);
+  font-weight:600;
+  line-height:1.16;
+  letter-spacing:-.035em;
+}
+
+.pricing-final-cta p{max-width:720px;margin:14px 0 0;color:rgba(255,255,255,.84);font-size:15px;line-height:1.7}
+.pricing-final-actions{display:flex;gap:12px;white-space:nowrap}
+.pricing-final-actions .button{min-height:48px;border:1px solid rgba(255,255,255,.9);border-radius:9px;padding:14px 20px;box-shadow:none;font-family:"Poppins",Arial,sans-serif;font-size:13px;font-weight:600}
+.pricing-final-actions .button:hover{transform:none}
+.pricing-final-actions .button.ghost{background:transparent;color:#fff}
+.pricing-final-actions .button:not(.ghost){background:#fff;color:#245b93}
+.pricing-final-actions svg{width:15px;height:15px}
+
+@media(max-width:760px){
+  .pricing-tier-grid{grid-template-columns:repeat(2,minmax(0,1fr));min-height:108px}
+  .pricing-tier-intro{display:none}
+  .pricing-tier-grid>div{padding:11px 9px}
+  .pricing-tier-summary{grid-template-columns:1fr;grid-template-areas:"name" "price" "action";gap:4px}
+  .pricing-tier-name{justify-content:space-between}
+  .pricing-tier-name b{font-size:12px}
+  .pricing-tier-price strong{font-size:18px}
+  .pricing-tier-summary .button{min-height:34px;padding:7px 8px;font-size:10px}
+  .pricing-tier-summary .button svg{display:none}
+  .pricing-tier-sticky+.comparison-wrap{border-radius:0}
+  .pricing-why{padding:64px 20px}
+  .pricing-why-inner{grid-template-columns:1fr;gap:42px}
+  .pricing-final-cta{padding:64px 20px}
+  .pricing-final-cta-inner{grid-template-columns:1fr;gap:28px;text-align:center}
+  .pricing-final-cta p{margin-inline:auto}
+  .pricing-final-actions{flex-direction:column}
+  .pricing-final-actions .button{width:100%}
+}
+
+@media(max-width:600px){
+  .pricing-tier-grid{width:calc(100% - 36px)}
+}
 
 /* Give the pricing introduction and plan cards room to breathe. */
 .pricing-page .pricing-hero{padding-bottom:28px}

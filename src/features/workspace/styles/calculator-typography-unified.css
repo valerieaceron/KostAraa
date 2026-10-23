@@ -300,3 +300,32 @@
   font-weight: 700 !important;
   line-height: 1 !important;
 }
+
+/*
+ * Enforce a hard two-level weight system in Calculator.
+ * Repeating the page class intentionally outranks legacy component selectors.
+ */
+.kostaraa-calculator,
+.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator * {
+  font-weight: 400 !important;
+}
+
+.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator :is(h1,h2,h3,h4,h5,h6,b,strong,label,button,input,select,textarea),
+.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator :is(.font-black,.font-extrabold,.font-bold,.font-semibold,.font-medium),
+.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator .calculator-step-badge,
+.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator .calculator-cost-section [class*="uppercase"],
+.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator .calculator-cost-section .m-3 > span,
+.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator .profile-cost-card>header>div>span,
+.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator .profile-cost-value,
+.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator .profile-cost-grid p,
+.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator .calculator-result-card > p,
+.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator .calculator-breakdown-pill p,
+.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator .calculator-results .rounded-full,
+.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator .calculator-final-comparison > p:first-child,
+.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator .overhead-readonly span,
+.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator .overhead-readonly a,
+.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator .calculator-amount-fields label>span,
+.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator .calculator-amount-fields input,
+.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator.kostaraa-calculator .calculator-amount-fields select {
+  font-weight: 500 !important;
+}

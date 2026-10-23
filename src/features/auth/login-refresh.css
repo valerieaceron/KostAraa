@@ -1,0 +1,64 @@
+.auth-card-login {
+  width: min(100%, 500px) !important;
+  padding: 30px 38px 32px !important;
+}
+
+.auth-card-login h1 {
+  margin-bottom: 38px;
+}
+
+.auth-card-login form > label {
+  gap: 5px;
+  margin-bottom: 14px;
+  color: #31445f;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.auth-card-login .auth-login-status {
+  margin: -18px auto 22px;
+  border: 1px solid rgba(29, 166, 108, .2);
+  border-radius: 10px;
+  background: rgba(223, 247, 237, .72);
+  padding: 10px 12px;
+  color: #16724f;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.auth-card-login .auth-row {
+  margin: 2px 0 18px;
+  color: #5b6b85;
+  font-size: 12px;
+}
+
+.auth-card-login .auth-row .check {
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-weight: 400;
+}
+
+.auth-card-login .auth-row .check input {
+  margin: 0;
+  accent-color: #3a74ba;
+}
+
+.auth-card-login .auth-row a,
+.auth-card-login .auth-switch a {
+  color: #3a74ba;
+  font-weight: 500;
+}
+
+.auth-card-login .auth-submit {
+  font-weight: 500;
+}
+
+@media (max-width: 580px) {
+  .auth-card-login { padding: 26px 22px 28px !important; }
+  .auth-card-login h1 { margin-bottom: 34px; }
+  .auth-card-login .auth-row { align-items: flex-start; gap: 14px; }
+  .auth-card-login .auth-row a { text-align: right; }
+}

@@ -612,3 +612,16 @@
     grid-row: 1 / 3;
   }
 }
+
+/* Keep Inventory emphasis aligned with the medium-weight workspace type system. */
+.kws-content .inventory-page :is(h1,h2,h3,h4,h5,h6,b,strong,label,button),
+.kws-content .inventory-page .inventory-alert,
+.kws-content .inventory-page .inventory-list-heading,
+.kws-content .inventory-page .inventory-help,
+.kws-content .inventory-page .inventory-help > span,
+.kws-content .inventory-page .recommended-units span,
+.kws-content .inventory-page .recommended-units em,
+.kws-content .inventory-page .inventory-list article > p span,
+.kws-content .inventory-page .inventory-pagination small {
+  font-weight: 500 !important;
+}

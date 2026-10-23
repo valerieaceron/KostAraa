@@ -1,59 +1,81 @@
 "use client";
-import {useEffect,useState} from "react";
-import {withSynchronizedOperationCost} from "../../features/workspace/business-profile-costs";
+
+import { useEffect, useState } from "react";
 import "./araa-chat.css";
 import "./araa-paper.css";
+import "./araa-librarian.css";
 
-type Snapshot={businessName:string;target:number;days:number;daily:number;productCount:number;averageProfit:number|null;averageMargin:number|null;projectedProfit:number|null;status:"positive"|"negative"|"attention"|"incomplete";factors:string[];audience:string;behavior:string;location:string;pricing:string;channels:string;priceFit:string;pricingGuidance:string;behaviorWatch:string;marketCheck:string;customerFit:string;nextStep:string};
-const money=(value:number)=>`₱${Number(value||0).toLocaleString(undefined,{maximumFractionDigits:2})}`;
-function read(key:string,fallback:any){try{return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback))}catch{return fallback}}
-function makeSnapshot():Snapshot{
-  const profile=withSynchronizedOperationCost(read("kostaraa.businessProfile",{}));const items:any[]=read("bizcost.savedItems",[]).filter((x:any)=>x.status!=="Archived");
-  const target=Number(profile?.operations?.monthlySalesUnits||profile?.calculatorCosts?.salesTarget)||0;const days=Number(profile?.operations?.operatingDaysPerMonth)||30;const daily=target?Math.ceil(target/days):0;
-  const usable=items.filter((x:any)=>Number.isFinite(Number(x.grossProfit))&&Number(x.sellingPrice)>0);const averageProfit=usable.length?usable.reduce((s:number,x:any)=>s+Number(x.grossProfit||0),0)/usable.length:null;const averageMargin=usable.length?usable.reduce((s:number,x:any)=>s+Number(x.profitMargin||0),0)/usable.length:null;const projectedProfit=averageProfit!==null&&target?averageProfit*target:null;
-  const overhead=Number(profile?.calculatorCosts?.overheadMonthly||profile?.overhead?.monthlyOverheadPool)||0;const labor=Number(profile?.calculatorCosts?.totalLaborMonthly)||0;const factors:string[]=[];
-  if(averageMargin!==null)factors.push(averageMargin>=30?`your saved products average a ${averageMargin.toFixed(1)}% margin`:`your average margin is only ${averageMargin.toFixed(1)}%`);if(overhead>0)factors.push(`${money(overhead)} in monthly operation bills`);if(labor>0)factors.push(`${money(labor)} in monthly labor costs`);if(!target)factors.push("your monthly sales target is not set yet");if(!usable.length)factors.push("no completed product costing is saved yet");
-  const market=profile?.targetMarket||{};const strategy=profile?.pricingStrategy||{};const groups:string[]=market.customerGroups||[];const priorities:string[]=market.priorities||[];const sensitivity=market.priceSensitivity||"";const audience=groups.length?groups.slice(0,3).join(", "):"not identified yet";const behavior=priorities.length?`They usually care about ${priorities.slice(0,3).join(", ").toLowerCase()}${sensitivity?` and are ${String(sensitivity).toLowerCase()} with price`:""}.`:sensitivity?`They are ${String(sensitivity).toLowerCase()} with price.`:"Add your target-market answers so I can describe their buying behavior.";
-  const location=market.customerLocation||market.locationType||"not identified yet";const channelNames:string[]=(profile?.salesChannels||[]).map((channel:any)=>typeof channel==="string"?channel:channel.name).filter(Boolean);const channels=channelNames.length?channelNames.slice(0,4).join(", "):"not selected yet";const pricePosition=strategy.pricePosition||"Not sure yet";const lowestPrice=Number(strategy.lowestUsualPrice)||0;const highestPrice=Number(strategy.highestUsualPrice)||0;const usualSpend=Number(market.spendingPerOrder)||0;const willingnessToPay=Number(market.willingnessToPay)||0;const priceRange=lowestPrice||highestPrice?`₱${lowestPrice.toLocaleString()}–₱${highestPrice.toLocaleString()}`:"no usual range saved";const pricing=`${pricePosition} positioning · ${priceRange}`;
-  const priceFit=!lowestPrice&&!highestPrice?"Not enough pricing data yet":usualSpend&&lowestPrice>usualSpend?"Your usual price may sit above the customer’s typical spend":usualSpend&&highestPrice&&highestPrice<=usualSpend?"Your usual price appears to fit within the customer’s typical spend":usualSpend?"Your price range overlaps the customer’s typical spend":willingnessToPay&&highestPrice&&highestPrice<=willingnessToPay?"Your usual price is within the amount customers may accept":"Add usual prices and customer spending to check fit";
-  const servesStudents=groups.some(group=>group.toLowerCase().includes("student"));const behaviorWatch=servesStudents?"Student buyers may be more budget-conscious and responsive to convenient, low-commitment purchases, bundles, and school-day timing. Treat these as patterns to test against your actual sales—not assumptions.":priorities.length?`Your customers say they value ${priorities.slice(0,3).join(", ").toLowerCase()}. Check whether your product, message, and buying experience consistently support those priorities.`:"Add customer priorities and price sensitivity so Araa can describe behaviors worth testing.";
-  const sensitiveCustomer=servesStudents||String(sensitivity).toLowerCase().includes("very careful")||String(sensitivity).toLowerCase().includes("somewhat careful");const valuesPremium=priorities.some(value=>["good quality","premium experience","product uniqueness","custom orders","trusted brand"].some(signal=>value.toLowerCase().includes(signal)));const onlineFees=channelNames.some(name=>["shopee","lazada","tiktok"].some(channel=>name.toLowerCase().includes(channel)));const pricingGuidance=!lowestPrice&&!highestPrice?"Start with a good-value position: calculate the true product cost first, protect a reasonable margin, then test one clear selling price against actual customer response.":usualSpend&&lowestPrice>usualSpend?"Do not immediately discount below cost. Test a smaller or simpler entry option near the customer’s usual spending level, then keep a higher-value option for customers willing to spend more.":sensitiveCustomer?`Use a good-value strategy. Keep an accessible entry price${usualSpend?` near the ${money(usualSpend)} typical order value`:""}, communicate what customers receive, and use bundles only when the combined margin remains healthy.`:valuesPremium?"A value-led or premium position may fit, but the higher price should be supported by visible quality, uniqueness, service, packaging, or convenience.":"Use a cost-based starting price, compare it with the customer’s typical spending, and test whether customers respond better to affordability, added value, or a premium offer.";const pricingGuidanceWithChannel=onlineFees?`${pricingGuidance} Include marketplace commissions, payment fees, promotions, and delivery support before deciding the final channel price.`:pricingGuidance;
-  const marketCheck=location==="not identified yet"?"Identify where most customers are located. Location affects convenience, delivery cost, store traffic, and the prices customers compare.":!usualSpend?"Record typical spending per order, purchase frequency, best-selling products, and repeat purchases to strengthen this fit check.":`Compare your actual average order value with the saved ${money(usualSpend)} typical spend. Also track purchase frequency, peak buying times, best-selling products, discount response, and repeat purchases.`;
-  const fitSignals:string[]=[];if(groups.length)fitSignals.push(`${market.frequentGroup||groups[0]} are your current primary audience`);if(location!=="not identified yet")fitSignals.push(`you are trying to reach them around ${location}`);if(channelNames.length)fitSignals.push(`${channelNames.slice(0,2).join(" and ")} are your current paths to purchase`);const customerFit=fitSignals.length?`${fitSignals.join("; ")}. ${priceFit}.`:"Complete your audience, location, channel, and pricing answers to build a fuller customer-fit insight.";
-  const status:Snapshot["status"]=projectedProfit===null?"incomplete":projectedProfit>0&&Number(averageMargin)>=30?"positive":projectedProfit<0?"negative":"attention";
-  const nextStep=!target?"Set a realistic Monthly Sales Target in your Business Profile.":!usable.length?"Complete and save your first product costing so I can estimate profitability.":averageMargin!==null&&averageMargin<30?"Review your highest product cost or test a safer selling price.":groups.length===0?"Complete your Target Market section to improve customer guidance.":"Track your actual daily sales against this target and review your costs regularly.";
-  return{businessName:profile?.identity?.businessName||"Your business",target,days,daily,productCount:usable.length,averageProfit,averageMargin,projectedProfit,status,factors,audience,behavior,location,pricing,channels,priceFit,pricingGuidance:pricingGuidanceWithChannel,behaviorWatch,marketCheck,customerFit,nextStep};
+type GuideMessage = { role: "araa" | "user"; text: string };
+
+const appLibrary = [
+  { keywords: ["dashboard", "overview", "home", "attention", "insight"], answer: "Dashboard gives you a quick view of pricing health, setup progress, customer details, saved-product cost insights, and your profit and break-even plan. Use its quick actions to add inventory, open Calculator, or review Product Library." },
+  { keywords: ["inventory", "ingredient", "material", "stock"], answer: "Open Inventory, then choose Add material. Enter the purchase amount, quantity, and base unit. Calculator materials are selected from this list, so add an item to Inventory before using it in a product." },
+  { keywords: ["packaging", "package", "container", "label"], answer: "Add packaging supplies in Inventory with the Packaging category. In Calculator, open Packaging and select from those packaging-only records, then enter how much one product uses." },
+  { keywords: ["calculator", "calculate", "costing", "product"], answer: "Open Calculator, name the product, then add Raw Materials and Packaging. Choose each item from Inventory and enter the amount used for one product. Kostaraa combines those costs with labor and operation costs from your Business Settings." },
+  { keywords: ["convert", "conversion", "cup", "kg", "liter", "unit"], answer: "Kostaraa converts compatible units such as kg to g, L to ml, yards to smaller length units, and dozens to pieces. For weight-to-cup costing, add the ingredient’s grams-per-cup value in Inventory because ingredients have different densities." },
+  { keywords: ["sales", "target", "monthly", "daily"], answer: "Set Monthly Sales Target in Business Settings. Kostaraa divides monthly labor and operation costs by that target to estimate cost per item. Dashboard also uses it to estimate the number of items you need to sell per working day." },
+  { keywords: ["labor", "manpower", "owner", "pay"], answer: "Add workers and owner pay in Business Settings. Direct production labor contributes to product costing, while indirect or administrative labor belongs in monthly operation costs." },
+  { keywords: ["overhead", "operation", "bills", "rent", "utilities", "expenses"], answer: "Add regular monthly and annual business expenses in Business Settings. Monthly overhead equals regular monthly bills plus each annual cost divided by 12. Calculator divides that total by your Monthly Sales Target." },
+  { keywords: ["save", "library", "edit", "duplicate", "archive"], answer: "After completing a calculation, save it as a Product or Service. It will appear in Product Library, where you can review, edit, duplicate, archive, or remove the saved record." },
+  { keywords: ["business", "profile", "customer", "market", "channel", "pricing"], answer: "Open Business Settings to manage your business identity, target customers, sales channels, pricing approach, labor, expenses, and operating details. These values flow into Calculator and Dashboard estimates." },
+  { keywords: ["account", "username", "email", "verified", "status"], answer: "Open Account Settings, then choose Account to update your username and review access, email verification, and plan status. Your verified email is displayed as read-only." },
+  { keywords: ["privacy", "security", "password", "reset"], answer: "Open Account Settings, then Privacy & Security. Choose Send password reset link and follow the secure instructions sent to your verified email address." },
+  { keywords: ["billing", "payment", "plan", "annual", "upgrade", "receipt"], answer: "Open Account Settings, then Billing & Payment. You can review your current plan, choose Annual, submit payment details, and check payment history or review status." },
+  { keywords: ["getting", "started", "tour", "guide", "onboarding"], answer: "Choose Getting Started near the bottom of the sidebar to replay the guided tour. It introduces Business Settings, Inventory, Calculator, Product Library, Dashboard, and Araa." },
+  { keywords: ["support", "issue", "problem", "bug", "report"], answer: "Choose Support near the bottom of the sidebar to report an issue. Include what you were doing and what happened so the Kostaraa team can investigate." },
+  { keywords: ["data", "storage", "cloud", "device"], answer: "Both Free and Annual accounts store data securely online. Annual adds higher record limits, backup and recovery, and access across supported devices." },
+];
+
+function findAppAnswer(question: string) {
+  const words = question.toLowerCase().replace(/[^a-z0-9]+/g, " ").split(" ").filter(Boolean);
+  let best: (typeof appLibrary)[number] | null = null;
+  let score = 0;
+  for (const item of appLibrary) {
+    const current = item.keywords.reduce((sum, key) => sum + (words.some(word => word === key || word.includes(key) || key.includes(word)) ? 1 : 0), 0);
+    if (current > score) { best = item; score = current; }
+  }
+  return best?.answer || "I don’t have a verified answer for that yet. I can guide you through Dashboard, Inventory, Calculator, Product Library, Business Settings, Account Settings, billing, security, Getting Started, and Support.";
 }
 
-type GuideMessage={role:"araa"|"user";text:string};
-const appLibrary=[
-  {keywords:["inventory","ingredient","material","stock"],answer:"Open Inventory, then choose Add material. Enter the purchase amount, quantity, and base unit. Calculator materials are selected from this list, so add an item to Inventory before using it in a product."},
-  {keywords:["calculator","calculate","costing","product"],answer:"Open Calculator, name the product, then add Raw Materials and Packaging. Choose each item from Inventory and enter the amount used for one product. Kostaraa combines those costs with labor and operation costs from your Business Profile."},
-  {keywords:["convert","conversion","cup","kg","liter","unit"],answer:"Kostaraa converts compatible units such as kg to g, L to ml, yards to smaller length units, and dozens to pieces. For weight-to-cup costing, add the ingredient’s grams-per-cup value in Inventory because ingredients have different densities."},
-  {keywords:["sales","target","monthly","daily"],answer:"Set Monthly Sales Target in Business Profile. Kostaraa divides monthly labor and operation costs by that target to estimate cost per item. Araa also uses it to estimate the number of items you need to sell per working day."},
-  {keywords:["labor","manpower","owner","pay"],answer:"Add workers and owner pay in Business Profile. Direct production labor contributes to product costing, while indirect or administrative labor belongs in monthly operation costs."},
-  {keywords:["overhead","operation","bills","rent","utilities"],answer:"Add regular monthly and annual business bills in Business Profile. Monthly overhead equals regular monthly bills plus each annual cost divided by 12. Calculator divides that total by your Monthly Sales Target."},
-  {keywords:["save","library","edit","duplicate"],answer:"After completing a calculation, choose Save as Product or Service. It will appear in Library, where you can edit, duplicate, archive, or remove it."},
-  {keywords:["profile","customer","market","channel","pricing"],answer:"Open Business Profile to edit customer, channel, pricing, labor, overhead, and operation details. Araa’s Customer Fit insight updates from those saved answers."},
-  {keywords:["data","storage","cloud","device"],answer:"Data behavior depends on the plan. Device-only plans keep information in the current browser and device. Cloud-enabled plans are intended for secure online storage and multi-device access as those services become available."},
-];
-function findAppAnswer(question:string){const words=question.toLowerCase().replace(/[^a-z0-9]+/g," ").split(" ").filter(Boolean);let best:any=null;let score=0;for(const item of appLibrary){const current=item.keywords.reduce((sum,key)=>sum+(words.some(word=>word===key||word.includes(key)||key.includes(word))?1:0),0);if(current>score){best=item;score=current}}return best?.answer||"I don’t have a verified answer for that yet. In Beta 0.2.26, I can guide you through Inventory, Calculator, Library, Business Profile, sales targets, labor, overhead, conversions, and data storage."}
-function WorkspaceGuide(){const[messages,setMessages]=useState<GuideMessage[]>([{role:"araa",text:"Ask me how to use the current Kostaraa beta. I’ll answer only from features available in Beta 0.2.26."}]);const[input,setInput]=useState("");const ask=(question:string)=>{const clean=question.trim();if(!clean)return;setMessages(current=>[...current,{role:"user",text:clean},{role:"araa",text:findAppAnswer(clean)}]);setInput("")};return <section className="araa-app-guide"><div className="araa-guide-title"><small>APP LIBRARIAN · BETA 0.2.26</small><h3>How can I help you use Kostaraa?</h3></div><div className="araa-messages" aria-live="polite">{messages.map((message,index)=><div className={`araa-message ${message.role}`} key={index}><p>{message.text}</p></div>)}</div><div className="araa-suggestions">{["How do I cost a product?","How are monthly costs divided?","How do unit conversions work?"].map(question=><button key={question} onClick={()=>ask(question)}>{question}</button>)}</div><form onSubmit={event=>{event.preventDefault();ask(input)}}><input value={input} onChange={event=>setInput(event.target.value)} placeholder="Ask how to use Kostaraa…" aria-label="Ask Araa how to use Kostaraa"/><button type="submit" aria-label="Send question">→</button></form><small className="araa-beta-note">Beta 0.2.26 · Guidance uses current app logic and may change as Kostaraa develops.</small></section>}
+function WorkspaceGuide() {
+  const [messages, setMessages] = useState<GuideMessage[]>([
+    { role: "araa", text: "Hi, I’m Araa, your Kostaraa librarian. Ask me about Inventory, Calculator, or any workspace tool—I’m happy to help." },
+  ]);
+  const [input, setInput] = useState("");
+  const ask = (question: string) => {
+    const clean = question.trim();
+    if (!clean) return;
+    setMessages(current => [...current, { role: "user", text: clean }, { role: "araa", text: findAppAnswer(clean) }]);
+    setInput("");
+  };
+  return <section className="araa-app-guide">
+    <div className="araa-messages" aria-live="polite">{messages.map((message, index) => <div className={`araa-message ${message.role}`} key={index}><p>{message.text}</p></div>)}</div>
+    <div className="araa-suggestions">{["How do I use Inventory?", "How do I cost a product?", "Where can I update my business?"].map(question => <button type="button" key={question} onClick={() => ask(question)}>{question}</button>)}</div>
+    <form onSubmit={event => { event.preventDefault(); ask(input); }}><input value={input} onChange={event => setInput(event.target.value)} placeholder="Ask Araa about a module…" aria-label="Ask Araa how to use Kostaraa"/><button type="submit" aria-label="Send question">→</button></form>
+  </section>;
+}
 
-export function AraaChat({workspace=false}:{workspace?:boolean}){
-  const[open,setOpen]=useState(false);const[snapshot,setSnapshot]=useState<Snapshot>(()=>makeSnapshot());const toggle=()=>{if(!open){setSnapshot(makeSnapshot());if(workspace)window.dispatchEvent(new CustomEvent("kostaraa:feature-opened",{detail:"araa"}))}setOpen(v=>!v)};
-  useEffect(()=>{const openAraa=()=>{setSnapshot(makeSnapshot());setOpen(true)};const closeAraa=()=>setOpen(false);window.addEventListener("kostaraa:open-araa",openAraa);window.addEventListener("kostaraa:close-araa",closeAraa);return()=>{window.removeEventListener("kostaraa:open-araa",openAraa);window.removeEventListener("kostaraa:close-araa",closeAraa)}},[]);
-  return <div className={`araa ${open?"open":""}`}>
-    <section className="araa-panel araa-coming-panel" aria-label={workspace?"Araa business snapshot":"Araa coming soon"} aria-hidden={!open}>
-      <header><img src="/araa-avatar.png" alt="Araa, the Kostaraa librarian"/><div><b>Araa</b><span>{workspace?"Kostaraa librarian · Beta 0.2.26":"Kostaraa librarian"}</span></div><button onClick={()=>setOpen(false)} aria-label="Close Araa">×</button></header>
-      {workspace?<div className="araa-summary" aria-live="polite"><div className="araa-summary-intro"><div><h2>Hello from Araa!</h2></div></div><p>Araa is getting her full library ready. For now, here’s a simple summary based on the information saved in Kostaraa.</p>
-        <div className="araa-insight-accordions">
-          <details className="araa-insight-card araa-fit"><summary><span><small>CUSTOMER FIT INSIGHT</small><strong>Does your offer fit your customers?</strong></span><i aria-hidden="true">⌄</i></summary><div><dl><div><dt>Audience</dt><dd>{snapshot.audience}</dd></div><div><dt>Location</dt><dd>{snapshot.location}</dd></div><div><dt>Channels</dt><dd>{snapshot.channels}</dd></div><div><dt>Saved pricing</dt><dd>{snapshot.pricing}</dd></div></dl><p><b>Current fit:</b> {snapshot.customerFit}</p><p><b>Price-fit signal:</b> {snapshot.priceFit}.</p><p><b>Pricing strategy to consider:</b> {snapshot.pricingGuidance}</p><p><b>Behavior to watch:</b> {snapshot.behaviorWatch}</p><p><b>What to validate next:</b> {snapshot.marketCheck}</p></div></details>
-        </div>
-        <section className="araa-next"><span>✦</span><div><small>ARAA’S NEXT STEP</small><p>{snapshot.nextStep}</p></div></section>
-        <WorkspaceGuide/><em>This is an early Beta 0.2.26 insight based on saved information—not market research, accounting, or financial advice.</em>
-      </div>:<div className="araa-summary araa-public-coming" aria-live="polite"><div className="araa-summary-intro"><img src="/araa-avatar.png" alt=""/><div><small>COMING SOON</small><h2>Araa is getting her library ready.</h2></div></div><p>Soon, she’ll help you find answers, understand Kostaraa, and guide you through common business questions.</p></div>}
+export function AraaChat({ workspace = false }: { workspace?: boolean }) {
+  const [open, setOpen] = useState(false);
+  const toggle = () => {
+    if (!open && workspace) window.dispatchEvent(new CustomEvent("kostaraa:feature-opened", { detail: "araa" }));
+    setOpen(value => !value);
+  };
+  useEffect(() => {
+    const openAraa = () => setOpen(true);
+    const closeAraa = () => setOpen(false);
+    window.addEventListener("kostaraa:open-araa", openAraa);
+    window.addEventListener("kostaraa:close-araa", closeAraa);
+    return () => {
+      window.removeEventListener("kostaraa:open-araa", openAraa);
+      window.removeEventListener("kostaraa:close-araa", closeAraa);
+    };
+  }, []);
+  return <div className={`araa ${open ? "open" : ""}`}>
+    <section className="araa-panel araa-coming-panel" aria-label={workspace ? "Ask Araa how to use Kostaraa" : "Araa coming soon"} aria-hidden={!open}>
+      <header><img src="/araa-avatar.png" alt="Araa, the Kostaraa librarian"/><div><b>Araa</b></div><button type="button" onClick={() => setOpen(false)} aria-label="Close Araa">×</button></header>
+      {workspace ? <div className="araa-summary araa-librarian-summary"><WorkspaceGuide/></div> : <div className="araa-summary araa-public-coming" aria-live="polite"><div className="araa-summary-intro"><img src="/araa-avatar.png" alt=""/><div><small>COMING SOON</small><h2>Araa is getting her library ready.</h2></div></div><p>Soon, she’ll help you find answers, understand Kostaraa, and guide you through common business questions.</p></div>}
     </section>
-    <button className="araa-launcher" onClick={toggle} aria-label={open?"Close Araa":"Ask Araa"}><img src="/araa-avatar.png" alt=""/><span>Ask Araa</span><i/></button>
-  </div>
+    <button type="button" className="araa-launcher" onClick={toggle} aria-label={open ? "Close Araa" : "Ask Araa"}><img src="/araa-avatar.png" alt=""/><span>Ask Araa</span><i/></button>
+  </div>;
 }
