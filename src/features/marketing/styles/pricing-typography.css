@@ -5,7 +5,7 @@
 }
 
 .pricing-page .pricing-hero h1 {
-  color: #252525;
+  color: #fff;
   font-family: "Poppins", Arial, sans-serif;
   font-size: 42px !important;
   font-weight: 600;
@@ -13,15 +13,18 @@
   letter-spacing: -.04em;
 }
 
+.pricing-page .pricing-hero h1 span {
+  color: inherit;
+}
+
 .pricing-page .pricing-hero p {
-  color: #52647d;
+  color: rgba(255, 255, 255, .9);
   font-size: 16px;
   font-weight: 400;
   line-height: 1.68;
 }
 
-.pricing-page .plan-name small,
-.pricing-page .pricing-cards article > em {
+.pricing-page .plan-tier {
   font-family: "Poppins", Arial, sans-serif;
   font-size: 11px;
   font-weight: 600;
@@ -30,10 +33,18 @@
   text-transform: uppercase;
 }
 
+.pricing-page .plan-badge {
+  font-family: "Poppins", Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
 .pricing-page .plan-name h2 {
   color: #252525;
   font-family: "Poppins", Arial, sans-serif;
-  font-size: 26px !important;
+  font-size: 22px !important;
   font-weight: 600;
   line-height: 1.24;
   letter-spacing: -.025em;
@@ -49,14 +60,14 @@
 .pricing-page .price-box strong {
   color: #252525;
   font-family: "Poppins", Arial, sans-serif;
-  font-size: 38px;
+  font-size: 36px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   line-height: 1.18;
 }
 
 .pricing-page :is(.price-box small, .price-box span, .plan-storage span) {
-  color: #687991;
+  color: #52647d;
   font-size: 12px;
   font-weight: 400;
   line-height: 1.5;

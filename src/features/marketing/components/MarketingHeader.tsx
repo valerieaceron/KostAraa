@@ -37,7 +37,7 @@ export function MarketingHeader({ active, overlay = false }: MarketingHeaderProp
       <img src={overlay ? "/brand/kostaraa-white-logo.png" : "/brand/kostaraa-blue-logo.png"} alt="Kostaraa"/>
     </a>
     <nav className="desktop-nav" aria-label="Main navigation">
-      {links.map(link => <a className={active === link.key ? "active" : undefined} href={link.href} key={link.key}>{link.label}</a>)}
+      {links.map(link => <a className={active === link.key ? "active" : undefined} aria-current={active === link.key ? "page" : undefined} href={link.href} key={link.key}>{link.label}</a>)}
     </nav>
     <div className="nav-actions">
       <a className="login" href="/login">Log in</a>
@@ -45,7 +45,7 @@ export function MarketingHeader({ active, overlay = false }: MarketingHeaderProp
     </div>
     <details className="mobile-menu">
       <summary aria-label="Open menu">☰</summary>
-      <div>{links.map(link => <a className={active === link.key ? "active" : undefined} href={link.href} key={link.key}>{link.label}</a>)}<a href="/login">Log in</a></div>
+      <div>{links.map(link => <a className={active === link.key ? "active" : undefined} aria-current={active === link.key ? "page" : undefined} href={link.href} key={link.key}>{link.label}</a>)}<a href="/login">Log in</a></div>
     </details>
   </header>;
 }

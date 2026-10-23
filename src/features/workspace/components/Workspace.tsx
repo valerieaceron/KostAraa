@@ -1,5 +1,7 @@
 import {useEffect,useMemo,useState} from "react";
+import {LayoutDashboard,Package,Calculator as CalculatorIcon,LibraryBig,Settings2,type LucideIcon} from "lucide-react";
 import BetaSupportModal from "./BetaSupportModal";
+import {AccountMenu} from "./AccountMenu";
 import {useUsageAnalytics} from "../useUsageAnalytics";
 import BusinessDashboard from "./BusinessDashboard";
 import ProductsServices from "../../costing/pages/ProductsServices";
@@ -13,41 +15,18 @@ import {buildSavedItem,calculateProduct,savedItemToProduct,computeInventoryMater
 import {loadState,saveBusiness,saveInventory,saveProduct,saveSavedItems} from "../../costing/utils/storage";
 import {apiJson,getAllApiItems,isOfflineUser,normalizeInventoryItem} from "../../costing/utils/api";
 import {normalizeBusinessProfile} from "../../costing/utils/businessProfile";
+import {GettingStartedGuide,ProfileSetupPrompt} from "./GettingStartedGuide";
+import {currentGuideKey,guideEntry,readGuideProgress,writeGuideProgress} from "../getting-started";
 
 const defaultLabor={staffCount:0,monthlyCost:0,workingDays:0,outputPerDay:0};
 const defaultOverhead={rent:0,utilities:0,miscellaneous:0};
 // Keep one canonical information architecture for both desktop and mobile navigation.
-const navGroups:Array<{label:string;items:Array<{page:string;label:string;icon:string;section?:string}>}>=[
-  {label:"Overview",items:[{page:"dashboard",label:"Dashboard",icon:"▥"}]},
-  {label:"Cost Management",items:[{page:"inventory",label:"Inventory",icon:"◇"},{page:"calculator",label:"Calculator",icon:"▦"},{page:"products",label:"Product Library",icon:"▤"}]},
-  {label:"Business Settings",items:[{page:"account",section:"identity",label:"Settings",icon:"⚙"}]},
+const navGroups:Array<{label:string;items:Array<{page:string;label:string;icon:LucideIcon;section?:string}>}>=[
+  {label:"Overview",items:[{page:"dashboard",label:"Dashboard",icon:LayoutDashboard}]},
+  {label:"Cost Management",items:[{page:"inventory",label:"Inventory",icon:Package},{page:"calculator",label:"Calculator",icon:CalculatorIcon},{page:"products",label:"Product Library",icon:LibraryBig}]},
+  {label:"Business Settings",items:[{page:"account",section:"identity",label:"Settings",icon:Settings2}]},
 ];
-const guideSteps=[
-  {title:"Business Profile",copy:"Review the details Kostaraa uses for labor, operation-cost, and customer-fit estimates.",page:"account"},
-  {title:"Inventory",copy:"Keep track of your raw materials and supplies for accurate product costing.",page:"inventory"},
-  {title:"Calculator",copy:"Combine materials, packaging, labor, and operation costs to estimate your product cost.",page:"calculator"},
-  {title:"Library",copy:"Keep completed product costings ready for review and editing.",page:"products"},
-  {title:"Dashboard",copy:"See which saved products may need your attention next.",page:"dashboard"},
-  {title:"Meet Araa",copy:"Ask how to use Kostaraa and review customer-fit guidance from your profile.",page:"araa"},
-];
-
-function guideStorageKey(){try{const user=JSON.parse(sessionStorage.getItem("kostaraa.user")||"{}");return `kostaraa.gettingStarted:${user.user_id||user.id||user.username||user.email||"local"}`}catch{return "kostaraa.gettingStarted:local"}}
 function workspaceUser(){try{const user=JSON.parse(sessionStorage.getItem("kostaraa.user")||"{}");const fullName=String(user.name||user.fullName||user.username||user.email?.split("@")[0]||"User").trim();return{firstName:fullName.split(/\s+/)[0]||"User"}}catch{return{firstName:"User"}}}
-function GettingStartedGuide({onClose,onGo}:{onClose:()=>void;onGo:(page:string)=>void}){
-  const key=guideStorageKey();
-  const saved=(()=>{try{return JSON.parse(localStorage.getItem(key)||"{}") }catch{return {}}})();
-  const[index,setIndex]=useState(saved.finished?0:Math.min(Number(saved.index)||0,guideSteps.length-1));
-  const step=guideSteps[index];
-  const persist=(nextIndex:number,finished=false)=>localStorage.setItem(key,JSON.stringify({index:nextIndex,completed:finished?guideSteps.length:nextIndex,finished,updatedAt:new Date().toISOString()}));
-  const closeAraa=()=>window.dispatchEvent(new CustomEvent("kostaraa:close-araa"));
-  const closeGuide=()=>{if(step.page==="araa")closeAraa();onClose()};
-  const showStep=(nextIndex:number)=>{const next=guideSteps[nextIndex];if(step.page==="araa"&&next.page!=="araa")closeAraa();setIndex(nextIndex);persist(nextIndex);if(next.page==="araa")window.dispatchEvent(new CustomEvent("kostaraa:open-araa"));else onGo(next.page)};
-  useEffect(()=>{if(step.page==="araa")window.dispatchEvent(new CustomEvent("kostaraa:open-araa"));else onGo(step.page)},[]);
-  const next=()=>{if(index===guideSteps.length-1){persist(index,true);closeGuide();return}showStep(index+1)};
-  const back=()=>{if(index>0)showStep(index-1)};
-  return <div className={`getting-started-modal ${step.page==="araa"?"is-araa":""}`} role="dialog" aria-modal="true" aria-labelledby="getting-started-title"><button className="getting-started-scrim" onClick={closeGuide} aria-label="Close guide"/><article><header><strong>Step {index+1} of {guideSteps.length}</strong><button onClick={closeGuide} aria-label="Close">×</button></header><section className="guide-step-card"><h2 id="getting-started-title">{step.title}</h2><p>{step.copy}</p></section><footer><button onClick={back} disabled={index===0}>← Back</button><button className="primary" onClick={next}>{index===guideSteps.length-1?"Finish":"Next →"}</button></footer></article></div>
-}
-
 function withBusinessCosts(product:any,business:any){return{...product,labor:{...defaultLabor,...(business.labor||{})},overhead:{...defaultOverhead,...(business.overhead||{})}}}
 
 function apiRecord(data:any){return data?.result?.draft||data?.result?.item||data?.result||data?.data?.draft||data?.data?.item||data?.data||data}
@@ -77,15 +56,22 @@ function calculatorDraftPayload(product:any,results:any,business:any,metadata:an
 }
 
 
-function KostaraaLayout({page,setPage,businessSection,setBusinessSection,onLogout,children,businessProfileId}:{page:string;setPage:(page:string)=>void;businessSection:string;setBusinessSection:(section:string)=>void;onLogout:()=>void;children:any;businessProfileId:any}){
+function KostaraaLayout({page,setPage,businessSection,setBusinessSection,onLogout,children,businessProfileId,onEditProfile}:{page:string;setPage:(page:string)=>void;businessSection:string;setBusinessSection:(section:string)=>void;onLogout:()=>void;children:any;businessProfileId:any;onEditProfile:()=>void}){
   const[mobileOpen,setMobileOpen]=useState(false);
   const[supportOpen,setSupportOpen]=useState(false);
   const user=workspaceUser();
-  const[guideOpen,setGuideOpen]=useState(()=>{const isNewAccountSetup=new URLSearchParams(location.search).get("start")==="product";if(isNewAccountSetup)history.replaceState({},"","/workspace");return isNewAccountSetup});
+  const[guideStart]=useState(()=>guideEntry(location.search,readGuideProgress(localStorage,currentGuideKey())));
+  const[guideOpen,setGuideOpen]=useState(guideStart.open);
+  const[firstRun,setFirstRun]=useState(guideStart.open);
+  const[profilePrompt,setProfilePrompt]=useState(guideStart.prompt);
+  useEffect(()=>{if(!guideStart.requested)return;const url=new URL(location.href);url.searchParams.delete("start");history.replaceState(history.state,"",`${url.pathname}${url.search}${url.hash}`)},[guideStart]);
   const go=(id:string,section?:string)=>{if(id==="account")setBusinessSection(section||"identity");setPage(id);setMobileOpen(false)};
+  const exitGuide=(completed=false)=>{setGuideOpen(false);if(completed||firstRun){if(!completed)writeGuideProgress(localStorage,currentGuideKey(),{skipped:true,started:false,profilePrompt:true});setProfilePrompt(true);go("account")}else writeGuideProgress(localStorage,currentGuideKey(),{started:false})};
+  const dismissProfilePrompt=()=>{setProfilePrompt(false);writeGuideProgress(localStorage,currentGuideKey(),{profilePrompt:false})};
+  const editProfile=()=>{dismissProfilePrompt();go("account");onEditProfile()};
   const openSupport=()=>{window.dispatchEvent(new CustomEvent("kostaraa:feature-opened",{detail:"beta_support"}));setMobileOpen(false);setSupportOpen(true)};
-  const Menu=()=> <><button className="kws-brand" onClick={()=>go("dashboard")} aria-label="Go to Dashboard"><img src="/kostaraa-logo.png" alt="Kostaraa"/></button><nav>{navGroups.map(group=><section className="kws-nav-group" key={group.label}><p className="kws-nav-label">{group.label}</p>{group.items.map(item=><button key={`${item.page}-${item.section||"main"}`} className={page===item.page&&(!item.section||businessSection===item.section)?"active":""} onClick={()=>go(item.page,item.section)}><span>{item.label}</span></button>)}</section>)}</nav><div className="kws-bottom-actions"><button className="kws-tour" onClick={()=>{window.dispatchEvent(new CustomEvent("kostaraa:feature-opened",{detail:"getting_started"}));setMobileOpen(false);setGuideOpen(true)}}><i>▶</i><span><b>Getting Started</b><small>Learn or revisit the app guide</small></span></button><button className="kws-support" onClick={openSupport}><i>?</i><span><b>Beta Support</b><small>Report an issue · 0.2.26</small></span></button><button className="kws-logout" onClick={onLogout}>Log out</button></div></>;
-  return <div className="kws-shell dotted-canvas"><aside className="kws-sidebar"><Menu/></aside><header className="kws-topbar"><p className="kws-tagline">Cost Better.Price Smarter.</p><div className="kws-welcome"><span>Welcome back,</span><strong>{user.firstName}</strong></div></header><header className="kws-mobile-head"><button onClick={()=>setMobileOpen(true)}>☰</button><button className="kws-mobile-logo" onClick={()=>go("dashboard")} aria-label="Go to Dashboard"><img src="/kostaraa-logo.png" alt="Kostaraa"/></button><button onClick={onLogout}>Log out</button></header>{mobileOpen&&<div className="kws-mobile-menu"><button className="kws-scrim" aria-label="Close menu" onClick={()=>setMobileOpen(false)}/><aside><button className="kws-close" onClick={()=>setMobileOpen(false)}>×</button><Menu/></aside></div>}<main className="kws-content">{children}</main>{guideOpen&&<GettingStartedGuide onClose={()=>setGuideOpen(false)} onGo={go}/>} {supportOpen&&<BetaSupportModal businessProfileId={businessProfileId} page={page} businessSection={businessSection} onClose={()=>setSupportOpen(false)}/>}</div>
+  const Menu=()=> <><button className="kws-brand" onClick={()=>go("dashboard")} aria-label="Go to Dashboard"><img src="/kostaraa-logo.png" alt="Kostaraa"/></button><nav>{navGroups.map(group=><section className="kws-nav-group" key={group.label}><p className="kws-nav-label">{group.label}</p>{group.items.map(item=><button key={`${item.page}-${item.section||"main"}`} className={page===item.page&&(!item.section||businessSection===item.section)?"active":""} onClick={()=>go(item.page,item.section)}><item.icon aria-hidden="true" strokeWidth={1.75}/><span>{item.label}</span></button>)}</section>)}</nav><div className="kws-bottom-actions"><button className="kws-tour" onClick={()=>{window.dispatchEvent(new CustomEvent("kostaraa:feature-opened",{detail:"getting_started"}));setMobileOpen(false);setFirstRun(false);setGuideOpen(true)}}><i>▶</i><span><b>Getting Started</b><small>Learn or revisit the app guide</small></span></button><button className="kws-support" onClick={openSupport}><i>?</i><span><b>Support</b><small>Report an issue · 0.2.26</small></span></button><button className="kws-logout" onClick={onLogout}>Log out</button></div></>;
+  return <div className="kws-shell dotted-canvas"><aside className="kws-sidebar"><Menu/></aside><header className="kws-topbar"><p className="kws-tagline">Cost Better.Price Smarter.</p><AccountMenu firstName={user.firstName} onSettings={()=>go("account")} onLogout={onLogout}/></header><header className="kws-mobile-head"><button onClick={()=>setMobileOpen(true)}>☰</button><button className="kws-mobile-logo" onClick={()=>go("dashboard")} aria-label="Go to Dashboard"><img src="/kostaraa-logo.png" alt="Kostaraa"/></button><button onClick={onLogout}>Log out</button></header>{mobileOpen&&<div className="kws-mobile-menu"><button className="kws-scrim" aria-label="Close menu" onClick={()=>setMobileOpen(false)}/><aside><button className="kws-close" onClick={()=>setMobileOpen(false)}>×</button><Menu/></aside></div>}<main className="kws-content">{profilePrompt&&!guideOpen&&<ProfileSetupPrompt onEdit={editProfile} onDismiss={dismissProfilePrompt}/>}<div inert={guideOpen?true:undefined}>{children}</div></main>{guideOpen&&<GettingStartedGuide onClose={()=>exitGuide()} onComplete={()=>exitGuide(true)} onGo={go}/>} {supportOpen&&<BetaSupportModal businessProfileId={businessProfileId} page={page} businessSection={businessSection} onClose={()=>setSupportOpen(false)}/>}</div>
 }
 
 export function Workspace(){
@@ -94,6 +80,7 @@ export function Workspace(){
   const initialBusiness=useMemo(()=>{let profile:any=null;try{profile=JSON.parse(localStorage.getItem("kostaraa.businessProfile")||"null")}catch{}const baseLabor={...defaultLabor,...(initial.business.labor||initial.product.labor||{})};const days=Number(profile?.operations?.operatingDaysPerMonth)||Number(baseLabor.workingDays)||26;const salesTarget=Number(profile?.operations?.monthlySalesUnits||profile?.calculatorCosts?.salesTarget)||0;const manpowerTotal=(profile?.manpower||[]).reduce((sum:number,worker:any)=>sum+(Number(worker.amount)||0)+(Number(worker.benefits)||0)+(Number(worker.contributions)||0),0);const ownerPay=profile?.ownerLabor?.includeOwnTime==="Yes"?(Number(profile.ownerLabor.desiredMonthlyCompensation)||0):0;const laborTotal=Number(profile?.calculatorCosts?.totalLaborMonthly)||(manpowerTotal+ownerPay)||Number(baseLabor.monthlyCost)||0;const overheadTotal=Number(profile?.calculatorCosts?.overheadMonthly||profile?.overhead?.monthlyOverheadPool)||0;return{...initial.business,labor:{...baseLabor,monthlyCost:laborTotal,workingDays:days,outputPerDay:salesTarget?salesTarget/days:baseLabor.outputPerDay},overhead:overheadTotal?{rent:0,utilities:0,miscellaneous:overheadTotal}:{...defaultOverhead,...(initial.business.overhead||initial.product.overhead||{})}}},[initial]);
   const[page,setPage]=useState(new URLSearchParams(location.search).get("page")==="account"?"account":new URLSearchParams(location.search).get("start")==="product"?"calculator":"dashboard");
   const[businessSection,setBusinessSection]=useState("identity");
+  const[profileEditRequest,setProfileEditRequest]=useState(0);
   const[business,setBusiness]=useState(initialBusiness);
   const[product,setProductState]=useState(withBusinessCosts(initial.product,initialBusiness));
   const[inventory,setInventoryState]=useState(initial.inventory);
@@ -185,7 +172,7 @@ export function Workspace(){
     products:<ProductsServices items={savedItems} onViewEdit={editItem} onDuplicate={duplicateItem} onArchive={archiveItem} onDelete={deleteItem} onDeleteItems={deleteItems} onUpdateItem={updateItem} setPage={setPage} pricingStatus={productLibraryFilter} onPricingStatusChange={setProductLibraryFilter}/>,
     inventory:<AdaptiveInventory inventory={inventory} setInventory={setInventory}/>,
     calculator:<CalculatorProfileCosts business={business} onSaveBusiness={saveBusinessProfile}><Calculator product={product} setProduct={setProduct} results={results} inventory={inventory} business={business} onSaveItem={saveLibraryItem} onDuplicateCurrent={()=>duplicateItem(buildSavedItem(product,results,business,{itemType:"Product",category:"Other",status:"Draft"}))} onReset={resetCalculator} editingItem={savedItems.find((item:any)=>item.id===editingItemId)}/></CalculatorProfileCosts>,
-    account:<BusinessProfile focusSection={businessSection}/>,
+    account:<BusinessProfile focusSection={businessSection} editRequest={profileEditRequest} onEditRequestHandled={()=>setProfileEditRequest(0)}/>,
   };
-  return <KostaraaLayout page={page} setPage={setPage} businessSection={businessSection} setBusinessSection={setBusinessSection} onLogout={logout} businessProfileId={businessProfileId}>{syncError&&<p className="simple-note" role="alert">{syncError}</p>}{pages[page]}</KostaraaLayout>
+  return <KostaraaLayout page={page} setPage={setPage} businessSection={businessSection} setBusinessSection={setBusinessSection} onLogout={logout} businessProfileId={businessProfileId} onEditProfile={()=>setProfileEditRequest(value=>value+1)}>{syncError&&<p className="simple-note" role="alert">{syncError}</p>}{pages[page]}</KostaraaLayout>
 }

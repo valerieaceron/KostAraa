@@ -1,4 +1,3 @@
-import { AccessibilityPanel } from "../components/accessibility/AccessibilityPanel";
 import Login from "../features/auth/LoginPage";
 import Signup from "../features/auth/SignupPage";
 import About from "../features/marketing/pages/About";
@@ -30,10 +29,5 @@ export default function App() {
   const path = window.location.pathname.replace(/\/$/, "") || "/";
   const Page = path.startsWith("/blog/") ? BlogPost : routes[path] || Home;
 
-  return (
-    <>
-      <Page />
-      <AccessibilityPanel />
-    </>
-  );
+  return <Page />;
 }

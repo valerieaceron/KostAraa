@@ -47,14 +47,13 @@ export default function BetaSupportModal({onClose, businessProfileId, page, busi
   }
   return <div className="beta-support-modal" role="dialog" aria-modal="true" aria-labelledby="beta-support-title">
     <button className="beta-support-scrim" onClick={() => !busy && onClose()} aria-label="Close beta support"/>
-    <article>{ticket ? <div className="beta-support-success"><span>✓</span><small>BETA SUPPORT</small><h2 id="beta-support-title">Your report was sent.</h2><p>The Kostaraa team will review support ticket #{ticket.id}.</p><p>Reference: {ticket.public_id}</p><div><button onClick={onClose}>Close</button></div></div> : <>
-      <header><div><small>BETA SUPPORT</small><h2 id="beta-support-title">Report an issue</h2><p>Tell us what happened so the Kostaraa team can help.</p></div><button disabled={busy} onClick={onClose} aria-label="Close">×</button></header>
+    <article>{ticket ? <div className="beta-support-success"><span>✓</span><h2 id="beta-support-title">Your report was sent.</h2><p>The Kostaraa team will review support ticket #{ticket.id}.</p><p>Reference: {ticket.public_id}</p><div><button onClick={onClose}>Close</button></div></div> : <>
+      <header><div><h2 id="beta-support-title">Report an issue</h2></div><button disabled={busy} onClick={onClose} aria-label="Close">×</button></header>
       <form onSubmit={submit}><div className="beta-support-grid"><label>What kind of issue?<select name="type" defaultValue="not_working">{issueTypes.map(([code, title]) => <option value={code} key={code}>{title}</option>)}</select></label><label>Page<input name="page" value={path} readOnly/></label></div>
         <label>What happened?<textarea name="message" required minLength={5} maxLength={10000} rows={5} autoFocus placeholder="Tell us what you clicked, what you expected, and what happened instead."/></label>
         <label>Email for follow-up <small>Optional</small><input name="email" type="email" maxLength={254} placeholder="you@example.com"/></label>
         {error && <p className="simple-note" role="alert">{error}</p>}
-        <aside><b>Privacy note</b><span>Do not include passwords, payment information, or other sensitive details.</span></aside>
-        <footer><button type="button" disabled={busy} onClick={onClose}>Cancel</button><button className="primary" type="submit" disabled={busy}>{busy ? 'Sending…' : 'Send support ticket'}</button></footer>
+        <footer><button type="button" disabled={busy} onClick={onClose}>Cancel</button><button className="primary" type="submit" disabled={busy}>{busy ? 'Submitting…' : 'Submit'}</button></footer>
       </form></>}</article>
   </div>;
 }

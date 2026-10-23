@@ -1,0 +1,13 @@
+.kws-account-menu { position: relative; }
+.kws-account-menu .kws-welcome { display: flex; min-height: 44px; align-items: center; gap: 5px; border: 1px solid transparent; border-radius: 9px; background: transparent; padding: 10px 12px; font-family: inherit; cursor: pointer; transition: background-color .16s ease; }
+.kws-account-menu .kws-welcome:hover,
+.kws-account-menu .kws-welcome[aria-expanded="true"] { background: #f0f5fc; }
+.kws-account-menu .kws-welcome > svg { width: 16px; height: 16px; flex-shrink: 0; margin-left: 5px; color: #687991; }
+.kws-account-menu .kws-welcome[aria-expanded="true"] > svg { transform: rotate(180deg); }
+.kws-account-dropdown { position: absolute; top: calc(100% + 8px); right: 0; z-index: 1; min-width: 210px; border: 1px solid #dce5ef; border-radius: 12px; background: #fff; padding: 6px; box-shadow: 0 12px 32px rgba(13, 39, 80, .12); }
+.kws-account-dropdown button { display: flex; width: 100%; min-height: 44px; align-items: center; gap: 10px; border: 0; border-radius: 7px; background: transparent; padding: 10px 12px; color: #405572; font-family: inherit; font-size: 13px; line-height: 1.4; text-align: left; cursor: pointer; }
+.kws-account-dropdown button:hover,
+.kws-account-dropdown button:focus { outline: none; background: #edf4fc; color: #2f67aa; }
+.kws-account-dropdown button + button { margin-top: 3px; }
+.kws-account-dropdown svg { width: 18px; height: 18px; flex-shrink: 0; }
+.kws-account-menu .kws-welcome:focus-visible { outline: 3px solid #91b6e3; outline-offset: 3px; }
