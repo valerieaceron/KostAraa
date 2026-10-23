@@ -27,7 +27,7 @@ const navGroups:Array<{label:string;items:Array<{page:string;label:string;icon:L
   {label:"Cost Management",items:[{page:"inventory",label:"Inventory",icon:Package},{page:"calculator",label:"Calculator",icon:CalculatorIcon},{page:"products",label:"Product Library",icon:LibraryBig}]},
   {label:"Business Settings",items:[{page:"subscription",label:"Plan & payments",icon:Settings2},{page:"account",section:"identity",label:"Settings",icon:Settings2}]},
 ];
-function workspaceUser(){try{const user=JSON.parse(sessionStorage.getItem("kostaraa.user")||"{}");const fullName=String(user.name||user.fullName||user.username||user.email?.split("@")[0]||"User").trim();return{firstName:fullName.split(/\s+/)[0]||"User"}}catch{return{firstName:"User"}}}
+function workspaceUser(){try{const user=JSON.parse(sessionStorage.getItem("kostaraa.user")||"{}");const fullName=String(user.name||user.fullName||user.username||user.email?.split("@")[0]||"User").trim();return{firstName:String(user.firstName||"").trim()||fullName.split(/\s+/)[0]||"User"}}catch{return{firstName:"User"}}}
 function withBusinessCosts(product:any,business:any){return{...product,labor:{...defaultLabor,...(business.labor||{})},overhead:{...defaultOverhead,...(business.overhead||{})}}}
 
 function apiRecord(data:any){return data?.result?.draft||data?.result?.item||data?.result||data?.data?.draft||data?.data?.item||data?.data||data}
