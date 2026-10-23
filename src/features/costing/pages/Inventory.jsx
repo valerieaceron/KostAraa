@@ -144,6 +144,7 @@ export default function Inventory({ inventory, setInventory, unitOptions = ALL_U
   const [saveError, setSaveError] = useState('');
   const [apiError, setApiError] = useState('');
   const [importMessage, setImportMessage] = useState('');
+  const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState('');
   const [loadingInventory, setLoadingInventory] = useState(false);
   const fileInputRef = useRef(null);
@@ -193,11 +194,13 @@ export default function Inventory({ inventory, setInventory, unitOptions = ALL_U
 
   const openAdd = () => { setDialog({ mode: 'add' }); setDraft(emptyDraft()); setDraftErrors({}); setSaveError(''); };
   const openEdit = (item) => {
+    if (importing) return;
     setDialog({ mode: 'edit', id: item.id });
     setDraft({ material: item.material || '', category: itemCategory(item), itemCost: item.itemCost ?? '', qty: item.qty ?? '', baseUnit: item.baseUnit || '', gramsPerCup: item.gramsPerCup || '', piecesPerUnit: item.piecesPerUnit || '' });
     setDraftErrors({}); setSaveError('');
   };
   const openDuplicate = (item) => {
+    if (importing) return;
     setDialog({ mode: 'add' });
     setDraft({ material: `${item.material || 'Unnamed material'} copy`, category: itemCategory(item), itemCost: item.itemCost ?? '', qty: item.qty ?? '', baseUnit: item.baseUnit || '', gramsPerCup: item.gramsPerCup || '', piecesPerUnit: item.piecesPerUnit || '' });
     setDraftErrors({}); setSaveError('');
@@ -219,6 +222,7 @@ export default function Inventory({ inventory, setInventory, unitOptions = ALL_U
   };
 
   const deleteIds = async (ids) => {
+    if (importing) return;
     const values = [...ids]; if (!values.length) return;
     if (!window.confirm(values.length === 1 ? 'Delete this material? This cannot be undone.' : `Delete ${values.length} materials? This cannot be undone.`)) return;
     setApiError('');
@@ -239,7 +243,8 @@ export default function Inventory({ inventory, setInventory, unitOptions = ALL_U
 
   const importInventory = async (event) => {
     const file = event.target.files?.[0]; event.target.value = ''; if (!file) return;
-    setImportMessage(''); setImportError('');
+    setImportMessage(''); setImportError(''); setImporting(true);
+    const savedItems = [];
     try {
       const XLSX = await import('xlsx'); const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' }); const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: '' });
       if (!rows.length) throw new Error('The spreadsheet does not contain any material rows.');
@@ -248,8 +253,16 @@ export default function Inventory({ inventory, setInventory, unitOptions = ALL_U
         if (!material) throw new Error(`Row ${index + 2}: Material is required.`); if (!(itemCost > 0)) throw new Error(`Row ${index + 2}: Purchase Amount must be greater than 0.`); if (!(qty > 0)) throw new Error(`Row ${index + 2}: Purchase Quantity must be greater than 0.`); if (!ALL_UNITS.includes(baseUnit)) throw new Error(`Row ${index + 2}: Base Unit is not supported.`);
         const category = ITEM_CATEGORIES.includes(row.Category) ? row.Category : 'Raw Material'; return { id: crypto.randomUUID(), material, category, item_type: categoryToType(category), itemCost, qty, baseUnit, gramsPerCup: Number(row['Grams Per Cup']) || 0, piecesPerUnit: Number(row['Pieces Per Pack']) || 0 };
       });
-      setInventory([...importedItems, ...inventory]); setImportMessage(`${importedItems.length} material${importedItems.length === 1 ? '' : 's'} imported successfully.`);
-    } catch (error) { setImportError(error instanceof Error ? error.message : 'Unable to import this spreadsheet.'); }
+      if (isOfflineUser()) savedItems.push(...importedItems);
+      else for (const material of importedItems) {
+        const data = await apiJson('/api/inventory/add', { method: 'POST', body: JSON.stringify(inventoryApiPayload(material)) });
+        savedItems.push(normalizeApiInventoryItem(getCreatedInventoryItem(data, material)));
+      }
+      setInventory([...savedItems, ...inventory]); setImportMessage(`${savedItems.length} material${savedItems.length === 1 ? '' : 's'} imported successfully.`);
+    } catch (error) {
+      if (savedItems.length) { setInventory([...savedItems, ...inventory]); setImportMessage(`${savedItems.length} material${savedItems.length === 1 ? '' : 's'} imported before the upload stopped. Remaining rows were not imported.`); }
+      setImportError(error instanceof Error ? error.message : 'Unable to import this spreadsheet.');
+    } finally { setImporting(false); }
   };
 
   return <section className="inventory-page">
@@ -261,11 +274,11 @@ export default function Inventory({ inventory, setInventory, unitOptions = ALL_U
         <button type="button" onClick={exportInventory}>
           <Download /> Download Excel
         </button>
-        <button type="button" onClick={() => fileInputRef.current?.click()}>
-          <FileUp /> Upload Excel
+        <button type="button" disabled={importing} onClick={() => fileInputRef.current?.click()}>
+          <FileUp /> {importing ? 'Importing…' : 'Upload Excel'}
         </button>
         <input ref={fileInputRef} hidden type="file" accept=".xlsx,.xls" onChange={importInventory} />
-        <button className="primary" type="button" onClick={openAdd}><Plus /> Add material</button>
+        <button className="primary" type="button" disabled={importing} onClick={openAdd}><Plus /> Add material</button>
       </div>
     </header>
     {importMessage ? <p className="inventory-alert success">{importMessage}</p> : null}{importError ? <p className="inventory-alert error">{importError}</p> : null}{apiError ? <p className="inventory-alert error">{apiError}</p> : null}{loadingInventory ? <p className="inventory-alert info">Loading inventory…</p> : null}

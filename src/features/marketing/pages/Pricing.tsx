@@ -1,12 +1,11 @@
-import { MarketingHeader } from "../components/MarketingHeader";
-import { MarketingFooter } from "../components/MarketingFooter";
-import { ArrowRight, Check } from "lucide-react";
+import {useEffect, useState} from "react";
+import {MarketingHeader} from "../components/MarketingHeader";
+import {MarketingFooter} from "../components/MarketingFooter";
+import {ArrowRight, Check} from "lucide-react";
+import {apiJson} from "../../costing/utils/api";
+import {planBenefits, planPrice, planTerm} from "../../costing/utils/plans";
 import "../styles/marketing-page-hero.css";
 
-const plans=[
-  {name:"Free",label:"Explore Kostaraa",price:"₱0",billing:"Free forever",audience:"Learn the essentials, cost your first products, and see how Kostaraa fits your business.",cta:"Start Free",href:"/signup",benefits:["Up to 5 inventory records","Up to 3 registered products","1 competitor crawl"]},
-  {name:"Annual",label:"Grow with confidence",price:"₱899",billing:"About ₱75/month · billed annually",audience:"For growing businesses that need unlimited products, secure backup, and access across devices.",cta:"Create account first",href:"/signup?plan=annual",recommended:true,benefits:["Everything in Free, plus:","Up to 100 inventory records","Unlimited product registration","5 competitor crawls"]},
-];
 const rows=[
   ["Getting started"],
   ["Business profiles","1","5"],
@@ -46,23 +45,27 @@ const rows=[
   ["Customer support","FAQ","Priority support"],
   ["Optional consultation","Paid separately","Paid separately"],
 ];
-export default function Pricing(){return <main className="pricing-page marketing-gradient-page"><MarketingHeader active="pricing" overlay/>
-<section className="pricing-hero marketing-page-hero"><div className="marketing-page-hero-inner"><h1>Start free.<br/><span>Grow when you’re ready.</span></h1><p>Explore Kostaraa at no cost, then choose Annual when your business needs unlimited products, cloud backup, and multi-device access.</p></div></section>
-<section className="pricing-content" id="pricing-plans">
-  <div className="pricing-cards superhuman-cards">{plans.map(p=><article className={p.recommended?"recommended":""} key={p.name}>
-    <div className="plan-heading"><small className="plan-tier">{p.name}</small>{p.recommended&&<span className="plan-badge">Best value</span>}</div>
-    <div className="plan-name"><h2>{p.label}</h2></div>
-    <p className="plan-audience">{p.audience}</p>
-    <div className="price-box"><strong>{p.price}</strong>{p.billing&&<small>{p.billing}</small>}</div>
-    <a className={p.recommended?"button":"button ghost"} href={p.href}>{p.cta}<ArrowRight aria-hidden="true"/></a>
-    <div className="plan-benefits"><b>{p.recommended?p.benefits[0]:"The essentials to get started"}</b>
-      <ul>{(p.recommended?p.benefits.slice(1):p.benefits).map(x=><li key={x}><Check aria-hidden="true"/><span>{x}</span></li>)}</ul>
-    </div>
-  </article>)}</div>
+
+export default function Pricing(){
+  const [plans,setPlans]=useState<any[]>([]),[error,setError]=useState(""),[refresh,setRefresh]=useState(0),[loading,setLoading]=useState(true);
+  useEffect(()=>{let active=true;setLoading(true);setError("");apiJson("/api/plans").then(data=>{if(active)setPlans(data.result)}).catch(err=>{if(active)setError(err.message)}).finally(()=>{if(active)setLoading(false)});return()=>{active=false}},[refresh]);
+  const signedIn=Boolean(sessionStorage.getItem("kostaraa.token"));
+  return <main className="pricing-page marketing-gradient-page"><MarketingHeader active="pricing" overlay/>
+    <section className="pricing-hero marketing-page-hero"><div className="marketing-page-hero-inner"><h1>Start free.<br/><span>Grow when you’re ready.</span></h1><p>Choose the plan with the room your business needs.</p></div></section>
+    <section className="pricing-content" id="pricing-plans">
+      {loading&&<p role="status">Loading plans…</p>}{error&&<p role="alert">{error} <button onClick={()=>setRefresh(v=>v+1)}>Try again</button></p>}
+      {!loading&&!error&&!plans.length&&<p>No plans are available right now.</p>}
+      {!loading&&!error&&plans.length>0&&<div className="pricing-cards superhuman-cards">{plans.map(plan=><article key={plan.id}>
+        <div className="plan-heading"><small className="plan-tier">{plan.name}</small></div>
+        <div className="plan-name"><h2>{plan.name}</h2></div><p className="plan-audience">{plan.description}</p>
+        <div className="price-box"><strong>{planPrice(plan)}</strong><small>{Number(plan.price)===0?"No charge · no expiry":`Billed every ${planTerm(plan)}`}</small></div>
+        <a className={Number(plan.price)>0?"button":"button ghost"} href={signedIn?`/workspace?page=subscription&plan=${encodeURIComponent(plan.id)}`:Number(plan.price)>0?`/signup?plan=${encodeURIComponent(plan.id)}`:"/signup"}>{Number(plan.price)>0?"Choose plan":"Start free"}<ArrowRight aria-hidden="true"/></a>
+        <div className="plan-benefits"><b>Included in your plan</b><ul>{planBenefits(plan).map(benefit=><li key={benefit}><Check aria-hidden="true"/><span>{benefit}</span></li>)}</ul></div>
+      </article>)}</div>}
   <div className="comparison-title"><h2>Compare Free and Annual</h2><p>Free stores records on your current device. Annual adds secure online storage, backup, unlimited products, and multi-device access.</p></div>
   <div className="comparison-wrap"><table><thead><tr><th>Features</th><th>Free</th><th>Annual <small>BEST VALUE</small></th></tr></thead><tbody>{rows.map(r=>r.length===1
     ? <tr className="comparison-group" key={r[0]}><th colSpan={3}>{r[0]}</th></tr>
     : <tr key={r[0]}>{r.map((c,i)=><td key={i} className={c==="×"?"no":c==="✓"?"yes":""}>{c}</td>)}</tr>
   )}</tbody></table></div>
-</section>
-<MarketingFooter/></main>}
+    </section><MarketingFooter/></main>;
+}

@@ -1,3 +1,7 @@
 .subscription-page{max-width:1100px;margin:auto;padding:24px}.subscription-page>p{margin:16px 0;color:#526580}.subscription-plans{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin:24px 0}.subscription-plans article{background:white;border:1px solid #d5e0ed;border-radius:20px;padding:28px}.subscription-plans h2{font-size:32px;margin:12px 0}.subscription-plans h2 small{font-size:16px}.subscription-plans p{margin:18px 0;line-height:1.6}.subscription-plans button{display:block;margin:14px 0;padding:12px}.subscription-history{overflow:auto;margin-top:20px}.subscription-history table{width:100%;border-collapse:collapse;background:white}.subscription-history th,.subscription-history td{text-align:left;padding:14px;border-bottom:1px solid #d5e0ed}.annual-payment-step label:not(.annual-payment-file){display:grid;gap:8px;margin:16px 0}.annual-payment-step input:not([type=file]){border:1px solid #b8c8dd;border-radius:8px;padding:12px;width:100%}@media(max-width:700px){.subscription-plans{grid-template-columns:1fr}.subscription-page{padding:12px}}
 
 .subscription-sidebar{display:grid;gap:8px;padding:14px;margin:8px;border:1px solid #d5e0ed;border-radius:12px;background:#f2f7ff;font-size:13px}.subscription-sidebar small{font-size:11px}.subscription-sidebar button{text-align:left;color:#245ea0;font-weight:600}
+
+.subscription-plans article.selected-plan{border-color:#3a74ba;box-shadow:0 0 0 2px #3a74ba}
+
+.subscription-plans article{min-width:0;overflow-wrap:anywhere}
