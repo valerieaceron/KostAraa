@@ -1,0 +1,92 @@
+.auth-verify-card {
+  width: min(100%, 500px) !important;
+  padding: 30px 38px 34px !important;
+  text-align: center;
+}
+
+.auth-verify-card .auth-logo {
+  margin-bottom: 24px;
+}
+
+.auth-verify-icon {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  margin: 0 auto;
+  place-items: center;
+  border: 1px solid rgba(58, 116, 186, .2);
+  border-radius: 17px;
+  background: rgba(234, 242, 255, .86);
+  color: #3a74ba;
+  box-shadow: 0 12px 28px rgba(58, 116, 186, .12);
+}
+
+.auth-verify-icon svg {
+  width: 25px;
+  height: 25px;
+  stroke-width: 1.8;
+}
+
+.auth-verify-card h1 {
+  margin: 18px 0 10px;
+  font-size: clamp(27px, 3vw, 31px);
+  font-weight: 500;
+}
+
+.auth-verify-card .auth-verify-message {
+  max-width: 390px;
+  margin: 0 auto 24px;
+  color: #5b6b85;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.auth-verify-card .auth-error {
+  margin: 0 0 16px;
+  text-align: left;
+}
+
+.auth-verify-primary {
+  width: 100%;
+  min-height: 46px;
+  border: 0;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.auth-verify-form {
+  text-align: left;
+}
+
+.auth-verify-card .auth-verify-form > label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 14px;
+  color: #31445f;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.auth-verify-secondary {
+  display: inline-flex;
+  margin-top: 17px;
+  color: #52647d;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.auth-verify-secondary:hover {
+  color: #3a74ba;
+  text-decoration: underline;
+}
+
+@media (max-width: 580px) {
+  .auth-verify-card { padding: 26px 22px 28px !important; }
+  .auth-verify-icon { width: 50px; height: 50px; border-radius: 15px; }
+  .auth-verify-card h1 { font-size: 27px; }
+}

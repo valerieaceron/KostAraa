@@ -13,6 +13,8 @@ test("new signup opens the guide; finished and skipped tours do not repeat at lo
   const key = guideStorageKey(user);
   const signup = { userId: "42" };
   assert.equal(shouldStartNewUserGuide(signup, user, readGuideProgress(storage, key)), true);
+  assert.equal(shouldStartNewUserGuide({ username: "NewOwner" }, { username: "newowner" }, readGuideProgress(storage, key)), true);
+  assert.equal(shouldStartNewUserGuide({ email: "Owner@Example.com" }, { email: "owner@example.com" }, readGuideProgress(storage, key)), true);
   assert.equal(shouldStartNewUserGuide({ userId: 43 }, user, readGuideProgress(storage, key)), false);
   assert.equal(shouldStartNewUserGuide(null, user, readGuideProgress(storage, key)), false);
   writeGuideProgress(storage, key, { index: 5, finished: true, profilePrompt: true });

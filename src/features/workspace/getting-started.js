@@ -36,7 +36,16 @@ export function writeGuideProgress(storage, key, changes) {
 }
 
 export function shouldStartNewUserGuide(signup, user, progress) {
-  return Boolean(signup?.userId && user?.id && String(signup.userId) === String(user.id) && !progress.finished && !progress.skipped);
+  if (!signup || !user || progress.finished || progress.skipped) return false;
+  const signupId = signup.userId == null ? "" : String(signup.userId);
+  const userId = user.id == null ? "" : String(user.id);
+  if (signupId && userId && signupId === userId) return true;
+  const signupUsername = String(signup.username || "").trim().toLowerCase();
+  const userUsername = String(user.username || "").trim().toLowerCase();
+  if (signupUsername && userUsername && signupUsername === userUsername) return true;
+  const signupEmail = String(signup.email || "").trim().toLowerCase();
+  const userEmail = String(user.email || "").trim().toLowerCase();
+  return Boolean(signupEmail && userEmail && signupEmail === userEmail);
 }
 
 export function guideEntry(search, progress) {
