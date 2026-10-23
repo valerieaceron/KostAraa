@@ -32,7 +32,7 @@ export default function VerifyEmailPage() {
     <a className="auth-back" href="/">← Back to Kostaraa</a>
     <section className="auth-form-side">
       <div className="auth-card auth-card-signup auth-verify-card">
-        <a className="auth-logo" href="/"><img src="/kostaraa-logo.png" alt="Kostaraa" /></a>
+        <a className="auth-logo" href="/"><img src="/kostaraa-logo.webp" alt="Kostaraa" /></a>
         <span className="auth-verify-icon" aria-hidden="true"><MailCheck /></span>
         <h1>Verify your email</h1>
         <p className="auth-verify-message" role="status">{message}</p>

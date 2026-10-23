@@ -85,7 +85,6 @@ export default function Home() {
           <p className="home-hero-problem">Know what each product truly costs—and whether your sales plan can support the business behind it.</p>
           <div className="home-hero-actions"><a className="button" href="/signup">Start planning free <ArrowRight aria-hidden="true"/></a></div>
         </div>
-        <figure className="home-dashboard-peek glass-panel" aria-label="Kostaraa dashboard preview"><div className="home-browser-bar"><i/><i/><i/><span>Kostaraa dashboard</span></div><img src="/marketing/kostaraa-dashboard-preview.png" alt="Kostaraa dashboard showing pricing overview and cost insights"/></figure>
       </div>
     </section>
 
@@ -111,7 +110,7 @@ export default function Home() {
         <div className="home-product-step"><span>{number}</span><div><h3>{title}</h3><p>{copy}</p></div></div>
         <figure className="home-workflow-preview">{video
           ? <HoverPreview src={video} label={alt}/>
-          : <img src="/marketing/kostaraa-dashboard-preview.png" alt={alt}/>
+          : <img src="/marketing/kostaraa-dashboard-preview.webp" alt={alt}/>
         }</figure>
       </article>)}</div>
     </section>
@@ -132,12 +131,13 @@ export default function Home() {
           <div className="home-final-laptop">
             <div className="home-final-screen">
               <div className="home-final-browser"><i/><i/><i/><span>Kostaraa workspace</span></div>
-              <img src="/marketing/kostaraa-dashboard-preview.png" alt="Kostaraa dashboard with product costing and pricing insights"/>
+              <img src="/marketing/kostaraa-dashboard-preview.webp" alt="Kostaraa dashboard with product costing and pricing insights"/>
             </div>
             <div className="home-final-laptop-base" aria-hidden="true"/>
           </div>
           <div className="home-final-stat home-final-stat-cost" aria-hidden="true"><Calculator/><span>True cost</span><strong>₱80.70</strong></div>
           <div className="home-final-stat home-final-stat-margin" aria-hidden="true"><BarChart3/><span>Margin</span><strong>37.5%</strong></div>
+          <div className="home-final-stat home-final-stat-markup" aria-hidden="true"><Target/><span>Markup</span><strong>60%</strong></div>
         </div>
       </div>
     </section>

@@ -28,9 +28,6 @@ export function monthlyOperationCost(profile: any) {
       + periodic.reduce((sum: number, expense: any) => sum + monthlyAmount(expense, "Annual"), 0);
   }
 
-  if (!rows.length && !profile?.locationExpenses) return Number(profile?.overhead?.monthlyOverheadPool)
-    || Number(profile?.calculatorCosts?.overheadMonthly)
-    || 0;
   return space;
 
 }
@@ -41,5 +38,19 @@ export function withSynchronizedOperationCost(profile: any) {
     ...profile,
     overhead: { ...(profile?.overhead || {}), monthlyOverheadPool: overheadMonthly },
     calculatorCosts: { ...(profile?.calculatorCosts || {}), overheadMonthly },
+  };
+}
+
+// Business Settings records are authoritative, including empty and zero values.
+export function businessSettingsCosts(profile: any) {
+  const days = Number(profile?.operations?.operatingDaysPerMonth) || 26;
+  const production = Number(profile?.operations?.monthlyProductionUnits) || 0;
+  const team = (profile?.manpower || []).reduce((sum: number, row: any) =>
+    sum + (Number(row.amount) || 0) + (Number(row.benefits) || 0) + (Number(row.contributions) || 0), 0);
+  const owner = profile?.ownerLabor?.includeOwnTime === "Yes"
+    ? Number(profile.ownerLabor.desiredMonthlyCompensation) || 0 : 0;
+  return {
+    labor: { monthlyCost: team + owner, workingDays: days, outputPerDay: production / days },
+    overhead: { rent: 0, utilities: 0, miscellaneous: monthlyOperationCost(profile) },
   };
 }

@@ -370,7 +370,7 @@
 .home-product-step h3{margin:2px 0 11px;color:var(--home-ink);font-family:"Poppins",Arial,sans-serif;font-size:clamp(21px,2vw,28px);font-weight:600;line-height:1.22;letter-spacing:-.025em}
 .home-product-step p{margin:0;color:var(--home-body);font-size:15px;line-height:1.7}
 .home-workflow-preview{margin:0;overflow:hidden;background:transparent;-webkit-mask-image:radial-gradient(ellipse 92% 94% at center,#000 78%,rgba(0,0,0,.82) 88%,transparent 100%);mask-image:radial-gradient(ellipse 92% 94% at center,#000 78%,rgba(0,0,0,.82) 88%,transparent 100%)}
-.home-workflow-preview :is(img,video){display:block;width:100%;aspect-ratio:1.78/1;background:#eef3f8 url("/marketing/kostaraa-dashboard-preview.png") top center/cover no-repeat;object-fit:cover;object-position:top;opacity:.96}
+.home-workflow-preview :is(img,video){display:block;width:100%;aspect-ratio:1.78/1;background:#eef3f8 url("/marketing/kostaraa-dashboard-preview.webp") top center/cover no-repeat;object-fit:cover;object-position:top;opacity:.96}
 .home-workflow-preview video{cursor:pointer;transition:opacity .2s ease,filter .2s ease}
 .home-workflow-preview video:not(:hover):not(:focus){filter:saturate(.92)}
 .home-workflow-preview video:is(:hover,:focus){opacity:1;filter:saturate(1)}
@@ -395,3 +395,6 @@
 
 /* Shared marketing-page rule: primary page headings remain 42px at every viewport. */
 .home-refresh .home-hero-copy h1{font-size:var(--marketing-heading-size)}
+
+.home-final-stat-markup{right:-13px;bottom:40px}
+@media(max-width:760px){.home-final-stat-markup{right:-4px;bottom:48px}}

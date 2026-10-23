@@ -1,6 +1,7 @@
+import {pricingHealth,needsPricingAttention} from "../utils/pricing-health";
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
-import { Archive, CheckCircle2, Copy, Download, Edit3, MoreHorizontal, Pencil, Plus, Search, Trash2, TriangleAlert } from 'lucide-react';
+import { Archive, CheckCircle2, Copy, Download, Edit3, Eye, MoreHorizontal, Pencil, Plus, Search, Trash2, TriangleAlert } from 'lucide-react';
 import { Badge, Button, Card, ChartCard, Input, Modal, ResultCard } from '../components/ui';
 import { formatCurrency, formatNumber } from '../utils/calculations';
 
@@ -62,7 +63,9 @@ function displayProductName(item) {
 }
 
 function displayStatus(item) {
-  return planningSignal(item).label;
+  if (item.status === 'Archived') return 'Archived';
+  const health = pricingHealth(item);
+  return health.key === 'healthy' ? 'Plan looks sustainable' : health.key === 'risk' ? 'Target may not cover costs' : health.reason === 'Margin is below the saved target' ? 'Limited safety margin' : 'More information needed';
 }
 
 function planningRemark(item) {
@@ -71,7 +74,7 @@ function planningRemark(item) {
   if (status === 'Limited safety margin') return { label: 'Low buffer above costs', tone: 'warn' };
   if (status === 'Target may not cover costs') return { label: 'May not cover costs', tone: 'risk' };
   if (status === 'Archived') return { label: 'Archived', tone: 'neutral' };
-  return { label: 'Add price and sales target', tone: 'neutral' };
+  return { label: pricingHealth(item).reason, tone: 'neutral' };
 }
 
 function customerRemark(item) {
@@ -100,7 +103,7 @@ function matchesPricingStatus(item, pricingStatus) {
   if (pricingStatus === 'All products') return item.status !== 'Archived';
   if (pricingStatus === 'Archived') return item.status === 'Archived';
   if (pricingStatus === 'Missing information') return item.status !== 'Archived' && displayStatus(item) === 'More information needed';
-  if (pricingStatus === 'Needs attention') return item.status !== 'Archived' && ['Limited safety margin', 'Target may not cover costs'].includes(displayStatus(item));
+  if (pricingStatus === 'Needs attention') return needsPricingAttention(item);
   return item.status !== 'Archived';
 }
 
@@ -139,54 +142,45 @@ function SummaryCard({ label, value, description, tone = 'neutral', icon: Icon }
   );
 }
 
-function DetailModal({ item, onClose, onViewEdit, onDuplicate, onArchive }) {
-  const plan = planningSignal(item);
-  const customerFit = customerFitSignal(item);
+export function DetailModal({ item, onClose, onViewEdit, onDuplicate, onArchive }) {
   const packagingMaterials = item.packagingMaterials || [];
-  const monthlyOutput = Number(item.expectedMonthlySales) || 0;
-  const overheadCost = monthlyOutput ? (Number(item.monthlyFixedCosts) || 0) / monthlyOutput : 0;
   const laborConfig = item.laborConfig || {};
-  const laborOutput = (Number(laborConfig.workingDays) || 0) * (Number(laborConfig.outputPerDay) || 0);
-  const laborCost = laborOutput ? (Number(laborConfig.monthlyCost) || 0) / laborOutput : Number(item.otherVariableCosts?.labor) || 0;
-  const costData = [
-    { name: 'Materials', value: (item.materials || []).reduce((sum, material) => sum + (Number(material.computedCost) || 0), 0) },
-    { name: 'Packaging', value: packagingMaterials.reduce((sum, material) => sum + (Number(material.computedCost) || 0), 0) + (Number(item.otherVariableCosts?.packaging) || 0) },
-    { name: 'Labor', value: laborCost },
-    { name: 'Platform', value: Number(item.otherVariableCosts?.platform) || 0 },
-    { name: 'Overhead', value: overheadCost },
-    { name: 'Other', value: Number(item.otherVariableCosts?.other) || 0 },
-  ].filter((entry) => entry.value > 0);
-  const recommendation = plan.label === 'Plan looks sustainable'
-    ? 'Your saved sales target currently covers the recorded costs for this product plan. Keep checking actual sales and customer response before changing the price.'
-    : plan.label === 'Limited safety margin'
-      ? 'Your target is only slightly above the estimated break-even point. Review the largest cost, selling price, or sales target before relying on this plan.'
-      : plan.label === 'Target may not cover costs'
-        ? 'At the saved price and target, this plan may not cover the recorded costs. Test a higher price, lower cost, or more realistic sales volume.'
-        : 'Add a selling price and Monthly Sales Target in your Business Profile to estimate whether this product plan covers its recorded costs.';
-  const reviewNotes = [];
-  if (plan.label === 'Plan looks sustainable') reviewNotes.push({ tone: 'good', text: 'No urgent cost-coverage concern based on the saved target and recorded costs.' });
-  if (plan.label === 'Limited safety margin') reviewNotes.push({ tone: 'warn', text: 'The plan is above break-even, but the safety margin is limited.' });
-  if (plan.label === 'Target may not cover costs') reviewNotes.push({ tone: 'risk', text: 'The saved target may not cover all recorded costs.' });
-  if (plan.label === 'More information needed') reviewNotes.push({ tone: 'neutral', text: 'Add the missing selling price or Monthly Sales Target to complete this estimate.' });
-  if (customerFit.tone === 'warn') reviewNotes.push({ tone: 'warn', text: `Customer price fit: ${customerFit.label}. Validate this with actual customer response.` });
-  if (customerFit.tone === 'neutral') reviewNotes.push({ tone: 'neutral', text: 'Complete the customer spending details in your Business Profile to check price fit.' });
-
+  const output = Number(item.expectedMonthlySales) || (Number(laborConfig.workingDays) || 0) * (Number(laborConfig.outputPerDay) || 0);
+  const labor = item.laborCostPerUnit ?? (output ? (Number(laborConfig.monthlyCost) || 0) / output : Number(item.otherVariableCosts?.labor) || 0);
+  const overhead = item.operationCostPerUnit ?? (output ? (Number(item.monthlyFixedCosts) || 0) / output : 0);
+  const pricing = item.pricingInputs || {};
+  const rows = [
+    {name:'Materials', value:item.materialCostPerUnit ?? (item.materials || []).reduce((sum,row)=>sum+(Number(row.computedCost)||0),0)},
+    {name:'Packaging', value:item.packagingCostPerUnit ?? packagingMaterials.reduce((sum,row)=>sum+(Number(row.computedCost)||0),0)+(Number(item.otherVariableCosts?.packaging)||0)},
+    {name:'Labor', value:Number(labor)||0},
+    {name:'Operation cost', value:Number(overhead)||0},
+    ...[
+      {name:'Platform fees', value:Number(item.otherVariableCosts?.platform)||0},
+      {name:'Marketing costs', value:Number(item.otherVariableCosts?.marketing)||0},
+      {name:'Other costs', value:Number(item.otherVariableCosts?.other)||0},
+      {name:'Marketing allowance', value:pricing.marketingAmount ?? (Number(item.costPerProduct)||0)*(Number(pricing.marketingPercentage)||0)/100},
+      {name:'Tax at your price', value:Number(pricing.taxAmount)||0},
+    ].filter(row=>row.value>0),
+  ];
+  const costData=rows.filter(row=>row.value>0);
+  const price=Number(item.sellingPrice)||0;
+  const suggested=Number(item.suggestedSellingPrice)||0;
+  const breakEven=pricing.breakEvenSellingPrice;
+  const comparison=(value)=>{const difference=Math.round(price*100)-Math.round(value*100);return difference===0?'Your price matches':`Your price is ${formatCurrency(Math.abs(difference)/100)} ${difference>0?'higher':'lower'}`};
   return (
-    <Modal className="library-detail-modal" title={displayProductName(item)} onClose={onClose}>
-      <div className="library-detail-metrics grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <ResultCard label="Selling price" value={formatCurrency(item.sellingPrice)} />
-        <ResultCard label="Product cost" value={formatCurrency(item.costPerProduct)} />
-        <ResultCard label="Estimated profit per item" value={formatCurrency(item.grossProfit)} tone={item.grossProfit > 0 ? 'good' : 'risk'} />
-        <ResultCard label="Saved profit margin" value={`${formatNumber(item.profitMargin)}%`} />
-      </div>
-      <div className="library-planning-overview mt-5 rounded-xl border border-blue-200 bg-blue-50/60 p-5">
-        <p className="library-section-label text-xs font-black uppercase tracking-[0.14em] text-blue-700">Planning overview</p>
-        <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="library-plan-status"><Badge tone={plan.tone} className="px-3 py-1.5 text-sm">{plan.label}</Badge><p className="mt-2 text-sm font-semibold leading-relaxed text-slate-600">{statusHelper(plan.label)}</p></div>
-          <div className="library-price-fit rounded-lg border border-white bg-white/80 px-4 py-3"><p className="text-xs font-black uppercase text-slate-400">Customer price fit</p><p className={`mt-1 text-sm font-black ${customerFit.tone === 'warn' ? 'text-orange-700' : customerFit.tone === 'good' ? 'text-teal-700' : 'text-slate-600'}`}>{customerFit.label}</p></div>
-        </div>
-      </div>
-      <div className="library-detail-overview-grid mt-5 grid gap-5 lg:grid-cols-2">
+    <Modal className="library-detail-modal calculation-review library-finance-preview" title={displayProductName(item)} onClose={onClose}>
+      <p className="review-note">{item.itemType || 'Product'} · {item.category || 'Other'} · Saved calculation</p>
+      <dl className="review-metrics">
+        <div><dt>Your selling price</dt><dd>{formatCurrency(price)}</dd></div>
+        <div><dt>Est. profit / item</dt><dd className={item.grossProfit<0?'review-loss':''}>{formatCurrency(item.grossProfit)}</dd></div>
+        <div><dt>Est. margin</dt><dd>{formatNumber(item.profitMargin)}%</dd></div>
+      </dl>
+
+      <section className="review-section"><h3>Price comparison</h3><dl className="review-rows review-comparisons">
+        <div><dt>Suggested price<small>{comparison(suggested)}</small></dt><dd>{formatCurrency(suggested)}</dd></div>
+        <div><dt>Break-even price<small>{breakEven != null ? comparison(breakEven) : 'Recalculate to update this saved item.'}</small></dt><dd>{breakEven != null ? formatCurrency(breakEven) : 'Not saved'}</dd></div>
+      </dl>{breakEven != null && <p className="review-verdict">{Math.round(price*100)<Math.round(breakEven*100)?'Your price is below break-even.':Math.round(price*100)===Math.round(breakEven*100)?'Your price covers estimated costs, with no estimated profit.':price<suggested?'Covers estimated costs · Below suggested price':'Covers estimated costs · Meets suggested price'}</p>}</section>
+      <div className="library-detail-overview-grid mt-5">
         <ChartCard className="library-cost-card" title="What makes up the product cost">
           <div className="library-cost-chart-layout">
             <div className="library-cost-chart-visual"><ResponsiveContainer width="100%" height="100%">
@@ -200,19 +194,9 @@ function DetailModal({ item, onClose, onViewEdit, onDuplicate, onArchive }) {
             <div className="library-cost-legend">{costData.map((entry, index) => <div key={entry.name}><span><i style={{ backgroundColor: colors[index % colors.length] }} />{entry.name}</span><b>{formatCurrency(entry.value)}</b></div>)}</div>
           </div>
         </ChartCard>
-        <Card className="library-review-card">
-          <h3 className="text-lg font-black text-navy">What to review</h3>
-          <p className="library-review-intro mt-1 text-sm font-medium text-slate-500">These notes use the same planning and customer-fit information shown above.</p>
-          <div className="mt-3 space-y-2">
-            {reviewNotes.map((note) => <p key={note.text} className={`rounded-lg border p-3 text-sm font-semibold leading-relaxed ${note.tone === 'good' ? 'border-teal-100 bg-teal-50 text-teal-800' : note.tone === 'warn' ? 'border-orange-100 bg-orange-50 text-orange-800' : note.tone === 'risk' ? 'border-rose-100 bg-rose-50 text-rose-700' : 'border-slate-200 bg-slate-50 text-slate-600'}`}>{note.text}</p>)}
-          </div>
-          <h3 className="library-next-step-title mt-5 text-lg font-black text-navy">Suggested next step</h3>
-          <p className="library-recommendation mt-2 text-sm font-medium leading-relaxed text-slate-600">{recommendation}</p>
-          <div className="library-detail-secondary-metrics mt-5 grid gap-3 sm:grid-cols-2"><div className="rounded-lg bg-slate-50 p-3"><p className="text-xs font-black uppercase text-slate-400">Saved markup</p><p className="mt-1 text-xl font-black text-navy">{formatNumber(item.markup)}%</p></div><div className="rounded-lg bg-slate-50 p-3"><p className="text-xs font-black uppercase text-slate-400">Estimated break-even units</p><p className="mt-1 text-xl font-black text-navy">{formatNumber(item.breakEvenUnits)}</p></div></div>
-        </Card>
+
       </div>
-      <Card className="mt-5">
-        <h3 className="text-base font-black text-navy">Materials breakdown</h3>
+      <details className="preview-breakdown"><summary>Materials breakdown</summary>
         <div className="mt-3 overflow-x-auto">
           <table className="w-full min-w-[680px] text-left text-sm">
             <thead className="text-xs uppercase text-slate-500"><tr><th className="p-2">Material</th><th className="p-2">Unit cost</th><th className="p-2">Used per product</th><th className="p-2">Cost</th></tr></thead>
@@ -228,9 +212,8 @@ function DetailModal({ item, onClose, onViewEdit, onDuplicate, onArchive }) {
             </tbody>
           </table>
         </div>
-      </Card>
-      <Card className="mt-5">
-        <h3 className="text-base font-black text-navy">Packaging breakdown</h3>
+      </details>
+      <details className="preview-breakdown"><summary>Packaging breakdown</summary>
         <div className="mt-3 overflow-x-auto">
           <table className="w-full min-w-[680px] text-left text-sm">
             <thead className="text-xs uppercase text-slate-500"><tr><th className="p-2">Item</th><th className="p-2">Unit cost</th><th className="p-2">Used</th><th className="p-2">Cost</th></tr></thead>
@@ -247,8 +230,8 @@ function DetailModal({ item, onClose, onViewEdit, onDuplicate, onArchive }) {
           </table>
           {!packagingMaterials.length && <p className="py-5 text-sm text-slate-500">No packaging rows saved for this item.</p>}
         </div>
-      </Card>
-      <div className="mt-5 flex flex-wrap justify-end gap-3">
+      </details>
+      <div className="preview-actions mt-5 flex flex-wrap justify-end gap-3">
         <Button onClick={() => onViewEdit(item)}><Edit3 className="h-4 w-4" /> Edit Costing</Button>
         <Button variant="ghost" onClick={() => onDuplicate(item)}><Copy className="h-4 w-4" /> Duplicate</Button>
         <Button variant="ghost" onClick={() => onArchive(item.id)}><Archive className="h-4 w-4" /> Archive</Button>
@@ -267,7 +250,7 @@ export default function ProductsServices({ items, onViewEdit, onDuplicate, onArc
   const visibleItems = useMemo(() => filterItems(items, pricingStatus, search), [items, pricingStatus, search]);
   const activeItems = items.filter((item) => item.status !== 'Archived');
   const sustainableItems = activeItems.filter((item) => displayStatus(item) === 'Plan looks sustainable');
-  const needsReviewItems = activeItems.filter((item) => ['Limited safety margin', 'Target may not cover costs'].includes(displayStatus(item)));
+  const needsReviewItems = activeItems.filter(needsPricingAttention);
   const missingInformationItems = activeItems.filter((item) => displayStatus(item) === 'More information needed');
   const archivedItems = items.filter((item) => item.status === 'Archived');
   const totalPages = Math.max(1, Math.ceil(visibleItems.length / 10));
@@ -408,7 +391,7 @@ export default function ProductsServices({ items, onViewEdit, onDuplicate, onArc
       <div className="grid gap-3 sm:grid-cols-3">
         <SummaryCard label="Saved products" value={activeItems.length} description="Active product costings in your Library." icon={Copy} />
         <SummaryCard label="Plans that look sustainable" value={sustainableItems.length} description="Saved targets currently cover recorded costs." tone="good" icon={CheckCircle2} />
-        <SummaryCard label="Needs your attention" value={needsReviewItems.length} description="Review missing details or plans with a limited buffer." tone={needsReviewItems.length ? 'warn' : 'good'} icon={TriangleAlert} />
+        <SummaryCard label="Needs your attention" value={needsReviewItems.length} description="Review missing pricing details or margins below target." tone={needsReviewItems.length ? 'warn' : 'good'} icon={TriangleAlert} />
       </div>
 
       <Card className="library-list-card overflow-visible p-0">
@@ -456,6 +439,7 @@ export default function ProductsServices({ items, onViewEdit, onDuplicate, onArc
                   <button className="library-actions-trigger" aria-haspopup="menu" aria-expanded={openMenuId === item.id} aria-label={`More actions for ${displayProductName(item)}`} onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)} title="More actions" type="button"><MoreHorizontal aria-hidden="true" /></button>
                   {openMenuId === item.id && (
                     <div className={`library-actions-menu${index >= pagedItems.length - 2 ? ' open-up' : ''}`} role="menu">
+                      <button onClick={() => runMenuAction(() => setSelected(item))} role="menuitem" type="button"><Eye aria-hidden="true" /> Overview</button>
                       <button onClick={() => runMenuAction(() => onViewEdit(item))} role="menuitem" type="button"><Pencil aria-hidden="true" /> Edit</button>
                       <button onClick={() => runMenuAction(() => onDuplicate(item))} role="menuitem" type="button"><Copy aria-hidden="true" /> Duplicate</button>
                       <button className="danger" onClick={() => runMenuAction(() => confirmDelete(item))} role="menuitem" type="button"><Trash2 aria-hidden="true" /> Delete</button>

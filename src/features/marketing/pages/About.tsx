@@ -15,17 +15,17 @@ export default function About() {
 
   const audienceCards = [
     {
-      image: "/marketing/kostaraa-audience-new-maker.png",
+      image: "/marketing/kostaraa-audience-new-maker.webp",
       alt: "A new product maker preparing her first small batch and reviewing notes",
       label: "New product makers",
     },
     {
-      image: "/marketing/kostaraa-audience-small-business-owner.png",
+      image: "/marketing/kostaraa-audience-small-business-owner.webp",
       alt: "A small business owner reviewing product costs at her workspace",
       label: "Small business owners",
     },
     {
-      image: "/marketing/kostaraa-audience-growing-team.png",
+      image: "/marketing/kostaraa-audience-growing-team.webp",
       alt: "Business partners reviewing products and planning their next production run",
       label: "Growing product brands",
     },

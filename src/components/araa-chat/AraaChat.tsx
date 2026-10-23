@@ -73,9 +73,9 @@ export function AraaChat({ workspace = false }: { workspace?: boolean }) {
   }, []);
   return <div className={`araa ${open ? "open" : ""}`}>
     <section className="araa-panel araa-coming-panel" aria-label={workspace ? "Ask Araa how to use Kostaraa" : "Araa coming soon"} aria-hidden={!open}>
-      <header><img src="/araa-avatar.png" alt="Araa, the Kostaraa librarian"/><div><b>Araa</b></div><button type="button" onClick={() => setOpen(false)} aria-label="Close Araa">×</button></header>
-      {workspace ? <div className="araa-summary araa-librarian-summary"><WorkspaceGuide/></div> : <div className="araa-summary araa-public-coming" aria-live="polite"><div className="araa-summary-intro"><img src="/araa-avatar.png" alt=""/><div><small>COMING SOON</small><h2>Araa is getting her library ready.</h2></div></div><p>Soon, she’ll help you find answers, understand Kostaraa, and guide you through common business questions.</p></div>}
+      <header><img src="/araa-avatar.webp" alt="Araa, the Kostaraa librarian"/><div><b>Araa</b></div><button type="button" onClick={() => setOpen(false)} aria-label="Close Araa">×</button></header>
+      {workspace ? <div className="araa-summary araa-librarian-summary"><WorkspaceGuide/></div> : <div className="araa-summary araa-public-coming" aria-live="polite"><div className="araa-summary-intro"><img src="/araa-avatar.webp" alt=""/><div><small>COMING SOON</small><h2>Araa is getting her library ready.</h2></div></div><p>Soon, she’ll help you find answers, understand Kostaraa, and guide you through common business questions.</p></div>}
     </section>
-    <button type="button" className="araa-launcher" onClick={toggle} aria-label={open ? "Close Araa" : "Ask Araa"}><img src="/araa-avatar.png" alt=""/><span>Ask Araa</span><i/></button>
+    <button type="button" className="araa-launcher" onClick={toggle} aria-label={open ? "Close Araa" : "Ask Araa"}><img src="/araa-avatar.webp" alt=""/><span>Ask Araa</span><i/></button>
   </div>;
 }

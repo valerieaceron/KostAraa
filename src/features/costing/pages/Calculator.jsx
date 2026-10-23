@@ -232,6 +232,9 @@ export default function Calculator({ product, setProduct, results, inventory = [
   const { marketingAmount, suggestedSellingPrice, breakEvenSellingPrice, taxAmount, profitPerUnit, grossMargin, targetPrice, targetTaxAmount, targetProfitPerUnit, targetGrossMargin, targetDifference } = pricing;
   const hasTargetPrice = targetPrice > 0;
   const finalSellingPrice = hasTargetPrice ? targetPrice : suggestedSellingPrice;
+  const savedPriceDifference = Math.round(finalSellingPrice * 100) - Math.round(suggestedSellingPrice * 100);
+  const savedBreakEvenDifference = Math.round(finalSellingPrice * 100) - Math.round(breakEvenSellingPrice * 100);
+  const priceComparison = (difference) => difference === 0 ? 'Your price matches' : `Your price is ${formatCurrency(Math.abs(difference) / 100)} ${difference > 0 ? 'higher' : 'lower'}`;
   const finalTaxAmount = hasTargetPrice ? targetTaxAmount : taxAmount;
   const finalProfitPerUnit = hasTargetPrice ? targetProfitPerUnit : profitPerUnit;
   const finalGrossMargin = hasTargetPrice ? targetGrossMargin : grossMargin;
@@ -666,10 +669,11 @@ export default function Calculator({ product, setProduct, results, inventory = [
       )}
 
       {saveOpen && (
-        <Modal title="Save calculation to Library" onClose={() => !saving && setSaveOpen(false)}>
+        <Modal title="Review calculation" className="calculation-review" onClose={() => !saving && setSaveOpen(false)}>
           {saveError && <p role="alert" className="text-red-700">{saveError}</p>}
-          <div className="grid gap-4 md:grid-cols-2">
-            <Field label="Product Name" value={product.productName} onChange={(value) => update('productName', value)} />
+          <div className="review-details">
+            <Field label="Product name" value={product.productName} onChange={(value) => update('productName', value)} />
+            <div className="review-detail-columns">
             <Select label="Item type" value={meta.itemType} onChange={(e) => setMeta({ ...meta, itemType: e.target.value })}>{itemTypes.map((item) => <option key={item}>{item}</option>)}</Select>
             <label className="grid min-w-0 gap-1.5 text-sm font-semibold text-slate-600">
               <span>Category</span>
@@ -684,14 +688,44 @@ export default function Calculator({ product, setProduct, results, inventory = [
                 {categories.map((category) => <option key={category} value={category} />)}
               </datalist>
             </label>
-            <div className="rounded-md border border-slate-200 bg-slate-50 p-3"><p className="text-xs font-bold uppercase text-slate-500">Material Cost</p><p className="mt-1 font-black text-navy">{formatCurrency(results.materialCost)}</p></div>
-            <div className="rounded-md border border-slate-200 bg-slate-50 p-3"><p className="text-xs font-bold uppercase text-slate-500">Final Cost</p><p className="mt-1 font-black text-navy">{formatCurrency(totalCostOfGoods)}</p></div>
-            <div className="rounded-md border border-slate-200 bg-slate-50 p-3"><p className="text-xs font-bold uppercase text-slate-500">Selling Price</p><p className="mt-1 font-black text-navy">{formatCurrency(finalSellingPrice)}</p></div>
-            <div className="rounded-md border border-slate-200 bg-slate-50 p-3"><p className="text-xs font-bold uppercase text-slate-500">Profit / Margin</p><p className="mt-1 font-black text-navy">{formatCurrency(finalProfitPerUnit)} / {formatNumber(finalGrossMargin)}%</p></div>
+            </div>
           </div>
-          <div className="mt-5 flex justify-end">
-            <Button disabled={saving} onClick={() => saveWithMeta()}>{saving ? 'Saving…' : editingItem ? 'Update Library Item' : 'Add to Library'}</Button>
-          </div>
+          <dl className="review-metrics">
+            <div><dt>Your selling price</dt><dd>{formatCurrency(finalSellingPrice)}</dd></div>
+            <div><dt>Est. profit / item</dt><dd className={finalProfitPerUnit < 0 ? 'review-loss' : ''}>{formatCurrency(finalProfitPerUnit)}</dd></div>
+            <div><dt>Est. margin</dt><dd className={finalProfitPerUnit < 0 ? 'review-loss' : ''}>{formatNumber(finalGrossMargin)}%</dd></div>
+          </dl>
+          <section className="review-section" aria-labelledby="review-cost-heading">
+            <h3 id="review-cost-heading">Cost per item</h3>
+            <dl className="review-rows">
+              {[
+                ['Materials', results.materialCost],
+                ['Packaging', results.packagingCost],
+                ['Labor', results.costBreakdown.Labor],
+                ['Operation cost', results.overheadCost],
+                ...[
+                  ['Platform fees', Number(product.otherCosts?.platform) || 0],
+                  ['Marketing costs', Number(product.otherCosts?.marketing) || 0],
+                  ['Other costs', Number(product.otherCosts?.other) || 0],
+                  ['Marketing allowance', marketingAmount],
+                  ['Tax at your price', finalTaxAmount],
+                ].filter(([, amount]) => amount > 0),
+              ].map(([label, amount]) => <div key={label}><dt>{label}</dt><dd>{formatCurrency(amount)}</dd></div>)}
+            </dl>
+            <p className="review-note">Totals use unrounded amounts.</p>
+          </section>
+          <section className="review-section" aria-labelledby="review-price-heading">
+            <h3 id="review-price-heading">Price comparison</h3>
+            <dl className="review-rows review-comparisons">
+              <div><dt>Suggested price<small>{priceComparison(savedPriceDifference)}</small></dt><dd>{formatCurrency(suggestedSellingPrice)}</dd></div>
+              <div><dt>Break-even price<small>{priceComparison(savedBreakEvenDifference)}</small></dt><dd>{formatCurrency(breakEvenSellingPrice)}</dd></div>
+            </dl>
+            <p className={`review-verdict${savedBreakEvenDifference < 0 ? ' review-loss' : ''}`}>{savedBreakEvenDifference < 0 ? 'Your price is below break-even.' : savedBreakEvenDifference === 0 ? 'Your price covers estimated costs, with no estimated profit.' : savedPriceDifference < 0 ? 'Your price covers estimated costs, but is below the suggested price.' : 'Your price covers estimated costs and meets or exceeds the suggested price.'}</p>
+          </section>
+          <footer className="review-actions">
+            <Button variant="ghost" disabled={saving} onClick={() => setSaveOpen(false)}>Back to edit</Button>
+            <Button disabled={saving} onClick={() => saveWithMeta()}>{saving ? 'Saving…' : editingItem ? 'Update Library Item' : 'Save to Library'}</Button>
+          </footer>
         </Modal>
       )}
     </div>
