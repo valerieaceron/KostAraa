@@ -44,6 +44,16 @@ export function getApiItem(data) {
   return data;
 }
 
+export function getCreatedInventoryItem(data, material) {
+  const result = data?.result ?? getApiItem(data);
+  const item = result && typeof result === 'object' && !Array.isArray(result) ? result : {};
+  const id = item.id ?? item.inventory_item_id ?? result;
+  if (!['number', 'string'].includes(typeof id) || !/^\d+$/.test(String(id)) || !Number.isSafeInteger(Number(id)) || Number(id) <= 0) {
+    throw new Error('The server did not return the saved material ID. Refresh Inventory before trying again.');
+  }
+  return { ...material, ...item, id };
+}
+
 export function getApiList(data) {
   if (Array.isArray(data)) return data;
   return [data?.result, data?.data?.result, data?.data?.items, data?.items, data?.inventory, data?.data].find(Array.isArray) || [];
