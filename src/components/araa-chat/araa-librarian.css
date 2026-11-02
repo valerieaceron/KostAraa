@@ -25,3 +25,7 @@
   min-height: 150px;
   max-height: none;
 }
+
+.kws-shell > .araa .araa-launcher {
+  overflow: visible !important;
+}

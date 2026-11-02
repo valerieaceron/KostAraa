@@ -1,5 +1,5 @@
 import {blankProduct} from '../data/demoData.js';
-import {calculateProduct, calculateSellingPrice, getInventoryCostUnit, getInventoryUnitCost, computeInventoryMaterialCost} from './calculations.js';
+import {calculateProduct, calculateSellingPrice, getInventoryCostUnit, getInventoryUnitCost, computeInventoryMaterialCost, savedItemToProduct} from './calculations.js';
 
 export const gridUnits = ['pcs', 'mg', 'g', 'kg', 'oz', 'lb', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'fl oz', 'mm', 'cm', 'm', 'inch', 'ft', 'yard', 'dozen', 'pack', 'box'];
 export const createGridMaterial = (kind = 'material') => ({id: crypto.randomUUID(), kind, materialId: '', name: '', usedQuantity: 1, usedUnit: 'pcs'});
@@ -8,6 +8,34 @@ export const createGridProduct = () => ({
   materials: [createGridMaterial()], marketing: 0, markup: 50, targetPrice: '',
   taxMode: 'exempt', taxPercentage: 0, targetMargin: 30, platform: 0, other: 0, notes: '',
 });
+
+export function libraryItemToGridProduct(item, inventory = []) {
+  const product = savedItemToProduct(item, inventory);
+  const materials = [
+    ...(product.ingredients || []).map(material => ({...material, id: material.id || crypto.randomUUID(), kind: 'material'})),
+    ...(product.packaging || []).map(material => ({...material, id: material.id || crypto.randomUUID(), kind: 'packaging'})),
+  ];
+  const pricing = item.pricingInputs || {};
+  const savedTargetPrice = Number(pricing.targetSellingPrice) > 0 ? Number(pricing.targetSellingPrice) : Number(item.sellingPrice) || '';
+  return {
+    ...createGridProduct(),
+    id: `library-${String(item.id)}`,
+    name: product.productName || '',
+    itemType: item.itemType || 'Product',
+    category: product.productCategory || item.category || 'Other',
+    materials: materials.length ? materials : [createGridMaterial()],
+    marketing: Number(pricing.marketingPercentage) || 0,
+    markup: Number(pricing.markupTopup ?? item.markup) || 0,
+    targetPrice: savedTargetPrice,
+    taxMode: pricing.taxMode || 'exempt',
+    taxPercentage: Number(pricing.taxPercentage) || 0,
+    targetMargin: Number(item.targetProfitMargin ?? product.targetMargin) || 0,
+    platform: Number(product.otherCosts?.platform) || 0,
+    other: Number(product.otherCosts?.other) || 0,
+    notes: item.notes || '',
+    savedItem: item,
+  };
+}
 
 export function selectGridMaterial(row, text, inventory) {
   const item = inventory.find(entry => String(entry.material || '').toLowerCase() === text.trim().toLowerCase());

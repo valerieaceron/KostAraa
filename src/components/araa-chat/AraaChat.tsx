@@ -1,11 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./araa-chat.css";
 import "./araa-paper.css";
 import "./araa-librarian.css";
 
-type GuideMessage = { role: "araa" | "user"; text: string };
+type GuideAction = { label: string; page: string; section?: string; field?: string };
+type GuideMessage = { role: "araa" | "user"; text: string; action?: GuideAction };
+type GuideContext = { page?: string; inventoryCount?: number; savedProductCount?: number; productionReady?: boolean };
+type GuideMilestone = { id: number; type: "first-inventory"; name?: string };
+
+function araaNoticeKey() {
+  try {
+    const user = JSON.parse(sessionStorage.getItem("kostaraa.user") || "{}");
+    const id = user.id || user.username || user.email || "workspace";
+    return `kostaraa.araa.intro-seen.${encodeURIComponent(String(id))}`;
+  } catch { return "kostaraa.araa.intro-seen.workspace"; }
+}
+function araaNoticeSeen(key: string) { try { return localStorage.getItem(key) === "1"; } catch { return false; } }
 
 const appLibrary = [
   { keywords: ["dashboard", "overview", "home", "attention", "insight"], answer: "Dashboard gives you a quick view of pricing health, setup progress, customer details, saved-product cost insights, and your profit and break-even plan. Use its quick actions to add inventory, open Calculator, or review Product Library." },
@@ -37,11 +49,28 @@ function findAppAnswer(question: string) {
   return best?.answer || "I don’t have a verified answer for that yet. I can guide you through Dashboard, Inventory, Calculator, Product Library, Business Settings, Account Settings, billing, security, Getting Started, and Support.";
 }
 
-function WorkspaceGuide() {
+function nextStep(context: GuideContext, firstInventory = false): GuideMessage {
+  if (!firstInventory && !context.inventoryCount) return { role: "araa", text: "Start by adding the materials or packaging you buy. I’ll use their purchase cost when you build your first product.", action: { label: "Add first inventory item", page: "inventory" } };
+  if (!context.productionReady) return { role: "araa", text: "Before costing a product, add your monthly sales target. This lets Kostaraa calculate the labor and operating cost for each item.", action: { label: "Add monthly sales target", page: "account", section: "operations", field: "monthlySalesUnits" } };
+  if (!context.savedProductCount) return { role: "araa", text: "Next, use your saved material in Calculator. I’ll help you include every cost and understand the suggested price.", action: { label: "Cost my first product", page: "calculator" } };
+  return { role: "araa", text: "Your setup is taking shape. Review your saved products to see which prices cover their recorded costs.", action: { label: "Review Product Library", page: "products" } };
+}
+
+function WorkspaceGuide({context, milestone, onAction}: {context: GuideContext; milestone: GuideMilestone | null; onAction: (action: GuideAction) => void}) {
   const [messages, setMessages] = useState<GuideMessage[]>([
-    { role: "araa", text: "Hi, I’m Araa, your Kostaraa librarian. Ask me about Inventory, Calculator, or any workspace tool—I’m happy to help." },
+    { role: "araa", text: "Hi, I’m Araa, your pricing guide. I can help you complete your setup, understand your costs, and decide what to do next." },
   ]);
   const [input, setInput] = useState("");
+  const handledMilestone = useRef<number | null>(null);
+  useEffect(() => {
+    if (!milestone || handledMilestone.current === milestone.id) return;
+    handledMilestone.current = milestone.id;
+    const itemName = milestone.name?.trim();
+    setMessages(current => [...current,
+      { role: "araa", text: `Nice work—you added your first inventory item${itemName ? `, ${itemName}` : ""}. Kostaraa can now use its purchase cost in your product calculations.` },
+      nextStep(context, true),
+    ]);
+  }, [context, milestone]);
   const ask = (question: string) => {
     const clean = question.trim();
     if (!clean) return;
@@ -49,33 +78,49 @@ function WorkspaceGuide() {
     setInput("");
   };
   return <section className="araa-app-guide">
-    <div className="araa-messages" aria-live="polite">{messages.map((message, index) => <div className={`araa-message ${message.role}`} key={index}><p>{message.text}</p></div>)}</div>
-    <div className="araa-suggestions">{["How do I use Inventory?", "How do I cost a product?", "Where can I update my business?"].map(question => <button type="button" key={question} onClick={() => ask(question)}>{question}</button>)}</div>
+    <div className="araa-messages" aria-live="polite">{messages.map((message, index) => <div className={`araa-message ${message.role}`} key={index}><p>{message.text}</p>{message.action && <button className="araa-message-action" type="button" onClick={() => onAction(message.action!)}>{message.action.label}<span aria-hidden="true">→</span></button>}</div>)}</div>
+    <div className="araa-suggestions"><button type="button" onClick={() => setMessages(current => [...current, nextStep(context)])}>What should I do next?</button>{["How do I use Inventory?", "How do I cost a product?"].map(question => <button type="button" key={question} onClick={() => ask(question)}>{question}</button>)}</div>
     <form onSubmit={event => { event.preventDefault(); ask(input); }}><input value={input} onChange={event => setInput(event.target.value)} placeholder="Ask Araa about a module…" aria-label="Ask Araa how to use Kostaraa"/><button type="submit" aria-label="Send question">→</button></form>
   </section>;
 }
 
-export function AraaChat({ workspace = false }: { workspace?: boolean }) {
+export function AraaChat({ workspace = false, context = {}, onNavigate }: { workspace?: boolean; context?: GuideContext; onNavigate?: (page: string, section?: string, field?: string) => void }) {
   const [open, setOpen] = useState(false);
+  const [milestone, setMilestone] = useState<GuideMilestone | null>(null);
+  const [noticeKey] = useState(araaNoticeKey);
+  const [unread, setUnread] = useState(() => workspace && !araaNoticeSeen(araaNoticeKey()));
+  const markSeen = () => { if (!workspace) return; setUnread(false); try { localStorage.setItem(noticeKey, "1"); } catch { /* The notification still clears for this session. */ } };
   const toggle = () => {
-    if (!open && workspace) window.dispatchEvent(new CustomEvent("kostaraa:feature-opened", { detail: "araa" }));
+    if (!open && workspace) { markSeen(); window.dispatchEvent(new CustomEvent("kostaraa:feature-opened", { detail: "araa" })); }
     setOpen(value => !value);
   };
   useEffect(() => {
-    const openAraa = () => setOpen(true);
+    const openAraa = () => { markSeen(); setOpen(true); };
     const closeAraa = () => setOpen(false);
+    const guide = (event: Event) => {
+      const detail = (event as CustomEvent).detail || {};
+      if (detail.type !== "first-inventory") return;
+      setMilestone({ id: Date.now(), type: "first-inventory", name: detail.name });
+      markSeen();
+      setOpen(true);
+      window.dispatchEvent(new CustomEvent("kostaraa:feature-opened", { detail: "araa_first_inventory" }));
+    };
     window.addEventListener("kostaraa:open-araa", openAraa);
     window.addEventListener("kostaraa:close-araa", closeAraa);
+    window.addEventListener("kostaraa:araa-guide", guide);
     return () => {
       window.removeEventListener("kostaraa:open-araa", openAraa);
       window.removeEventListener("kostaraa:close-araa", closeAraa);
+      window.removeEventListener("kostaraa:araa-guide", guide);
     };
-  }, []);
+  }, [noticeKey, workspace]);
+  const followAction = (action: GuideAction) => { onNavigate?.(action.page, action.section, action.field); setOpen(false); };
   return <div className={`araa ${open ? "open" : ""}`}>
     <section className="araa-panel araa-coming-panel" aria-label={workspace ? "Ask Araa how to use Kostaraa" : "Araa coming soon"} aria-hidden={!open}>
-      <header><img src="/araa-avatar.webp" alt="Araa, the Kostaraa librarian"/><div><b>Araa</b></div><button type="button" onClick={() => setOpen(false)} aria-label="Close Araa">×</button></header>
-      {workspace ? <div className="araa-summary araa-librarian-summary"><WorkspaceGuide/></div> : <div className="araa-summary araa-public-coming" aria-live="polite"><div className="araa-summary-intro"><img src="/araa-avatar.webp" alt=""/><div><small>COMING SOON</small><h2>Araa is getting her library ready.</h2></div></div><p>Soon, she’ll help you find answers, understand Kostaraa, and guide you through common business questions.</p></div>}
+      <header><img src="/araa-avatar.webp" alt="Araa, the Kostaraa pricing guide"/><div><b>Araa</b></div><button type="button" onClick={() => setOpen(false)} aria-label="Close Araa">×</button></header>
+      {workspace ? <div className="araa-summary araa-librarian-summary"><WorkspaceGuide context={context} milestone={milestone} onAction={followAction}/></div> : <div className="araa-summary araa-public-coming" aria-live="polite"><div className="araa-summary-intro"><img src="/araa-avatar.webp" alt=""/><div><small>COMING SOON</small><h2>Araa is getting her library ready.</h2></div></div><p>Soon, she’ll help you find answers, understand Kostaraa, and guide you through common business questions.</p></div>}
     </section>
-    <button type="button" className="araa-launcher" onClick={toggle} aria-label={open ? "Close Araa" : "Ask Araa"}><img src="/araa-avatar.webp" alt=""/><span>Ask Araa</span><i/></button>
+    {workspace && unread && !open && <button type="button" className="araa-intro-notice" onClick={() => { markSeen(); setOpen(true); }}><strong>Need help getting started?</strong><span>I’ll guide your next step.</span></button>}
+    <button type="button" className="araa-launcher" onClick={toggle} aria-label={open ? "Close Araa" : unread ? "Ask Araa, one new guide message" : "Ask Araa"}><img src="/araa-avatar.webp" alt=""/><span>Ask Araa</span><i/>{workspace && unread && !open && <b className="araa-unread" aria-hidden="true">1</b>}</button>
   </div>;
 }

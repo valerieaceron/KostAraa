@@ -4,6 +4,9 @@
 .araa-message.user{align-items:flex-end}
 .araa-message.user p{background:#3a74ba;color:white;border-radius:14px 5px 14px 14px}
 .araa-message small{max-width:84%;padding:4px 8px 0;color:#6d7e95;font-size:9px;font-weight:700}
+.araa-message .araa-message-action{display:inline-flex;align-items:center;justify-content:space-between;gap:12px;max-width:88%;margin-top:7px;padding:8px 11px;border:1px solid #b8d0ef;border-radius:8px;background:#fff;color:#2868b1;font-size:11px;font-weight:600;line-height:1.25;text-align:left;box-shadow:0 3px 10px rgba(36,82,135,.08)}
+.araa-message .araa-message-action:hover{border-color:#3472b9;background:#edf5ff}
+.araa-message .araa-message-action span{font-size:14px;line-height:1}
 .araa-suggestions button:hover{background:#eaf2ff}
 .araa-panel form button:hover{background:#0e53c9}
 .araa-panel form input::placeholder{color:#8b9ab0}

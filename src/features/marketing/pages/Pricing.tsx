@@ -80,7 +80,14 @@ export default function Pricing(){
           <a className={paid?"button":"button ghost"} href={planHref(plan)}>{planCta(plan)}<ArrowRight aria-hidden="true"/></a>
           <div className="plan-benefits"><b>{paid?"Everything in Free, plus:":"The essentials to get started"}</b><ul>{benefits.map(benefit=><li key={benefit}><Check aria-hidden="true"/><span>{benefit}</span></li>)}</ul></div>
         </article>;
-      })}</div>}
+      })}<article className="setup-service">
+        <div className="plan-heading"><small className="plan-tier">Optional add-on</small><span className="plan-badge">One-time</span></div>
+        <div className="plan-name"><h2>Guided Setup</h2></div>
+        <p className="plan-audience">Get personal help preparing Kostaraa with your business costs and first product.</p>
+        <div className="price-box"><strong>₱499.00</strong><small>One-time payment · no recurring fee</small></div>
+        <a className="button ghost" href="/contact?topic=guided-setup">Get Setup Help<ArrowRight aria-hidden="true"/></a>
+        <div className="plan-benefits"><b>Setup support includes:</b><ul><li><Check aria-hidden="true"/><span>Review of your Business Settings</span></li><li><Check aria-hidden="true"/><span>Help adding your first inventory costs</span></li><li><Check aria-hidden="true"/><span>Guidance through your first product costing</span></li></ul></div>
+      </article></div>}
       <div className="comparison-title"><h2>Compare Free and Annual</h2><p>Both plans include online access to Kostaraa’s costing, planning, and guidance tools. Annual adds higher limits, an ad-free workspace, secure backup, and multi-device access.</p></div>
       {!loading&&!error&&plans.length>0&&<div className="pricing-tier-sticky" aria-label="Kostaraa plans">
         <div className="pricing-tier-grid">

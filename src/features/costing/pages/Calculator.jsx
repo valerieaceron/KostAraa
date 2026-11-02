@@ -346,9 +346,14 @@ export default function Calculator({ product, setProduct, results, inventory = [
         {editingItem ? <Badge tone="warn">Editing saved item</Badge> : null}
       </div>
 
-      <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-soft">
-        <div className="grid gap-4">
+      <section className="calculator-product-overview rounded-lg border border-slate-200 bg-white p-4 shadow-soft">
+        <div className="calculator-product-overview-grid">
           <Field label="Product name" icon={Package} value={product.productName} onChange={(value) => update('productName', value)} />
+          <aside className="calculator-top-srp" aria-live="polite">
+            <span>Suggested selling price</span>
+            <b>{suggestedSellingPrice > 0 ? formatCurrency(suggestedSellingPrice) : 'Not available'}</b>
+            <small>Based on your recorded costs and pricing settings</small>
+          </aside>
         </div>
       </section>
 

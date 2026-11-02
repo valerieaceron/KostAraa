@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {calculateGridProduct, createGridProduct, createGridMaterial, gridSignature, gridStorageKey, gridValidation, selectGridMaterial} from '../src/features/costing/utils/grid-model.js';
+import {calculateGridProduct, createGridProduct, createGridMaterial, gridSignature, gridStorageKey, gridValidation, libraryItemToGridProduct, selectGridMaterial} from '../src/features/costing/utils/grid-model.js';
 import {buildSavedItem, calculateProduct, calculateSellingPrice} from '../src/features/costing/utils/calculations.js';
 const business = {labor:{monthlyCost:2000,workingDays:20,outputPerDay:10},overhead:{rent:500,utilities:200,miscellaneous:300}};
 const inventory = [{id:1,material:'Paper',itemCost:100,qty:10,baseUnit:'pcs'},{id:2,material:'Box',itemCost:50,qty:10,baseUnit:'pcs'}];
@@ -47,4 +47,15 @@ test('material selection resolves exact names and local drafts stay scoped to an
  assert.equal(material.materialId,1);assert.equal(material.usedUnit,'pcs');
  assert.equal(selectGridMaterial(material,'unknown',inventory).materialId,'');
  assert.notEqual(gridStorageKey({id:1}),gridStorageKey({id:2}));assert.equal(gridStorageKey({}),null);
+});
+test('library records become editable grid rows without losing their identity',()=>{
+ const original=example();const calculated=calculateGridProduct(original,inventory,business);
+ const saved={...buildSavedItem(calculated.draft,calculated.results,business,calculated.metadata),id:'library-item-1'};
+ const row=libraryItemToGridProduct(saved,inventory);
+ assert.equal(row.name,'Sample');assert.equal(row.savedItem.id,'library-item-1');
+ assert.equal(row.materials.filter(item=>item.kind==='material').length,1);
+ assert.equal(row.materials.filter(item=>item.kind==='packaging').length,1);
+ assert.equal(calculateGridProduct(row,inventory,business).metadata.existingItemId,'library-item-1');
+ const suggestedOnly=libraryItemToGridProduct({...saved,sellingPrice:125,pricingInputs:{...saved.pricingInputs,targetSellingPrice:0}},inventory);
+ assert.equal(suggestedOnly.targetPrice,125);
 });

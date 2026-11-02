@@ -44,6 +44,48 @@
   position: static;
 }
 
+.kostaraa-calculator .calculator-product-overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+  align-items: start;
+  gap: 16px;
+}
+
+.kostaraa-calculator .calculator-top-srp {
+  display: grid;
+  min-height: 68px;
+  align-content: center;
+  padding: 10px 14px;
+  border: 1px solid #cddbea;
+  border-radius: 8px;
+  background: #f7f9fc;
+}
+
+.kostaraa-calculator .calculator-top-srp > span {
+  color: var(--calc-muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.kostaraa-calculator .calculator-top-srp > b {
+  margin-top: 2px;
+  color: var(--calc-ink);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.kostaraa-calculator .calculator-top-srp > small {
+  margin-top: 2px;
+  color: var(--calc-muted);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
 @media (min-width: 1600px) {
   .kostaraa-calculator .calculator-layout {
     grid-template-columns: minmax(800px, 1.45fr) minmax(330px, .75fr) !important;
@@ -270,6 +312,8 @@
   .kostaraa-calculator .calculator-result-card > p:last-child,
   .kostaraa-calculator .calculator-result-card--accent > p:last-child { font-size: 18px !important; }
   .kostaraa-calculator .calculator-info-tip > span { right: -12px; left: auto; transform: none; }
+  .kostaraa-calculator .calculator-product-overview-grid { grid-template-columns: 1fr; }
+  .kostaraa-calculator .calculator-top-srp { min-height: 0; }
 }
 
 /* Align inventory selectors and keep their chevrons centered consistently. */

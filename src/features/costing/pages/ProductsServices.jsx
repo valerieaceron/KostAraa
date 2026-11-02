@@ -1,9 +1,10 @@
 import {pricingHealth,needsPricingAttention} from "../utils/pricing-health";
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
-import { Archive, CheckCircle2, Copy, Download, Edit3, Eye, MoreHorizontal, Pencil, Plus, Search, Trash2, TriangleAlert } from 'lucide-react';
+import { Archive, Copy, Download, Edit3, Eye, MoreHorizontal, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { Badge, Button, Card, ChartCard, Input, Modal, ResultCard } from '../components/ui';
 import { formatCurrency, formatNumber } from '../utils/calculations';
+import { titleCaseName } from '../utils/display-text';
 
 const pricingStatuses = ['All products', 'Needs attention', 'Missing information', 'Archived'];
 const colors = ['#14b8a6', '#f97316', '#64748b', '#0ea5e9', '#a855f7', '#111827'];
@@ -59,7 +60,7 @@ function customerFitSignal(item) {
 
 function displayProductName(item) {
   const name = String(item?.productName || '').trim();
-  return !name || name.toLowerCase() === 'untitled item' ? 'Unnamed Product' : name;
+  return !name || name.toLowerCase() === 'untitled item' ? 'Unnamed Product' : titleCaseName(name);
 }
 
 function displayStatus(item) {
@@ -75,13 +76,6 @@ function planningRemark(item) {
   if (status === 'Target may not cover costs') return { label: 'May not cover costs', tone: 'risk' };
   if (status === 'Archived') return { label: 'Archived', tone: 'neutral' };
   return { label: pricingHealth(item).reason, tone: 'neutral' };
-}
-
-function customerRemark(item) {
-  const signal = customerFitSignal(item);
-  if (signal.tone === 'good') return { label: 'Fits saved customer budget', tone: 'good' };
-  if (signal.tone === 'warn') return { label: 'May be high for customers', tone: 'warn' };
-  return { label: 'Add customer budget details', tone: 'neutral' };
 }
 
 function statusHelper(status) {
@@ -121,24 +115,6 @@ function HelpTip({ children, label = 'More information' }) {
       ?
       <span className="library-help-tooltip invisible absolute left-0 top-7 z-40 w-64 translate-y-[-4px] rounded-lg border border-blue-100 bg-white p-3 text-left text-xs font-semibold normal-case leading-relaxed tracking-normal text-slate-600 opacity-0 shadow-xl transition group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus:visible group-focus:translate-y-0 group-focus:opacity-100">{children}</span>
     </span>
-  );
-}
-
-function SummaryCard({ label, value, description, tone = 'neutral', icon: Icon }) {
-  const toneClass = tone === 'good'
-    ? 'border-teal-100 bg-teal-50 text-accent'
-    : tone === 'warn'
-      ? 'border-orange-100 bg-orange-50 text-orange-700'
-      : tone === 'risk'
-        ? 'border-rose-100 bg-rose-50 text-rose-700'
-        : 'border-slate-200 bg-white text-navy';
-  return (
-    <div className={`library-summary-card rounded-xl border p-4 ${toneClass}`}>
-      <div className="flex items-start justify-between gap-3">
-        <div><p className="library-summary-label flex items-center gap-2 text-sm font-bold">{label} <HelpTip>{description}</HelpTip></p><p className="library-summary-value mt-2 text-3xl font-black leading-none">{value}</p></div>
-        {Icon ? <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/80"><Icon className="h-4 w-4" /></span> : null}
-      </div>
-    </div>
   );
 }
 
@@ -249,7 +225,6 @@ export default function ProductsServices({ items, onViewEdit, onDuplicate, onArc
   const selectAllRef = useRef(null);
   const visibleItems = useMemo(() => filterItems(items, pricingStatus, search), [items, pricingStatus, search]);
   const activeItems = items.filter((item) => item.status !== 'Archived');
-  const sustainableItems = activeItems.filter((item) => displayStatus(item) === 'Plan looks sustainable');
   const needsReviewItems = activeItems.filter(needsPricingAttention);
   const missingInformationItems = activeItems.filter((item) => displayStatus(item) === 'More information needed');
   const archivedItems = items.filter((item) => item.status === 'Archived');
@@ -388,12 +363,6 @@ export default function ProductsServices({ items, onViewEdit, onDuplicate, onArc
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        <SummaryCard label="Saved products" value={activeItems.length} description="Active product costings in your Library." icon={Copy} />
-        <SummaryCard label="Plans that look sustainable" value={sustainableItems.length} description="Saved targets currently cover recorded costs." tone="good" icon={CheckCircle2} />
-        <SummaryCard label="Needs your attention" value={needsReviewItems.length} description="Review missing pricing details or margins below target." tone={needsReviewItems.length ? 'warn' : 'good'} icon={TriangleAlert} />
-      </div>
-
       <Card className="library-list-card overflow-visible p-0">
         <div className="library-list-toolbar flex flex-col gap-4 border-b border-slate-100 p-4 lg:flex-row lg:items-center lg:justify-between">
           <label className="library-filter-label grid w-full gap-1.5 text-sm font-bold text-slate-700 sm:max-w-[300px]">
@@ -416,7 +385,7 @@ export default function ProductsServices({ items, onViewEdit, onDuplicate, onArc
           </div>
         </div>
 
-        <div className="library-list-heading" aria-hidden="true"><span /><span>Product Name</span><span>Margin</span><span>Remarks</span><span /></div>
+        <div className="library-list-heading" aria-hidden="true"><span /><span>Product name</span><span className="library-number-heading">Target price</span><span className="library-number-heading">Suggested price</span><span className="library-number-heading">Estimated profit/item</span><span className="library-number-heading">Profit margin</span><span>Status</span><span /></div>
         <div className={`library-selection-bar${selectedIds.size ? ' has-selection' : ''}`}>
           <label className="library-select-all"><input ref={selectAllRef} aria-label={allFilteredSelected ? 'Deselect all filtered products' : 'Select all filtered products'} type="checkbox" checked={allFilteredSelected} onChange={toggleFiltered} /><b>{selectedIds.size ? `${selectedIds.size} selected` : 'Select all'}</b></label>
           <span />
@@ -425,15 +394,22 @@ export default function ProductsServices({ items, onViewEdit, onDuplicate, onArc
         <div className={`library-list${selectedIds.size ? ' has-selection' : ''}`}>
           {pagedItems.map((item, index) => {
             const planRemark = planningRemark(item);
-            const fitRemark = customerRemark(item);
+            const targetPrice = Number(item.pricingInputs?.targetSellingPrice) || Number(item.sellingPrice) || 0;
+            const suggestedPrice = Number(item.suggestedSellingPrice) || 0;
+            const estimatedProfit = Number(item.grossProfit) || 0;
+            const profitMargin = Number(item.profitMargin) || 0;
             return (
               <article key={item.id} className="library-item-row">
                 <label className="library-row-selector"><span aria-hidden="true">{(safePage - 1) * 10 + index + 1}</span><input aria-label={`Select ${displayProductName(item)}`} type="checkbox" checked={selectedIds.has(String(item.id))} onChange={() => setSelectedIds((current) => { const next = new Set(current); const id = String(item.id); next.has(id) ? next.delete(id) : next.add(id); return next; })} /></label>
                 <button className="library-product-name" type="button" onClick={() => setSelected(item)} title={`View ${displayProductName(item)}`}><span>{displayProductName(item)}</span></button>
-                <p className="library-margin-value">{formatNumber(item.profitMargin)}%</p>
+                <div className="library-price-metrics">
+                  <p className="library-price-value" data-label="Target price">{targetPrice > 0 ? formatCurrency(targetPrice) : '—'}</p>
+                  <p className="library-price-value" data-label="Suggested price">{suggestedPrice > 0 ? formatCurrency(suggestedPrice) : '—'}</p>
+                  <p className={`library-price-value${estimatedProfit < 0 ? ' risk' : ''}`} data-label="Estimated profit/item">{formatCurrency(estimatedProfit)}</p>
+                  <p className={`library-price-value${profitMargin < 0 ? ' risk' : ''}`} data-label="Profit margin">{formatNumber(profitMargin)}%</p>
+                </div>
                 <div className="library-remarks">
                   <span className={`library-remark ${planRemark.tone}`}>{planRemark.label}</span>
-                  <span className={`library-remark ${fitRemark.tone}`}>{fitRemark.label}</span>
                 </div>
                 <div className="library-row-actions">
                   <button className="library-actions-trigger" aria-haspopup="menu" aria-expanded={openMenuId === item.id} aria-label={`More actions for ${displayProductName(item)}`} onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)} title="More actions" type="button"><MoreHorizontal aria-hidden="true" /></button>
@@ -464,7 +440,6 @@ export default function ProductsServices({ items, onViewEdit, onDuplicate, onArc
       </Card>
 
       <Card className="library-tip-card border-l-4 border-l-accent">
-        <p className="text-sm font-semibold text-slate-600"><span className="font-black text-navy">Tip:</span> Use the planning signal to check cost coverage, then compare the customer-fit badge with actual customer response.</p>
       </Card>
 
       {selected && <DetailModal item={selected} onClose={() => setSelected(null)} onViewEdit={onViewEdit} onDuplicate={onDuplicate} onArchive={onArchive} />}
