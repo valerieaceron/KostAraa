@@ -179,3 +179,5 @@
   .auth-signup-page .auth-card-signup,
   .auth-signup-page .auth-back { background: #fff; backdrop-filter: none; -webkit-backdrop-filter: none; }
 }
+
+.auth-signup-fields .auth-referral-field { grid-column: 1 / -1; }

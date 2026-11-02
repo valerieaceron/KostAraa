@@ -11,7 +11,7 @@ export default function VerifyEmailPage() {
   const [email, setEmail] = useState(params.get("email") || "");
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
-    [message, setMessage] = useState(token ? "To continue, confirm your email address. This activates your Free account and lets you log in to Kostaraa." : params.get("delivery") === "failed" ? "To continue, request a new verification email. We couldn’t deliver the first message." : "To continue, use the verification link we sent to your email. Check your inbox and spam folder. The link expires after 24 hours.");
+    [message, setMessage] = useState(token ? "To continue, confirm your email address. This activates your account and lets you log in to Kostaraa." : params.get("delivery") === "failed" ? "To continue, request a new verification email. We couldn’t deliver the first message." : "To continue, use the verification link we sent to your email. Check your inbox and spam folder. The link expires after 24 hours.");
   async function send(verify: boolean) {
     setBusy(true);
     setError("");

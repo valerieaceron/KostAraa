@@ -62,3 +62,5 @@
   .auth-card-login .auth-row { align-items: flex-start; gap: 14px; }
   .auth-card-login .auth-row a { text-align: right; }
 }
+
+.auth-verification-link { display: block; margin-top: 16px; text-align: center; color: #3a74ba; font-size: 12px; }

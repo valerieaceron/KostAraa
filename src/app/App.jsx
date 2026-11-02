@@ -1,3 +1,4 @@
+import PasswordReset from "../features/auth/PasswordResetPage";
 import Login from "../features/auth/LoginPage";
 import Signup from "../features/auth/SignupPage";
 import About from "../features/marketing/pages/About";
@@ -14,6 +15,8 @@ import Workspace from "../features/workspace/WorkspacePage";
 import VerifyEmail from "../features/auth/VerifyEmailPage";
 
 const routes = {
+  "/forgot-password": PasswordReset,
+  "/reset-password": PasswordReset,
   "/verify-email": VerifyEmail,
   "/": Home,
   "/about": About,

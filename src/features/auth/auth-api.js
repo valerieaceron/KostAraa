@@ -17,7 +17,7 @@ export async function authRequest(action, payload) {
     data = JSON.parse(await response.text());
   } catch {
     throw new Error(response.status === 404
-      ? 'This feature is not available on the API server yet. The updated backend must be deployed and restarted before email verification can work.'
+      ? 'This feature is not available on the API server yet. Please try again later.'
       : 'The API server returned an unexpected response. Please try again later.');
   }
   if (!response.ok || data?.type !== 'success') {
