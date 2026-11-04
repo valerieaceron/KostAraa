@@ -5,19 +5,25 @@ import "./araa-chat.css";
 import "./araa-paper.css";
 import "./araa-librarian.css";
 
-type GuideAction = { label: string; page: string; section?: string; field?: string };
+type GuideAction = { label: string; page: string; section?: string; field?: string; event?: string };
 type GuideMessage = { role: "araa" | "user"; text: string; action?: GuideAction };
 type GuideContext = { page?: string; inventoryCount?: number; savedProductCount?: number; productionReady?: boolean };
-type GuideMilestone = { id: number; type: "first-inventory"; name?: string };
+type GuideMilestone = { id: number; type: "business-settings-complete" | "first-inventory" | "unsaved-grid"; name?: string; count?: number };
 
 function araaNoticeKey() {
   try {
     const user = JSON.parse(sessionStorage.getItem("kostaraa.user") || "{}");
     const id = user.id || user.username || user.email || "workspace";
-    return `kostaraa.araa.intro-seen.${encodeURIComponent(String(id))}`;
-  } catch { return "kostaraa.araa.intro-seen.workspace"; }
+    return `kostaraa.araa.first-edit-guide-seen.v1.${encodeURIComponent(String(id))}`;
+  } catch { return "kostaraa.araa.first-edit-guide-seen.v1.workspace"; }
 }
 function araaNoticeSeen(key: string) { try { return localStorage.getItem(key) === "1"; } catch { return false; } }
+function araaActivityKey(key: string) { return `${key}.first-edit`; }
+function araaActivityTriggered(key: string) { try { return localStorage.getItem(araaActivityKey(key)) === "1"; } catch { return false; } }
+function markAraaActivityTriggered(key: string) { try { localStorage.setItem(araaActivityKey(key), "1"); } catch { /* The notice still appears for this session. */ } }
+function businessSettingsGuideKey(key: string) { return `${key}.business-settings-to-inventory.v1`; }
+function businessSettingsGuideSeen(key: string) { try { return localStorage.getItem(businessSettingsGuideKey(key)) === "1"; } catch { return false; } }
+function markBusinessSettingsGuideSeen(key: string) { try { localStorage.setItem(businessSettingsGuideKey(key), "1"); } catch { /* The guide still appears for this session. */ } }
 
 const appLibrary = [
   { keywords: ["dashboard", "overview", "home", "attention", "insight"], answer: "Dashboard gives you a quick view of pricing health, setup progress, customer details, saved-product cost insights, and your profit and break-even plan. Use its quick actions to add inventory, open Calculator, or review Product Library." },
@@ -65,6 +71,23 @@ function WorkspaceGuide({context, milestone, onAction}: {context: GuideContext; 
   useEffect(() => {
     if (!milestone || handledMilestone.current === milestone.id) return;
     handledMilestone.current = milestone.id;
+    if (milestone.type === "business-settings-complete") {
+      setMessages(current => [...current, {
+        role: "araa",
+        text: "Congratulations—your Business Settings are ready. Next, add the ingredients, materials, or packaging you buy to Inventory so Kostaraa can use their actual purchase costs in your product costing.",
+        action: { label: "Add your first inventory item", page: "inventory", event: "kostaraa:inventory-add" },
+      }]);
+      return;
+    }
+    if (milestone.type === "unsaved-grid") {
+      const count = milestone.count || 1;
+      setMessages(current => [...current, {
+        role: "araa",
+        text: `You have ${count} product${count === 1 ? "" : "s"} in the Grid with changes that are not yet saved to the Product Library. Use Save to Library or Update Library at the end of each row.`,
+        action: { label: "Show me where to save", page: "grid", event: "kostaraa:grid-highlight-save" },
+      }]);
+      return;
+    }
     const itemName = milestone.name?.trim();
     setMessages(current => [...current,
       { role: "araa", text: `Nice work—you added your first inventory item${itemName ? `, ${itemName}` : ""}. Kostaraa can now use its purchase cost in your product calculations.` },
@@ -87,23 +110,61 @@ function WorkspaceGuide({context, milestone, onAction}: {context: GuideContext; 
 export function AraaChat({ workspace = false, context = {}, onNavigate }: { workspace?: boolean; context?: GuideContext; onNavigate?: (page: string, section?: string, field?: string) => void }) {
   const [open, setOpen] = useState(false);
   const [milestone, setMilestone] = useState<GuideMilestone | null>(null);
+  const [noticeCopy, setNoticeCopy] = useState({ title: "Need help with your first update?", body: "I can guide you as you build your workspace." });
   const [noticeKey] = useState(araaNoticeKey);
-  const [unread, setUnread] = useState(() => workspace && !araaNoticeSeen(araaNoticeKey()));
+  const [unread, setUnread] = useState(() => workspace && araaActivityTriggered(araaNoticeKey()) && !araaNoticeSeen(araaNoticeKey()));
   const markSeen = () => { if (!workspace) return; setUnread(false); try { localStorage.setItem(noticeKey, "1"); } catch { /* The notification still clears for this session. */ } };
   const toggle = () => {
     if (!open && workspace) { markSeen(); window.dispatchEvent(new CustomEvent("kostaraa:feature-opened", { detail: "araa" })); }
     setOpen(value => !value);
   };
   useEffect(() => {
+    if (!workspace || araaNoticeSeen(noticeKey) || araaActivityTriggered(noticeKey)) return;
+    const firstEdit = (event: Event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement || target instanceof HTMLTextAreaElement)) return;
+      if (!target.closest(".kws-content")) return;
+      markAraaActivityTriggered(noticeKey);
+      setUnread(true);
+      document.removeEventListener("input", firstEdit, true);
+      document.removeEventListener("change", firstEdit, true);
+    };
+    document.addEventListener("input", firstEdit, true);
+    document.addEventListener("change", firstEdit, true);
+    return () => {
+      document.removeEventListener("input", firstEdit, true);
+      document.removeEventListener("change", firstEdit, true);
+    };
+  }, [noticeKey, workspace]);
+  useEffect(() => {
     const openAraa = () => { markSeen(); setOpen(true); };
     const closeAraa = () => setOpen(false);
     const guide = (event: Event) => {
       const detail = (event as CustomEvent).detail || {};
-      if (detail.type !== "first-inventory") return;
-      setMilestone({ id: Date.now(), type: "first-inventory", name: detail.name });
-      markSeen();
-      setOpen(true);
-      window.dispatchEvent(new CustomEvent("kostaraa:feature-opened", { detail: "araa_first_inventory" }));
+      if (detail.type === "business-settings-complete") {
+        if (context.inventoryCount || businessSettingsGuideSeen(noticeKey)) return;
+        markBusinessSettingsGuideSeen(noticeKey);
+        markAraaActivityTriggered(noticeKey);
+        setMilestone({ id: Date.now(), type: "business-settings-complete" });
+        setNoticeCopy({ title: "Business Settings complete", body: "Your next step is to add your Inventory." });
+        setUnread(false);
+        setOpen(true);
+        return;
+      }
+      if (detail.type === "unsaved-grid") {
+        const count = Math.max(1, Number(detail.count) || 1);
+        setMilestone({ id: Date.now(), type: "unsaved-grid", count });
+        setNoticeCopy({ title: `${count} unsaved Grid product${count === 1 ? "" : "s"}`, body: "I’ll show you where to save your changes." });
+        setUnread(true);
+        return;
+      }
+      if (detail.type === "first-inventory") {
+        setMilestone({ id: Date.now(), type: "first-inventory", name: detail.name });
+        if (!araaNoticeSeen(noticeKey)) {
+          markAraaActivityTriggered(noticeKey);
+          setUnread(true);
+        }
+      }
     };
     window.addEventListener("kostaraa:open-araa", openAraa);
     window.addEventListener("kostaraa:close-araa", closeAraa);
@@ -113,14 +174,18 @@ export function AraaChat({ workspace = false, context = {}, onNavigate }: { work
       window.removeEventListener("kostaraa:close-araa", closeAraa);
       window.removeEventListener("kostaraa:araa-guide", guide);
     };
-  }, [noticeKey, workspace]);
-  const followAction = (action: GuideAction) => { onNavigate?.(action.page, action.section, action.field); setOpen(false); };
+  }, [context.inventoryCount, noticeKey, workspace]);
+  const followAction = (action: GuideAction) => {
+    onNavigate?.(action.page, action.section, action.field);
+    if (action.event) window.setTimeout(() => window.dispatchEvent(new CustomEvent(action.event!)), 120);
+    setOpen(false);
+  };
   return <div className={`araa ${open ? "open" : ""}`}>
     <section className="araa-panel araa-coming-panel" aria-label={workspace ? "Ask Araa how to use Kostaraa" : "Araa coming soon"} aria-hidden={!open}>
       <header><img src="/araa-avatar.webp" alt="Araa, the Kostaraa pricing guide"/><div><b>Araa</b></div><button type="button" onClick={() => setOpen(false)} aria-label="Close Araa">×</button></header>
       {workspace ? <div className="araa-summary araa-librarian-summary"><WorkspaceGuide context={context} milestone={milestone} onAction={followAction}/></div> : <div className="araa-summary araa-public-coming" aria-live="polite"><div className="araa-summary-intro"><img src="/araa-avatar.webp" alt=""/><div><small>COMING SOON</small><h2>Araa is getting her library ready.</h2></div></div><p>Soon, she’ll help you find answers, understand Kostaraa, and guide you through common business questions.</p></div>}
     </section>
-    {workspace && unread && !open && <button type="button" className="araa-intro-notice" onClick={() => { markSeen(); setOpen(true); }}><strong>Need help getting started?</strong><span>I’ll guide your next step.</span></button>}
+    {workspace && unread && !open && <button type="button" className="araa-intro-notice" onClick={() => { markSeen(); setOpen(true); }}><strong>{noticeCopy.title}</strong><span>{noticeCopy.body}</span></button>}
     <button type="button" className="araa-launcher" onClick={toggle} aria-label={open ? "Close Araa" : unread ? "Ask Araa, one new guide message" : "Ask Araa"}><img src="/araa-avatar.webp" alt=""/><span>Ask Araa</span><i/>{workspace && unread && !open && <b className="araa-unread" aria-hidden="true">1</b>}</button>
   </div>;
 }

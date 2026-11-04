@@ -48,14 +48,16 @@ export default function BusinessDashboard({business,savedItems,onViewEdit,onDupl
     const recentItems=items.map((item,index)=>({item,index})).sort((left,right)=>{
       const rightTime=Date.parse(right.item.createdAt||"")||0;
       const leftTime=Date.parse(left.item.createdAt||"")||0;
-      return rightTime-leftTime||left.index-right.index;
+      return leftTime&&rightTime&&leftTime!==rightTime?rightTime-leftTime:left.index-right.index;
     }).slice(0,5).map(row=>row.item);
     const operations=profile?.operations||{};
     const manpowerRows=(profile?.manpower||[]).filter((row:any)=>row.nameOrRole||row.position||Number(row.amount)>0||Number(row.benefits)>0||Number(row.contributions)>0);
     const ownerLabor=profile?.ownerLabor||{};
     const manpowerTotal=manpowerRows.reduce((sum:number,row:any)=>sum+Number(row.amount||0)+Number(row.benefits||0)+Number(row.contributions||0),0)+(ownerLabor.includeOwnTime==="Yes"?Number(ownerLabor.desiredMonthlyCompensation||0):0);
-    const target=Number(operations.monthlySalesUnits||operations.monthlySalesTarget)||0;
-    const production=Number(operations.monthlyProductionUnits)||(Number(business?.labor?.workingDays||0)*Number(business?.labor?.outputPerDay||0))||0;
+    const usesDailyOperations=Number(operations.dailyOperationsVersion)>=1;
+    const operatingDays=Number(operations.operatingDaysPerMonth)||0;
+    const target=usesDailyOperations&&operatingDays&&Number(operations.dailySalesUnits)>0?Math.round(operatingDays*Number(operations.dailySalesUnits)):Number(operations.monthlySalesUnits||operations.monthlySalesTarget)||0;
+    const production=usesDailyOperations&&operatingDays&&Number(operations.dailyProductionUnits)>0?Math.round(operatingDays*Number(operations.dailyProductionUnits)):Number(operations.monthlyProductionUnits)||(Number(business?.labor?.workingDays||0)*Number(business?.labor?.outputPerDay||0))||0;
     const labor=manpowerTotal;
     const overhead=Number(profile?.calculatorCosts?.overheadMonthly||profile?.overhead?.monthlyOverheadPool)||Number(business?.overhead?.rent||0)+Number(business?.overhead?.utilities||0)+Number(business?.overhead?.miscellaneous||0);
     const breakdowns=items.map(itemCostBreakdown);

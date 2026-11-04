@@ -8,3 +8,7 @@
 - Frontend mocks, adapters, defensive states, and UI-only fallbacks are allowed when they do not alter backend behavior or contracts.
 - Before making a change, confirm that every edited file is frontend-scoped. If the scope is unclear, stop and ask the user.
 - This restriction can be lifted only by an explicit user instruction that backend work may begin.
+
+## Build commands
+
+- Do not run production builds, including `npm run build`, unless the user explicitly requests a build.

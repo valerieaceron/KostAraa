@@ -276,44 +276,96 @@
 
 .kws-content .product-library-page .library-cost-card .chart-card-body {
   height: auto !important;
-  margin-top: 14px !important;
+  margin-top: 4px !important;
 }
 
 .kws-content .product-library-page .library-cost-chart-layout {
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(145px, .75fr);
+  grid-template-columns: 200px minmax(0, 1fr);
   align-items: center;
-  gap: 14px;
+  gap: 36px;
+  margin-top: 16px;
   min-width: 0;
 }
 
 .kws-content .product-library-page .library-cost-chart-visual {
+  position: relative;
+  width: 200px;
+  height: 200px;
   min-width: 0;
-  height: 238px;
+  justify-self: center;
+}
+
+.kws-content .product-library-page .library-cost-chart-total {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  display: grid;
+  width: 104px;
+  justify-items: center;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  text-align: center;
+}
+
+.kws-content .product-library-page .library-cost-chart-total span {
+  color: var(--library-muted);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.kws-content .product-library-page .library-cost-chart-total strong {
+  margin-top: 3px;
+  color: var(--library-ink);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -.01em;
+  white-space: nowrap;
 }
 
 .kws-content .product-library-page .library-cost-legend {
   display: grid;
   min-width: 0;
-  gap: 10px;
+  align-content: center;
 }
 
 .kws-content .product-library-page .library-cost-legend > div {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(92px, auto);
   align-items: center;
-  gap: 10px;
+  column-gap: 24px;
+  min-height: 58px;
+  padding: 8px 0;
+  border-bottom: 1px solid #edf1f5;
   color: var(--library-body);
   font-size: 13px;
   font-weight: 400;
   line-height: 1.4;
 }
 
-.kws-content .product-library-page .library-cost-legend span {
+.kws-content .product-library-page .library-cost-legend > div:last-child {
+  border-bottom: 0;
+}
+
+.kws-content .product-library-page .library-cost-legend-label {
   display: flex;
   min-width: 0;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+}
+
+.kws-content .product-library-page .library-cost-legend-copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.kws-content .product-library-page .library-cost-legend-copy > span {
+  color: var(--library-body);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.35;
   overflow-wrap: anywhere;
 }
 
@@ -326,9 +378,19 @@
 
 .kws-content .product-library-page .library-cost-legend b {
   color: var(--library-ink);
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: right;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.kws-content .product-library-page .library-cost-legend-copy small {
+  color: var(--library-muted);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
 }
 
 .kws-content .product-library-page .library-review-card .space-y-2 > p {
@@ -357,6 +419,16 @@
     padding: 16px !important;
   }
 
+  .kws-content .product-library-page .library-cost-chart-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .kws-content .product-library-page .library-cost-chart-visual {
+    width: 200px;
+    height: 200px;
+  }
+
   .kws-content .product-library-page .library-planning-overview > div:last-child {
     align-items: stretch !important;
   }
@@ -376,7 +448,12 @@
   }
 
   .kws-content .product-library-page .library-cost-chart-visual {
-    height: 220px;
+    height: 200px;
+  }
+
+  .kws-content .product-library-page .library-cost-legend > div {
+    column-gap: 16px;
+    padding: 7px 0;
   }
 }
 
@@ -701,34 +778,27 @@
 }
 
 .kws-content .product-library-page .library-remark {
-  display: flex;
+  display: inline-flex;
+  width: fit-content;
   align-items: center;
-  gap: 7px;
-  color: var(--library-muted);
-  font-size: 12px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #e7f6ef;
+  color: #087a58;
+  font-size: 11px;
   font-weight: 400;
-  line-height: 1.4;
+  line-height: 1.3;
 }
 
-.kws-content .product-library-page .library-remark::before {
-  width: 7px;
-  height: 7px;
-  flex: 0 0 7px;
-  border-radius: 50%;
-  background: #8796aa;
-  content: "";
+.kws-content .product-library-page .library-remark.review,
+.kws-content .product-library-page .library-remark.below {
+  background: #fff2d8;
+  color: #92550a;
 }
 
-.kws-content .product-library-page .library-remark.good::before {
-  background: #16856e;
-}
-
-.kws-content .product-library-page .library-remark.warn::before {
-  background: #c77716;
-}
-
-.kws-content .product-library-page .library-remark.risk::before {
-  background: #b53443;
+.kws-content .product-library-page .library-remark.above {
+  background: #e9f2ff;
+  color: #2f64a4;
 }
 
 .kws-content .product-library-page .library-row-actions {
@@ -933,4 +1003,97 @@
   .library-product-name
 ) {
   font-weight: 500 !important;
+}
+
+/* Keep the Product Library detail modal on the same restrained type system. */
+.kws-content .product-library-page .library-detail-modal,
+.kws-content .product-library-page .library-detail-modal * {
+  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-weight: 400 !important;
+}
+
+.kws-content .product-library-page .library-detail-modal > div:first-child h2 {
+  color: var(--library-ink) !important;
+  font-size: 24px !important;
+  font-weight: 500 !important;
+  line-height: 1.2 !important;
+  letter-spacing: -.02em !important;
+}
+
+.kws-content .product-library-page .library-detail-modal > div:first-child button,
+.kws-content .product-library-page .library-detail-modal :is(h3, b, strong, button, summary, th, dd) {
+  font-weight: 500 !important;
+}
+
+.kws-content .product-library-page .library-detail-modal .review-note {
+  color: var(--library-muted) !important;
+  font-size: 12px !important;
+  line-height: 1.45 !important;
+}
+
+.kws-content .product-library-page .library-detail-modal .review-metrics dt {
+  color: var(--library-muted) !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.kws-content .product-library-page .library-detail-modal .review-metrics dd {
+  margin-top: 5px !important;
+  color: var(--library-ink);
+  font-size: 22px !important;
+  font-weight: 500 !important;
+  line-height: 1.25 !important;
+}
+
+.kws-content .product-library-page .library-detail-modal .review-section h3,
+.kws-content .product-library-page .library-detail-modal .chart-card-title {
+  color: var(--library-ink) !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  line-height: 1.35 !important;
+}
+
+.kws-content .product-library-page .library-detail-modal .review-rows,
+.kws-content .product-library-page .library-detail-modal .review-verdict,
+.kws-content .product-library-page .library-detail-modal .library-cost-legend-copy > span,
+.kws-content .product-library-page .library-detail-modal table {
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+}
+
+.kws-content .product-library-page .library-detail-modal .review-rows dd,
+.kws-content .product-library-page .library-detail-modal .library-cost-legend b {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+.kws-content .product-library-page .library-detail-modal :is(.review-rows small, .library-cost-legend-copy small) {
+  color: var(--library-muted) !important;
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  line-height: 1.4 !important;
+}
+
+.kws-content .product-library-page .library-detail-modal .preview-breakdown summary,
+.kws-content .product-library-page .library-detail-modal button {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+}
+
+.kws-content .product-library-page .library-detail-modal table thead {
+  color: var(--library-muted) !important;
+  font-size: 12px !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+.kws-content .product-library-page .library-detail-modal table tbody td {
+  color: var(--library-body);
+  font-size: 13px !important;
+  font-weight: 400 !important;
 }

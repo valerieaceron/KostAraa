@@ -1,7 +1,11 @@
 .kws-shell{min-height:100vh;color:#252525;background-color:#f8fbff}
-.kws-sidebar{position:fixed;inset:0 auto 0 0;width:280px;background:rgba(255,255,255,.97);border-right:1px solid #dbe7f7;padding:0 22px 22px;z-index:30}
+.kws-sidebar{position:fixed;inset:0 auto 0 0;width:280px;background:rgba(255,255,255,.97);border-right:1px solid #dbe7f7;padding:0 22px 22px;z-index:30;transition:width .2s ease,padding .2s ease}
 .kws-brand{display:flex;align-items:center;width:100%;height:78px;border:0;background:transparent;padding:0 5px;text-align:left;cursor:pointer;box-sizing:border-box}
 .kws-brand img{width:150px;height:auto}
+.kws-brand .kws-brand-icon{display:none}
+.kws-sidebar-toggle{position:absolute;top:25px;right:-14px;z-index:2;display:grid;width:28px;height:28px;place-items:center;border:1px solid #cbd9e9;border-radius:50%;background:#fff;color:#536783;box-shadow:0 4px 12px rgba(30,64,105,.13);cursor:pointer}
+.kws-sidebar-toggle:hover{border-color:#9fbce0;background:#edf4ff;color:#2f68aa}
+.kws-sidebar-toggle svg{width:15px;height:15px}
 .kws-sidebar nav,.kws-mobile-menu nav{display:flex;flex-direction:column;gap:7px;margin-top:4px}
 .kws-sidebar nav{max-height:calc(100vh - 308px);margin-top:20px;padding-right:3px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#d5e1f1 transparent}
 .kws-nav-group{display:grid;gap:4px}
@@ -16,10 +20,10 @@
 .kws-sidebar nav button:hover,.kws-mobile-menu nav button:hover{background:#eef5ff;color:#3a74ba}
 .kws-sidebar nav button.active,.kws-mobile-menu nav button.active{background:linear-gradient(90deg,#0d315f,#3a74ba);color:#fff;font-weight:700}
 .kws-logout{position:absolute;left:22px;right:22px;bottom:24px;width:calc(100% - 44px);justify-content:center;border:1px solid #dbe7f7}
-.kws-topbar{position:sticky;top:0;z-index:20;height:78px;margin-left:280px;border-bottom:1px solid #dbe7f7;background:rgba(255,255,255,.97);display:flex;align-items:center;justify-content:space-between;padding:0 38px;box-sizing:border-box;backdrop-filter:blur(12px)}
+.kws-topbar{position:sticky;top:0;z-index:20;height:78px;margin-left:280px;border-bottom:1px solid #dbe7f7;background:rgba(255,255,255,.97);display:flex;align-items:center;justify-content:space-between;padding:0 38px;box-sizing:border-box;backdrop-filter:blur(12px);transition:margin-left .2s ease}
 .kws-tagline{margin:0;color:#536783;font-size:13px;font-weight:500;line-height:1.25;white-space:nowrap}
 .kws-welcome{display:flex;align-items:baseline;gap:4px;color:#687991;font-size:13px;line-height:1.3;white-space:nowrap}.kws-welcome strong{color:#252525;font-size:13px;font-weight:600}
-.kws-content{min-height:calc(100vh - 78px);margin-left:280px;padding:47px 38px 60px}
+.kws-content{min-height:calc(100vh - 78px);margin-left:280px;padding:47px 38px 60px;transition:margin-left .2s ease}
 .kws-mobile-head{display:none}
 .kws-mobile-menu{display:none}
 .kws-content .text-accent{color:#3a74ba!important}
@@ -28,10 +32,39 @@
 .kws-content .bg-teal-50{background-color:#eef5ff!important}
 .kws-content .text-navy{color:#252525!important}
 .kws-content button.bg-navy{background:#3a74ba!important;color:#fff!important}
+.kws-logout svg{width:17px;height:17px}
+
+.kws-shell.sidebar-collapsed .kws-sidebar{width:76px;padding-right:12px;padding-left:12px}
+.kws-shell.sidebar-collapsed .kws-topbar,.kws-shell.sidebar-collapsed .kws-content{margin-left:76px}
+.kws-shell.sidebar-collapsed .kws-sidebar .kws-brand{justify-content:center;padding:0}
+.kws-shell.sidebar-collapsed .kws-sidebar .kws-brand-full{display:none}
+.kws-shell.sidebar-collapsed .kws-sidebar .kws-brand .kws-brand-icon{display:block;width:34px;height:34px;object-fit:contain}
+.kws-shell.sidebar-collapsed .kws-sidebar nav{padding-right:0;overflow-x:hidden}
+.kws-shell.sidebar-collapsed .kws-sidebar .kws-nav-label{display:none}
+.kws-shell.sidebar-collapsed .kws-sidebar .kws-nav-group{gap:6px}
+.kws-shell.sidebar-collapsed .kws-sidebar .kws-nav-group+.kws-nav-group{margin-top:8px;padding-top:8px;border-top:1px solid #e6edf6}
+.kws-shell.sidebar-collapsed .kws-sidebar .kws-nav-group>button{justify-content:center;width:52px;min-height:42px;padding:0;gap:0}
+.kws-shell.sidebar-collapsed .kws-sidebar .kws-nav-group>button>span{display:none}
+.kws-shell.sidebar-collapsed .kws-sidebar .kws-nav-group>button>svg{width:19px;height:19px}
+.kws-shell.sidebar-collapsed .kws-sidebar .kws-bottom-actions{left:12px;right:12px;gap:7px}
+.kws-shell.sidebar-collapsed .kws-sidebar :is(.kws-tour,.kws-support,.kws-logout){justify-content:center;min-height:44px;padding:0;gap:0}
+.kws-shell.sidebar-collapsed .kws-sidebar :is(.kws-tour,.kws-support)>span,
+.kws-shell.sidebar-collapsed .kws-sidebar .kws-logout>span{display:none}
+.kws-shell.sidebar-collapsed .kws-sidebar .kws-tour>i,
+.kws-shell.sidebar-collapsed .kws-sidebar .kws-support>i{flex-basis:28px;width:28px;height:28px}
+
+@media(prefers-reduced-motion:reduce){.kws-sidebar,.kws-topbar,.kws-content{transition:none}}
+
+@media(min-width:801px){
+.kws-shell.grid-workspace{height:100vh;overflow:hidden}
+.kws-shell.grid-workspace .kws-topbar{display:none}
+.kws-shell.grid-workspace .kws-content{height:100vh;min-height:0;padding:12px 14px 14px;overflow:hidden}
+.kws-shell.grid-workspace .kws-content>div{height:100%;min-height:0}
+}
 
 @media(max-width:800px){html,body,#root{width:100%;max-width:100%;overflow-x:hidden}.kws-shell{width:100%;max-width:100%;overflow-x:clip}.kws-sidebar{display:none}
 .kws-topbar{display:none}
-.kws-content{width:100%;max-width:100%;margin-left:0;padding:22px 14px 110px;box-sizing:border-box;overflow-x:clip}
+.kws-content,.kws-shell.sidebar-collapsed .kws-content{width:100%;max-width:100%;margin-left:0;padding:22px 14px 110px;box-sizing:border-box;overflow-x:clip}
 .kws-mobile-head{position:sticky;top:0;z-index:25;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;width:100%;max-width:100%;padding:10px 14px;background:rgba(255,255,255,.96);border-bottom:1px solid #dbe7f7;box-sizing:border-box}
 .kws-mobile-head img{width:122px}
 .kws-mobile-head .kws-mobile-logo{display:grid;place-items:center;justify-self:center;background:transparent;padding:3px}

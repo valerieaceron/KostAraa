@@ -29,7 +29,10 @@ function itemVariableCost(item) {
 function planningSignal(item) {
   if (item.status === 'Archived') return { label: 'Archived', tone: 'neutral' };
   const profile = readBusinessProfile();
-  const target = Number(profile?.operations?.monthlySalesUnits || profile?.calculatorCosts?.salesTarget) || 0;
+  const operations = profile?.operations || {};
+  const target = Number(operations.dailyOperationsVersion) >= 1 && Number(operations.operatingDaysPerMonth) > 0 && Number(operations.dailySalesUnits) > 0
+    ? Math.round(Number(operations.operatingDaysPerMonth) * Number(operations.dailySalesUnits))
+    : Number(operations.monthlySalesUnits || profile?.calculatorCosts?.salesTarget) || 0;
   const labor = Number(profile?.calculatorCosts?.totalLaborMonthly) || 0;
   const overhead = Number(profile?.calculatorCosts?.overheadMonthly || profile?.overhead?.monthlyOverheadPool) || 0;
   const price = Number(item.sellingPrice) || 0;
@@ -69,13 +72,14 @@ function displayStatus(item) {
   return health.key === 'healthy' ? 'Plan looks sustainable' : health.key === 'risk' ? 'Target may not cover costs' : health.reason === 'Margin is below the saved target' ? 'Limited safety margin' : 'More information needed';
 }
 
-function planningRemark(item) {
-  const status = displayStatus(item);
-  if (status === 'Plan looks sustainable') return { label: 'Costs likely covered', tone: 'good' };
-  if (status === 'Limited safety margin') return { label: 'Low buffer above costs', tone: 'warn' };
-  if (status === 'Target may not cover costs') return { label: 'May not cover costs', tone: 'risk' };
-  if (status === 'Archived') return { label: 'Archived', tone: 'neutral' };
-  return { label: pricingHealth(item).reason, tone: 'neutral' };
+function priceComparisonRemark(target, suggested) {
+  if (!target) return { tone: 'review', label: 'Add target price' };
+  if (!suggested) return { tone: 'review', label: 'No suggested price' };
+  const difference = Math.round((target - suggested) * 100) / 100;
+  if (difference === 0) return { tone: 'match', label: 'Matches suggested' };
+  return difference < 0
+    ? { tone: 'below', label: `${formatCurrency(Math.abs(difference))} below suggested` }
+    : { tone: 'above', label: `${formatCurrency(difference)} above suggested` };
 }
 
 function statusHelper(status) {
@@ -139,12 +143,13 @@ export function DetailModal({ item, onClose, onViewEdit, onDuplicate, onArchive 
     ].filter(row=>row.value>0),
   ];
   const costData=rows.filter(row=>row.value>0);
+  const totalCost=costData.reduce((sum,row)=>sum+(Number(row.value)||0),0);
   const price=Number(item.sellingPrice)||0;
   const suggested=Number(item.suggestedSellingPrice)||0;
   const breakEven=pricing.breakEvenSellingPrice;
   const comparison=(value)=>{const difference=Math.round(price*100)-Math.round(value*100);return difference===0?'Your price matches':`Your price is ${formatCurrency(Math.abs(difference)/100)} ${difference>0?'higher':'lower'}`};
   return (
-    <Modal className="library-detail-modal calculation-review library-finance-preview" title={displayProductName(item)} onClose={onClose}>
+    <Modal closeOnBackdrop overlayClassName="product-library-page" className="library-detail-modal calculation-review library-finance-preview" title={displayProductName(item)} onClose={onClose}>
       <p className="review-note">{item.itemType || 'Product'} · {item.category || 'Other'} · Saved calculation</p>
       <dl className="review-metrics">
         <div><dt>Your selling price</dt><dd>{formatCurrency(price)}</dd></div>
@@ -157,17 +162,36 @@ export function DetailModal({ item, onClose, onViewEdit, onDuplicate, onArchive 
         <div><dt>Break-even price<small>{breakEven != null ? comparison(breakEven) : 'Recalculate to update this saved item.'}</small></dt><dd>{breakEven != null ? formatCurrency(breakEven) : 'Not saved'}</dd></div>
       </dl>{breakEven != null && <p className="review-verdict">{Math.round(price*100)<Math.round(breakEven*100)?'Your price is below break-even.':Math.round(price*100)===Math.round(breakEven*100)?'Your price covers estimated costs, with no estimated profit.':price<suggested?'Covers estimated costs · Below suggested price':'Covers estimated costs · Meets suggested price'}</p>}</section>
       <div className="library-detail-overview-grid mt-5">
-        <ChartCard className="library-cost-card" title="What makes up the product cost">
+        <ChartCard className="library-cost-card" title="Cost breakdown">
           <div className="library-cost-chart-layout">
-            <div className="library-cost-chart-visual"><ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={costData} dataKey="value" nameKey="name" innerRadius={48} outerRadius={86}>
-                  {costData.map((entry, index) => <Cell key={entry.name} fill={colors[index % colors.length]} />)}
-                </Pie>
-                <Tooltip formatter={(value) => formatCurrency(value)} />
-              </PieChart>
-            </ResponsiveContainer></div>
-            <div className="library-cost-legend">{costData.map((entry, index) => <div key={entry.name}><span><i style={{ backgroundColor: colors[index % colors.length] }} />{entry.name}</span><b>{formatCurrency(entry.value)}</b></div>)}</div>
+            <div className="library-cost-chart-visual">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={costData} dataKey="value" nameKey="name" innerRadius={58} outerRadius={88} paddingAngle={1}>
+                    {costData.map((entry, index) => <Cell key={entry.name} fill={colors[index % colors.length]} />)}
+                  </Pie>
+                  <Tooltip formatter={(value) => formatCurrency(value)} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="library-cost-chart-total">
+                <span>Total cost</span>
+                <strong>{formatCurrency(totalCost)}</strong>
+              </div>
+            </div>
+            <div className="library-cost-legend" role="list" aria-label="Product cost breakdown">
+              {costData.map((entry, index) => (
+                <div key={entry.name} role="listitem">
+                  <span className="library-cost-legend-label">
+                    <i style={{ backgroundColor: colors[index % colors.length] }} />
+                    <span className="library-cost-legend-copy">
+                      <span>{entry.name}</span>
+                      <small>{totalCost > 0 ? `${formatNumber((entry.value / totalCost) * 100)}% of total cost` : '0% of total cost'}</small>
+                    </span>
+                  </span>
+                  <b>{formatCurrency(entry.value)}</b>
+                </div>
+              ))}
+            </div>
           </div>
         </ChartCard>
 
@@ -385,7 +409,7 @@ export default function ProductsServices({ items, onViewEdit, onDuplicate, onArc
           </div>
         </div>
 
-        <div className="library-list-heading" aria-hidden="true"><span /><span>Product name</span><span className="library-number-heading">Target price</span><span className="library-number-heading">Suggested price</span><span className="library-number-heading">Estimated profit/item</span><span className="library-number-heading">Profit margin</span><span>Status</span><span /></div>
+        <div className="library-list-heading" aria-hidden="true"><span /><span>Product name</span><span className="library-number-heading">Target price</span><span className="library-number-heading">Suggested price</span><span className="library-number-heading">Estimated profit/item</span><span className="library-number-heading">Profit margin</span><span>Remarks</span><span /></div>
         <div className={`library-selection-bar${selectedIds.size ? ' has-selection' : ''}`}>
           <label className="library-select-all"><input ref={selectAllRef} aria-label={allFilteredSelected ? 'Deselect all filtered products' : 'Select all filtered products'} type="checkbox" checked={allFilteredSelected} onChange={toggleFiltered} /><b>{selectedIds.size ? `${selectedIds.size} selected` : 'Select all'}</b></label>
           <span />
@@ -393,11 +417,11 @@ export default function ProductsServices({ items, onViewEdit, onDuplicate, onArc
         </div>
         <div className={`library-list${selectedIds.size ? ' has-selection' : ''}`}>
           {pagedItems.map((item, index) => {
-            const planRemark = planningRemark(item);
             const targetPrice = Number(item.pricingInputs?.targetSellingPrice) || Number(item.sellingPrice) || 0;
             const suggestedPrice = Number(item.suggestedSellingPrice) || 0;
             const estimatedProfit = Number(item.grossProfit) || 0;
             const profitMargin = Number(item.profitMargin) || 0;
+            const priceRemark = priceComparisonRemark(targetPrice, suggestedPrice);
             return (
               <article key={item.id} className="library-item-row">
                 <label className="library-row-selector"><span aria-hidden="true">{(safePage - 1) * 10 + index + 1}</span><input aria-label={`Select ${displayProductName(item)}`} type="checkbox" checked={selectedIds.has(String(item.id))} onChange={() => setSelectedIds((current) => { const next = new Set(current); const id = String(item.id); next.has(id) ? next.delete(id) : next.add(id); return next; })} /></label>
@@ -409,7 +433,7 @@ export default function ProductsServices({ items, onViewEdit, onDuplicate, onArc
                   <p className={`library-price-value${profitMargin < 0 ? ' risk' : ''}`} data-label="Profit margin">{formatNumber(profitMargin)}%</p>
                 </div>
                 <div className="library-remarks">
-                  <span className={`library-remark ${planRemark.tone}`}>{planRemark.label}</span>
+                  <span className={`library-remark ${priceRemark.tone}`}>{priceRemark.label}</span>
                 </div>
                 <div className="library-row-actions">
                   <button className="library-actions-trigger" aria-haspopup="menu" aria-expanded={openMenuId === item.id} aria-label={`More actions for ${displayProductName(item)}`} onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)} title="More actions" type="button"><MoreHorizontal aria-hidden="true" /></button>

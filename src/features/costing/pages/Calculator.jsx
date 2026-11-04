@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Copy, GripVertical, Info, Package, Plus, RotateCcw, Save, Trash2 } from 'lucide-react';
 import { Badge, Button, Modal, Select } from '../components/ui';
 import { calculateSellingPrice, formatCurrency, formatNumber } from '../utils/calculations';
@@ -105,32 +105,6 @@ function SectionShell({ number, title, helper, action, children }) {
   );
 }
 
-function BreakdownPill({ label, value }) {
-  return (
-    <div className="calculator-breakdown-pill rounded-md border border-slate-200 bg-slate-50 p-3">
-      <p className="text-xs font-bold text-slate-500">{label}</p>
-      <p className="mt-1 text-base font-black text-navy">{value}</p>
-    </div>
-  );
-}
-
-function ResultPanelCard({ label, value, tone = 'default' }) {
-  const toneClass = {
-    default: 'border-slate-200 bg-slate-50 text-navy',
-    accent: 'border-teal-100 bg-teal-50 text-accent',
-    soft: 'border-slate-200 bg-white text-navy',
-    strong: 'border-navy bg-navy text-white',
-    highlight: 'border-orange-200 bg-orange-50 text-orange-700',
-  }[tone];
-
-  return (
-    <div className={`calculator-result-card calculator-result-card--${tone} rounded-md border px-4 py-3 ${toneClass}`}>
-      <p className={`text-xs font-black ${tone === 'strong' ? 'text-slate-300' : 'text-slate-500'}`}>{label}</p>
-      <p className={`mt-1 font-black ${tone === 'strong' ? 'text-3xl' : 'text-2xl'}`}>{value}</p>
-    </div>
-  );
-}
-
 export default function Calculator({ product, setProduct, results, inventory = [], onSaveItem, onDuplicateCurrent, onReset, editingItem, operationCostsCard = null }) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
@@ -141,6 +115,8 @@ export default function Calculator({ product, setProduct, results, inventory = [
   const [marketingPercentage, setMarketingPercentage] = useState(0);
   const [markupTopup, setMarkupTopup] = useState(50);
   const [targetSellingPrice, setTargetSellingPrice] = useState('');
+  const [isOverviewStuck, setIsOverviewStuck] = useState(false);
+  const overviewRef = useRef(null);
   const [draggedRow, setDraggedRow] = useState(null);
   const [rowModal, setRowModal] = useState(null);
   const [rowDraft, setRowDraft] = useState({ materialId: '', usedQuantity: '', usedUnit: 'pcs' });
@@ -162,6 +138,27 @@ export default function Calculator({ product, setProduct, results, inventory = [
       setTargetSellingPrice(savedTarget > 0 ? savedTarget : savedSellingPrice > 0 && Math.abs(savedSellingPrice - savedSuggestedPrice) > 0.005 ? savedSellingPrice : '');
     }
   }, [editingItem]);
+
+  useEffect(() => {
+    let animationFrame = 0;
+    const updateOverviewState = () => {
+      window.cancelAnimationFrame(animationFrame);
+      animationFrame = window.requestAnimationFrame(() => {
+        const overviewTop = overviewRef.current?.getBoundingClientRect().top;
+        const isStuck = window.innerWidth > 800 && window.scrollY > 0 && overviewTop <= 79;
+        setIsOverviewStuck((current) => (current === isStuck ? current : isStuck));
+      });
+    };
+
+    updateOverviewState();
+    window.addEventListener('scroll', updateOverviewState, { passive: true });
+    window.addEventListener('resize', updateOverviewState);
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.removeEventListener('scroll', updateOverviewState);
+      window.removeEventListener('resize', updateOverviewState);
+    };
+  }, []);
 
   const update = (field, value) => setProduct({ ...product, [field]: value });
   const updateIngredient = (id, field, value) => {
@@ -341,18 +338,50 @@ export default function Calculator({ product, setProduct, results, inventory = [
     <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="calculator-page-title text-3xl font-black text-navy">Costing Calculator</h1>
+          <h1 className="calculator-page-title text-3xl font-black text-navy">Add New Product</h1>
         </div>
         {editingItem ? <Badge tone="warn">Editing saved item</Badge> : null}
       </div>
 
-      <section className="calculator-product-overview rounded-lg border border-slate-200 bg-white p-4 shadow-soft">
+      <section
+        ref={overviewRef}
+        className={`calculator-product-overview rounded-lg border border-slate-200 bg-white p-4 shadow-soft${isOverviewStuck ? ' is-stuck' : ''}`}
+      >
         <div className="calculator-product-overview-grid">
           <Field label="Product name" icon={Package} value={product.productName} onChange={(value) => update('productName', value)} />
-          <aside className="calculator-top-srp" aria-live="polite">
-            <span>Suggested selling price</span>
-            <b>{suggestedSellingPrice > 0 ? formatCurrency(suggestedSellingPrice) : 'Not available'}</b>
-            <small>Based on your recorded costs and pricing settings</small>
+          <aside className="calculator-top-metric calculator-top-cost" aria-live="polite">
+            <span className="calculator-top-metric-label">Total cost of goods</span>
+            <strong>{formatCurrency(totalCostOfGoods)}</strong>
+            <small>Combined cost to produce one item</small>
+          </aside>
+          <aside className="calculator-top-metric calculator-top-srp" aria-live="polite">
+            <span className="calculator-top-metric-label">Suggested selling price</span>
+            <strong>{suggestedSellingPrice > 0 ? formatCurrency(suggestedSellingPrice) : 'Not available'}</strong>
+            <small>Recommended price based on your costing</small>
+          </aside>
+          <aside className="calculator-top-metric calculator-top-target">
+            <label htmlFor="targetSellingPrice">
+              Target selling price <small>(Optional)</small>
+            </label>
+            <span className="calculator-top-target-input">
+              <span>₱</span>
+              <input
+                id="targetSellingPrice"
+                min="0"
+                placeholder="Enter price"
+                step="0.01"
+                type="number"
+                value={targetSellingPrice}
+                onChange={(event) => setTargetSellingPrice(event.target.value)}
+              />
+            </span>
+            <small aria-live="polite">
+              {!hasTargetPrice
+                ? 'Enter the price you plan to charge'
+                : targetDifference === 0
+                  ? 'Matches the suggested price'
+                  : `${formatCurrency(Math.abs(targetDifference))} ${targetDifference > 0 ? 'above' : 'below'} suggested price`}
+            </small>
           </aside>
         </div>
       </section>
@@ -443,9 +472,7 @@ export default function Calculator({ product, setProduct, results, inventory = [
         </div>
 
         <aside className="calculator-results min-w-0 rounded-lg border border-slate-200 bg-slate-50/80 p-4 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
-          <ResultPanelCard label="Total Cost of Goods" value={formatCurrency(totalCostOfGoods)} tone="accent" />
-
-          <div className="mt-3 rounded-md border border-slate-200 bg-white p-3">
+          <div className="rounded-md border border-slate-200 bg-white p-3">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-1.5">
@@ -559,59 +586,6 @@ export default function Calculator({ product, setProduct, results, inventory = [
               <span className="text-base font-black text-navy">{formatCurrency(taxAmount)}</span>
             </div>
           </div>
-
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-            <ResultPanelCard label="Suggested Selling Price" value={formatCurrency(suggestedSellingPrice)} tone="accent" />
-            <ResultPanelCard label="Profit Per Unit" value={formatCurrency(profitPerUnit)} tone="soft" />
-            <ResultPanelCard label="Gross Margin" value={`${formatNumber(grossMargin)}%`} tone="soft" />
-            <ResultPanelCard label="Break-even Selling Price" value={formatCurrency(breakEvenSellingPrice)} tone="highlight" />
-          </div>
-
-          <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-3">
-            <p className="mb-3 text-sm font-black text-navy">Cost Breakdown</p>
-            <div className="grid grid-cols-2 gap-2">
-              <BreakdownPill label="Materials" value={formatCurrency(results.materialCost)} />
-              <BreakdownPill label="Packaging" value={formatCurrency(results.packagingCost)} />
-              <BreakdownPill label="Labor" value={formatCurrency(results.costBreakdown.Labor)} />
-              <BreakdownPill label="Overhead" value={formatCurrency(results.overheadCost)} />
-            </div>
-          </div>
-
-          <section className="calculator-final-comparison mt-4 rounded-md border border-blue-200 bg-blue-50/60 p-4">
-            <p className="text-sm font-black uppercase tracking-wide text-blue-600">Final Comparison</p>
-            <h3 className="mt-2 text-base font-black text-navy">Target Selling Price <span className="font-bold text-slate-500">(Optional)</span></h3>
-            <label className="mt-4 block" htmlFor="targetSellingPrice">
-              <span className="sr-only">Target Selling Price</span>
-              <span className="flex min-h-12 items-center gap-3 rounded-md border border-slate-200 bg-white px-3 focus-within:border-accent focus-within:ring-2 focus-within:ring-blue-100">
-                <span className="font-bold text-slate-500">PHP</span>
-                <input
-                  id="targetSellingPrice"
-                  className="min-w-0 flex-1 bg-transparent text-base font-black text-navy outline-none"
-                  min="0"
-                  placeholder="Enter target price"
-                  step="0.01"
-                  type="number"
-                  value={targetSellingPrice}
-                  onChange={(event) => setTargetSellingPrice(event.target.value)}
-                />
-              </span>
-            </label>
-            {hasTargetPrice ? (
-              <div className="mt-4 grid gap-2 border-t border-blue-200 pt-4">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-xs font-bold text-slate-500">Compared with suggested price</span>
-                  <span className={`text-sm font-black ${targetDifference >= 0 ? 'text-emerald-700' : 'text-orange-700'}`}>{targetDifference >= 0 ? '+' : '−'}{formatCurrency(Math.abs(targetDifference))}</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <BreakdownPill label="Target profit / unit" value={formatCurrency(targetProfitPerUnit)} />
-                  <BreakdownPill label="Target gross margin" value={`${formatNumber(targetGrossMargin)}%`} />
-                  <BreakdownPill label={isVat ? 'VAT in target price' : 'Tax on target revenue'} value={formatCurrency(targetTaxAmount)} />
-                  <BreakdownPill label="Price position" value={targetPrice >= breakEvenSellingPrice ? 'Above break-even' : 'Below break-even'} />
-                </div>
-                {targetPrice < breakEvenSellingPrice ? <p className="rounded-md border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-bold leading-5 text-orange-800">This target price does not cover the calculated cost, marketing allowance, and tax.</p> : null}
-              </div>
-            ) : null}
-          </section>
 
           <div className="mt-4 grid gap-3">
             <Button onClick={() => setSaveOpen(true)}><Save className="h-4 w-4" /> {editingItem ? 'Update Product / Service' : 'Save as Product / Service'}</Button>

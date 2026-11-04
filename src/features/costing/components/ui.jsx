@@ -78,9 +78,9 @@ export function Badge({ children, tone = 'neutral', className = '' }) {
   return <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-bold ${tones[tone]} ${className}`}>{children}</span>;
 }
 
-export function Modal({ title, children, onClose, className = '' }) {
+export function Modal({ title, children, onClose, className = '', overlayClassName = '', closeOnBackdrop = false }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4">
+    <div className={`fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 ${overlayClassName}`} onMouseDown={event => { if (closeOnBackdrop && event.target === event.currentTarget) onClose(); }}>
       <div className={`max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-lg bg-white p-5 shadow-soft ${className}`}>
         <div className="mb-4 flex items-center justify-between gap-3">
           <h2 className="text-xl font-black text-navy">{title}</h2>

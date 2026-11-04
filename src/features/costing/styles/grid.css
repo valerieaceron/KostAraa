@@ -12,6 +12,34 @@
 .grid-workbook .grid-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px}
 .grid-workbook .grid-toolbar>button,.grid-workbook .grid-column-menu>summary{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:7px 11px;border:1px solid #ccd7e4;border-radius:5px;background:white;font-size:12px;font-weight:550;cursor:pointer}
 .grid-workbook .grid-toolbar>button:first-child{background:#3472b9;border-color:#3472b9;color:white}
+.grid-workbook .grid-history-actions{display:flex;align-items:center;overflow:hidden;border:1px solid #ccd7e4;border-radius:5px;background:#fff}
+.grid-workbook .grid-history-actions button{display:inline-flex;min-height:32px;align-items:center;gap:5px;padding:6px 9px;border:0;background:#fff;color:#425d7b;font-size:11px;font-weight:500;cursor:pointer}
+.grid-workbook .grid-history-actions button+button{border-left:1px solid #dce4ed}
+.grid-workbook .grid-history-actions button:not(:disabled):hover{background:#edf4ff;color:#2f68aa}
+.grid-workbook .grid-history-actions button:disabled{background:#f7f9fb;color:#a3adba}
+.grid-workbook .grid-data-tools{display:flex;min-height:42px;align-items:center;gap:8px;margin-bottom:8px;padding:5px 7px;border:1px solid #ccd8e5;border-radius:6px;background:#f5f8fc}
+.grid-workbook .grid-search{display:flex;width:min(320px,30vw);min-width:190px;height:32px;align-items:center;gap:6px;border:1px solid #cbd7e5;border-radius:5px;background:#fff;padding:0 8px;color:#728298}
+.grid-workbook .grid-search>svg{width:14px;height:14px;flex:0 0 14px}
+.grid-workbook .grid-search input{height:30px;padding:5px 0;border:0;background:transparent;font-size:11px;text-align:left}
+.grid-workbook .grid-search input:focus{outline:0;background:transparent}
+.grid-workbook .grid-search button{display:grid;width:22px;height:22px;flex:0 0 22px;place-items:center;border:0;border-radius:4px;background:transparent;color:#7a899c;cursor:pointer}
+.grid-workbook .grid-search button:hover{background:#edf3fa;color:#315f99}
+.grid-workbook .grid-search button svg{width:13px;height:13px}
+.grid-workbook .grid-data-select{display:flex;height:32px;align-items:center;gap:5px;border:1px solid #cbd7e5;border-radius:5px;background:#fff;padding:0 5px 0 8px;color:#60728a;white-space:nowrap}
+.grid-workbook .grid-data-select>svg{width:13px;height:13px;flex:0 0 13px}
+.grid-workbook .grid-data-select>span{font-size:10px;font-weight:500}
+.grid-workbook .grid-data-select select{width:auto;max-width:190px;height:30px;border:0;background:#fff;padding:5px 24px 5px 4px;color:#304861;font-size:11px;cursor:pointer}
+.grid-workbook .grid-data-select select:focus{outline:0;background:#fff}
+.grid-workbook .grid-result-count{margin-left:auto;color:#718198;font-size:10px;white-space:nowrap}
+.grid-workbook .grid-clear-data-view{display:inline-flex;min-height:30px;align-items:center;gap:4px;border:0;border-radius:5px;background:transparent;padding:5px 7px;color:#315f99;font-size:10px;font-weight:500;cursor:pointer}
+.grid-workbook .grid-clear-data-view:hover{background:#e8f1fb}
+.grid-workbook .grid-clear-data-view svg{width:12px;height:12px}
+.grid-workbook .grid-bulk-actions{display:flex;align-items:center;gap:6px;margin-left:auto;padding-left:10px;border-left:1px solid #d9e2ec}
+.grid-workbook .grid-bulk-actions>span{padding:0 4px;color:#52677f;font-size:11px;font-weight:600;white-space:nowrap}
+.grid-workbook .grid-bulk-actions>button{display:inline-flex;min-height:34px;align-items:center;gap:6px;padding:7px 10px;border:1px solid #c7d8eb;border-radius:5px;background:#fff;color:#2f68aa;font-size:11px;font-weight:550;cursor:pointer}
+.grid-workbook .grid-bulk-actions>button:hover{background:#edf4ff}
+.grid-workbook .grid-bulk-actions>button.danger{border-color:#e7c7cb;color:#a9323f}
+.grid-workbook .grid-bulk-actions>button.danger:hover{background:#fff1f2}
 .grid-workbook .grid-view-switcher{display:flex;align-items:center;gap:2px;padding:3px;border:1px solid #ccd8e5;border-radius:6px;background:#edf3f9}
 .grid-workbook .grid-view-switcher button{min-height:28px;padding:5px 11px;border-radius:4px;color:#5e7189;font-size:11px;font-weight:500;line-height:1}
 .grid-workbook .grid-view-switcher button:hover{color:#285f9f}
@@ -24,7 +52,10 @@
 .grid-workbook .grid-column-menu label{display:flex;align-items:center;gap:10px;min-height:34px;padding:6px 8px;border-radius:4px;color:#334a64;font-size:12px;line-height:1.35;cursor:pointer}
 .grid-workbook .grid-column-menu label:hover{background:#f2f6fb}
 .grid-workbook .grid-column-menu input[type=checkbox]{display:inline-block;flex:0 0 15px;width:15px;height:15px;min-width:15px;margin:0;padding:0;border:1px solid #aebdce;border-radius:3px;accent-color:#3472b9;box-sizing:border-box}
-.grid-workbook .grid-column-menu button{position:sticky;bottom:-8px;width:100%;margin-top:5px;padding:10px 8px;border-top:1px solid #e3e9f0;background:white;color:#3472b9;font-size:11px;font-weight:600;text-align:left}
+.grid-workbook .grid-column-menu>div>button{position:sticky;bottom:-8px;width:100%;margin-top:5px;padding:10px 8px;border-top:1px solid #e3e9f0;background:white;color:#3472b9;font-size:11px;font-weight:600;text-align:left}
+.grid-workbook .grid-column-menu footer{position:sticky;bottom:-8px;display:grid;margin:5px -8px -8px;border-top:1px solid #e3e9f0;background:#fff;padding:4px 8px 8px}
+.grid-workbook .grid-column-menu footer button{width:100%;border:0;background:#fff;padding:8px;color:#3472b9;font-size:11px;font-weight:600;text-align:left;cursor:pointer}
+.grid-workbook .grid-column-menu footer button:hover{background:#f2f6fb}
 .grid-workbook .grid-formula-bar{display:flex;align-items:stretch;min-height:42px;border:1px solid #cdd8e4;border-bottom:0;background:#fff;color:#738297;font-size:11px}
 .grid-workbook .grid-cell-context{display:flex;align-items:stretch;min-width:0;flex:1}
 .grid-workbook .grid-cell-context>span{display:grid;place-items:center;min-width:54px;border-right:1px solid #d9e1eb;font-variant-numeric:tabular-nums;color:#3b526e}
@@ -32,20 +63,34 @@
 .grid-workbook .grid-formula-bar strong{font-weight:500;color:#4d617a}
 .grid-workbook .grid-view-control{display:flex;align-items:center;gap:9px;margin-left:auto;padding:4px 5px 4px 12px;border-left:1px solid #d9e1eb;white-space:nowrap}
 .grid-workbook .grid-view-control>span{color:#52677f;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
-.grid-workbook .grid-table-wrap{width:100%;min-height:360px;max-height:calc(100dvh - 310px);overflow:auto;border:1px solid #cdd8e4;background:white;scrollbar-gutter:stable;overscroll-behavior-x:contain;box-shadow:0 8px 24px #29496c0d}
+.grid-workbook .grid-table-wrap{isolation:isolate;width:100%;min-height:360px;max-height:calc(100dvh - 310px);overflow:auto;border:1px solid #cdd8e4;background:white;scrollbar-gutter:stable;overscroll-behavior:contain;box-shadow:0 8px 24px #29496c0d}
 .grid-workbook table{border-collapse:separate;border-spacing:0;table-layout:fixed;width:max-content;min-width:100%;font-variant-numeric:tabular-nums}
 .grid-workbook th,.grid-workbook td{border-right:1px solid #dce3eb;border-bottom:1px solid #dce3eb;font-size:12px;vertical-align:top;padding:0;font-weight:400;line-height:1.4}
-.grid-workbook thead th{position:sticky;top:50px;z-index:4;height:34px;padding:8px;background:#f3f6fa;white-space:nowrap;font-weight:600;text-align:left;color:#354c67}
-.grid-workbook .grid-column-letters th{top:0;height:24px;padding:4px 8px;text-align:center;font-size:10px;background:#eaf0f6;font-weight:400;color:#728298}
+.grid-workbook thead th{position:sticky;top:50px;z-index:22;height:34px;padding:8px;background:#f3f6fa;background-clip:padding-box;white-space:nowrap;font-weight:600;text-align:left;color:#354c67}
+.grid-workbook .grid-column-letters th{top:0;z-index:24;height:24px;padding:4px 8px;text-align:center;font-size:10px;background:#eaf0f6;font-weight:400;color:#728298}
 .grid-workbook .grid-column-letters th span{float:right;font-family:serif;color:#688a83}
-.grid-workbook .grid-column-groups th{top:24px;height:26px;padding:5px 8px;border-bottom-color:#cdd9e6;background:#dfe9f5;color:#5b718c;font-size:10px;font-weight:600;letter-spacing:.07em;text-align:left;text-transform:uppercase}
+.grid-workbook .grid-column-resizer{position:absolute;top:0;right:-4px;z-index:12;width:9px;height:100%;min-height:0;border:0;background:transparent;padding:0;cursor:col-resize;touch-action:none}
+.grid-workbook .grid-column-resizer::after{content:"";position:absolute;top:4px;right:3px;bottom:4px;width:1px;background:transparent}
+.grid-workbook .grid-column-resizer:hover::after,.grid-workbook .grid-column-resizer:focus-visible::after{background:#3472b9}
+.grid-workbook .grid-column-resizer:focus-visible{outline:2px solid #8db3df;outline-offset:-2px}
+.grid-workbook .grid-column-groups th{top:24px;z-index:23;height:26px;padding:5px 8px;border-bottom-color:#cdd9e6;background:#dfe9f5;color:#5b718c;font-size:10px;font-weight:600;letter-spacing:.07em;text-align:left;text-transform:uppercase}
 .grid-workbook .grid-column-labels th{font-family:inherit;font-size:12px;font-weight:600;letter-spacing:0;text-transform:none}
 .grid-workbook tbody>tr>th{position:sticky;left:0;z-index:3;width:42px;background:#f3f6fa;text-align:center;color:#8793a3;padding:11px 3px 4px}
+.grid-workbook .grid-row-resizer{position:absolute;right:0;bottom:-4px;left:0;z-index:10;width:100%;height:9px;min-height:0;margin:0!important;border:0;border-radius:0!important;background:transparent;padding:0!important;cursor:row-resize;touch-action:none}
+.grid-workbook .grid-row-resizer::after{content:"";position:absolute;right:5px;bottom:3px;left:5px;height:1px;background:transparent}
+.grid-workbook .grid-row-resizer:hover::after,.grid-workbook .grid-row-resizer:focus-visible::after{background:#3472b9}
+.grid-workbook .grid-row-resizer:focus-visible{outline:2px solid #8db3df;outline-offset:-2px}
 .grid-workbook tbody>tr>th button{display:block;margin:13px auto 0;padding:4px;color:#8d9aad;border-radius:3px}
 .grid-workbook tbody>tr>th button:hover{background:#feecec;color:#b42318}
-.grid-workbook thead th:first-child{position:sticky;left:0;z-index:7;width:42px;background:#eaf0f6}
+.grid-workbook tbody>tr>th .grid-row-resizer:hover{background:transparent;color:inherit}
+.grid-workbook .grid-select-checkbox{display:block;width:15px;height:15px;margin:0 auto;padding:0;border:1px solid #aebdce;border-radius:3px;accent-color:#3472b9;cursor:pointer}
+.grid-workbook .grid-selection-mode{cursor:pointer}
+.grid-workbook .grid-selection-mode :is(input,select,button){cursor:pointer}
+.grid-workbook .grid-row-selected>th{background:#e4eefb}
+.grid-workbook .grid-row-selected>td,.grid-workbook .grid-row-selected>td.grid-calculated,.grid-workbook .grid-row-selected>td.grid-result{background:#f2f7ff}
+.grid-workbook thead th:first-child{position:sticky;left:0;z-index:30;width:42px;background:#eaf0f6}
 .grid-workbook .grid-product-column{position:sticky;left:42px;z-index:2;background:#fff;box-shadow:2px 0 0 #cdd8e4}
-.grid-workbook thead .grid-product-column{z-index:6;background:#edf3fb}
+.grid-workbook thead .grid-product-column{z-index:28;background:#edf3fb}
 .grid-workbook .grid-editable{background:white}
 .grid-workbook td.grid-calculated{background:#f7faf9}
 .grid-workbook thead th.grid-calculated{background:#ecf3f1}
@@ -53,12 +98,35 @@
 .grid-workbook thead th.grid-result{background:#e2efeb;color:#2d5f59}
 .grid-workbook td.grid-result output{color:#284f52;font-weight:600}
 .grid-workbook tbody tr:hover td{box-shadow:inset 0 1px #c7d9ec,inset 0 -1px #c7d9ec}
+.grid-workbook tbody tr:hover td.grid-product-column{box-shadow:inset 0 1px #c7d9ec,inset 0 -1px #c7d9ec,2px 0 0 #cdd8e4}
+.grid-workbook tbody tr:hover td.grid-row-actions{box-shadow:inset 0 1px #c7d9ec,inset 0 -1px #c7d9ec,-1px 0 #cdd8e4}
 .grid-workbook input,.grid-workbook select{display:block;width:100%;height:38px;min-width:0;padding:9px 8px;border:0;border-radius:0;outline-offset:-2px;background:transparent;color:#253a52;font:inherit;box-sizing:border-box}
-.grid-workbook input[type=number]{text-align:right;appearance:textfield;-moz-appearance:textfield}
+.grid-workbook input[type=number]{padding-right:12px;padding-left:10px;text-align:right;appearance:textfield;-moz-appearance:textfield}
 .grid-workbook input[type=number]::-webkit-inner-spin-button,.grid-workbook input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .grid-workbook input::placeholder{color:#8796a9;font:inherit;font-weight:500;opacity:1}
 .grid-workbook input:focus,.grid-workbook select:focus{outline:2px solid #3a78bf;background:#f2f7ff}
+.grid-workbook td.grid-cell-editing input:focus,.grid-workbook td.grid-cell-editing select:focus{outline:0;background:transparent;box-shadow:none}
+.grid-workbook td.grid-cell-editing input::selection{background:#cfe2f8;color:#193d65}
 .grid-workbook td:focus{outline:2px solid #3a78bf;outline-offset:-2px}
+.grid-workbook td[data-column]{cursor:cell}
+.grid-workbook td.grid-cell-active{outline:2px solid #3a78bf;outline-offset:-2px;z-index:3}
+.grid-workbook td.grid-product-column.grid-cell-active{z-index:4}
+.grid-workbook td.grid-cell-editing{background:#f2f7ff!important}
+.grid-workbook td.grid-cell-copied{position:relative}
+.grid-workbook td.grid-product-column.grid-cell-copied{position:sticky}
+.grid-workbook td.grid-cell-copied::after{content:"";position:absolute;inset:-1px;z-index:9;pointer-events:none;background:linear-gradient(90deg,#1f66b2 50%,transparent 50%) 0 0/8px 2px repeat-x,linear-gradient(0deg,#1f66b2 50%,transparent 50%) 100% 0/2px 8px repeat-y,linear-gradient(90deg,#1f66b2 50%,transparent 50%) 0 100%/8px 2px repeat-x,linear-gradient(0deg,#1f66b2 50%,transparent 50%) 0 0/2px 8px repeat-y;animation:grid-copy-march .55s linear infinite}
+@keyframes grid-copy-march{to{background-position:8px 0,100% 8px,-8px 100%,0 -8px}}
+@media(prefers-reduced-motion:reduce){.grid-workbook td.grid-cell-copied::after{animation:none;outline:2px dashed #1f66b2;outline-offset:-2px;background:none}}
+.grid-workbook td.grid-editable:not(.grid-cell-editing) input,
+.grid-workbook td.grid-editable:not(.grid-cell-editing) select{pointer-events:none;caret-color:transparent}
+.grid-workbook td.grid-cell-editing{cursor:text}
+.grid-workbook td.grid-cell-editing input,.grid-workbook td.grid-cell-editing select{pointer-events:auto;caret-color:auto}
+.grid-workbook td[data-column="taxMode"]{position:relative}
+.grid-workbook td[data-column="taxMode"] .grid-tax-select{position:absolute;inset:0;height:auto;padding-right:30px;pointer-events:auto!important;cursor:pointer}
+.grid-workbook td.grid-fill-capable{position:relative}
+.grid-workbook td.grid-fill-range{background:#eaf3ff!important;box-shadow:inset 0 0 0 1px #74a5dc!important}
+.grid-workbook .grid-fill-handle{position:absolute;right:-4px;bottom:-4px;z-index:8;width:9px;height:9px;min-width:9px;padding:0;border:1px solid #fff;border-radius:2px;background:#3472b9;box-shadow:0 0 0 1px #3472b9;cursor:crosshair;touch-action:none}
+.grid-workbook .grid-fill-handle:hover,.grid-workbook .grid-fill-handle:focus-visible{width:11px;height:11px;right:-5px;bottom:-5px;outline:2px solid #b8d2f1;outline-offset:1px}
 .grid-workbook .grid-product-column>input{font-weight:550}
 .grid-workbook .grid-material-stack{display:flex;flex-direction:column}
 .grid-workbook .grid-material-line{display:flex;height:38px;min-height:38px;border-bottom:1px solid #eef1f5;align-items:center}
@@ -69,12 +137,27 @@
 .grid-workbook .grid-add-material{display:flex;align-items:center;gap:12px;height:26px;padding:3px 8px;white-space:nowrap}
 .grid-workbook .grid-add-material button{font-size:10px;color:#6c87a9}
 .grid-workbook .grid-add-material button:hover{color:#3472b9;text-decoration:underline}
+.grid-workbook .grid-add-material .grid-material-toggle{display:inline-flex;align-items:center;gap:3px;color:#3472b9;font-weight:500}
+.grid-workbook .grid-add-material .grid-material-toggle svg{width:12px;height:12px}
+.grid-workbook .grid-add-material .grid-material-toggle.collapse{margin-left:auto;color:#6d7f96}
 .grid-workbook .grid-material-spacer{height:26px}
+.grid-workbook .grid-material-spacer.has-more{display:flex;align-items:center;justify-content:flex-end;padding:3px 8px;color:#8795a7;font-size:9px}
 .grid-workbook td output{display:block;padding:11px 8px;white-space:nowrap;text-align:right;font-size:13px;color:#3a5364}
 .grid-workbook .grid-negative{color:#b42318!important}
 .grid-workbook .grid-row-actions{padding:6px;background:#fff;vertical-align:top}
 .grid-workbook .grid-row-actions button{display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;width:100%;padding:6px 8px;font-size:11px;color:#3472b9;border:1px solid #d5e2f0;border-radius:4px}
 .grid-workbook .grid-row-actions button:hover{background:#edf4ff}
+.grid-workbook.grid-save-guide-active .grid-save-product-action{position:relative;z-index:5;border-color:#2f6fb8;background:#eaf3ff;color:#1f5f9f;box-shadow:0 0 0 3px rgba(58,116,186,.2);animation:grid-save-guide-pulse 1.15s ease-in-out infinite}
+.grid-workbook.grid-save-guide-active .grid-save-product-action:disabled{opacity:.7}
+@keyframes grid-save-guide-pulse{50%{border-color:#174f91;background:#dcecff;box-shadow:0 0 0 6px rgba(58,116,186,.1)}}
+@media(prefers-reduced-motion:reduce){.grid-workbook.grid-save-guide-active .grid-save-product-action{animation:none;outline:3px solid rgba(58,116,186,.2);outline-offset:2px}}
+.grid-workbook .grid-no-results td{height:220px;padding:30px;text-align:center;color:#718198}
+.grid-workbook .grid-no-results td>svg{display:block;width:24px;height:24px;margin:0 auto 8px;color:#8da1b8}
+.grid-workbook .grid-no-results strong,.grid-workbook .grid-no-results span{display:block}
+.grid-workbook .grid-no-results strong{color:#40536f;font-size:13px;font-weight:500}
+.grid-workbook .grid-no-results span{margin-top:3px;font-size:11px}
+.grid-workbook .grid-no-results button{margin-top:12px;border:1px solid #c4d6eb;border-radius:5px;background:#fff;padding:7px 10px;color:#315f99;font-size:11px;cursor:pointer}
+.grid-workbook .grid-no-results button:hover{background:#edf4ff}
 .grid-workbook button:disabled{opacity:.45;cursor:default}
 .grid-workbook .grid-cell-error{padding:3px 8px 8px;margin:0;color:#b42318;font-size:11px;line-height:1.5;max-width:208px;white-space:normal}
 .grid-workbook .grid-row-invalid>th{color:#b42318;background:#fff0ed}
@@ -84,7 +167,88 @@
 .grid-workbook .grid-setup-note,.grid-workbook .grid-notice{font-size:12px;line-height:1.6;background:#f1f6fd;border:1px solid #d6e4f7;padding:8px 12px;margin:8px 0;color:#516c8b}
 .grid-workbook .grid-notice.error{border-color:#f1c7c2;background:#fff3f1;color:#9f2d24}
 .grid-workbook .grid-setup-note button,.grid-workbook .grid-notice button{color:#3472b9;text-decoration:underline;margin-left:4px}
-@media(max-width:700px){.grid-workbook .grid-page-header{align-items:flex-start;flex-direction:column;gap:10px}.grid-workbook .grid-header-meta{width:100%}.grid-workbook .grid-page-header h1{font-size:24px}.grid-workbook .grid-draft-status{width:100%;margin-left:0;font-size:10px}.grid-workbook .grid-formula-bar{flex-direction:column}.grid-workbook .grid-view-control{width:100%;margin-left:0;padding:6px;border-top:1px solid #d9e1eb;border-left:0;white-space:normal}.grid-workbook .grid-view-control>span{padding-left:4px}.grid-workbook .grid-view-switcher{flex:1}.grid-workbook .grid-view-switcher button{flex:1}.grid-workbook .grid-product-column{position:static;box-shadow:none}.grid-workbook thead .grid-product-column{position:sticky;left:auto}.grid-workbook .grid-table-wrap{min-height:320px;max-height:62vh}}
-.grid-workbook thead tr>th:last-child{position:sticky;right:0;z-index:6;background:#eef3f9;box-shadow:-1px 0 #cdd8e4}
+@media(max-width:700px){.grid-workbook .grid-page-header{align-items:flex-start;flex-direction:column;gap:10px}.grid-workbook .grid-header-meta{width:100%}.grid-workbook .grid-page-header h1{font-size:24px}.grid-workbook .grid-bulk-actions{width:100%;margin-left:0;padding:8px 0 0;border-top:1px solid #d9e2ec;border-left:0}.grid-workbook .grid-bulk-actions>button{flex:1;justify-content:center}.grid-workbook .grid-draft-status{width:100%;margin-left:0;font-size:10px}.grid-workbook .grid-formula-bar{flex-direction:column}.grid-workbook .grid-view-control{width:100%;margin-left:0;padding:6px;border-top:1px solid #d9e1eb;border-left:0;white-space:normal}.grid-workbook .grid-view-control>span{padding-left:4px}.grid-workbook .grid-view-switcher{flex:1}.grid-workbook .grid-view-switcher button{flex:1}.grid-workbook .grid-product-column{position:static;box-shadow:none}.grid-workbook thead .grid-product-column{position:sticky;left:auto}.grid-workbook .grid-table-wrap{min-height:320px;max-height:62vh}}
+@media(max-width:700px){.grid-workbook .grid-data-tools{align-items:stretch;flex-wrap:wrap}.grid-workbook .grid-search{width:100%;min-width:0}.grid-workbook .grid-data-select{flex:1;min-width:150px}.grid-workbook .grid-data-select select{width:100%;max-width:none}.grid-workbook .grid-result-count{margin-left:0;padding:7px 4px}.grid-workbook .grid-clear-data-view{margin-left:auto}}
+.grid-workbook thead tr>th:last-child{position:sticky;right:0;z-index:28;background:#eef3f9;box-shadow:-1px 0 #cdd8e4}
+
+/* Desktop sheet mode: let the worksheet own the workspace like a spreadsheet app. */
+@media(min-width:801px){
+.grid-workspace .beta-grid-page.grid-workbook{display:flex;height:100%;min-height:0;flex-direction:column}
+.grid-workspace .grid-page-header{flex:0 0 auto;align-items:center;margin:0 0 9px}
+.grid-workspace .grid-page-header h1{margin:0 0 2px;font-size:22px}
+.grid-workspace .grid-page-header p{font-size:12px}
+.grid-workspace .grid-header-meta{gap:4px}
+.grid-workspace .grid-toolbar{flex:0 0 auto;margin-bottom:8px}
+.grid-workspace .grid-data-tools,
+.grid-workspace .grid-formula-bar,
+.grid-workspace .grid-setup-note,
+.grid-workspace .grid-sheet-footer,
+.grid-workspace .grid-notice{flex:0 0 auto}
+.grid-workspace .grid-table-wrap{flex:1 1 auto;min-height:0;max-height:none}
+}
 .grid-workbook td.grid-row-actions{position:sticky;right:0;z-index:3;box-shadow:-1px 0 #cdd8e4}
 @media(max-width:700px){.grid-workbook td.grid-row-actions{position:static}.grid-workbook thead tr>th:last-child{right:auto}}
+
+/* Match the Product Library's calm, medium-weight typography. */
+.kws-content .grid-workbook{
+  color:#252525;
+  font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:13px;
+  font-weight:400;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+.kws-content .grid-workbook .grid-page-header h1{
+  color:#252525;
+  font-size:32px;
+  font-weight:500;
+  line-height:1.15;
+  letter-spacing:-.02em;
+}
+.kws-content .grid-workbook .grid-page-header p{
+  font-size:14px;
+  font-weight:400;
+}
+.kws-content .grid-workbook :is(
+  .grid-beta-label,
+  .grid-toolbar>button,
+  .grid-column-menu>summary,
+  .grid-column-menu button,
+  .grid-bulk-actions>span,
+  .grid-bulk-actions>button,
+  .grid-view-switcher button,
+  .grid-view-control>span,
+  thead th,
+  .grid-column-groups th,
+  .grid-column-labels th,
+  .grid-row-actions button,
+  .grid-formula-bar strong,
+  .grid-product-column>input,
+  td.grid-result output
+){font-weight:500}
+.kws-content .grid-workbook :is(input,select){
+  font-size:13px;
+  font-weight:400;
+}
+.kws-content .grid-workbook .grid-product-column>input{
+  color:#252525;
+  font-size:14px;
+}
+.kws-content .grid-workbook td output{
+  font-size:13px;
+  font-weight:500;
+}
+.kws-content .grid-workbook .grid-column-letters th{
+  font-weight:400;
+}
+
+@media(max-width:700px){
+  .kws-content .grid-workbook .grid-page-header h1{font-size:28px}
+  .kws-content .grid-workbook :is(input,select){font-size:16px}
+}
+
+@media(min-width:801px){
+  .kws-shell.grid-workspace .kws-content .grid-workbook .grid-page-header h1{margin:0 0 2px;font-size:22px}
+  .kws-shell.grid-workspace .kws-content .grid-workbook .grid-page-header p{font-size:12px}
+}

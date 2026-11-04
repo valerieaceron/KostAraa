@@ -81,20 +81,15 @@ export default function Subscription() {
       setBusy(false);
     }
   }
-  const summaries = {
-    account: `${username || "Username not set"} · Active · ${data ? planName : "Loading plan"}`,
-    password: email ? `Reset securely through ${email}` : "Add an email address to manage your password",
-    billing: `${data ? planName : "Loading"} plan · ${pending ? "Payment under review" : data?.payments?.length ? `${data.payments.length} payment record${data.payments.length === 1 ? "" : "s"}` : "No payments yet"}`,
-  };
   const rows = [
-    { key: "account" as const, title: "Account", summary: summaries.account, icon: UserRound, action: "Edit" },
-    { key: "password" as const, title: "Privacy & Security", summary: summaries.password, icon: KeyRound, action: "Edit" },
-    { key: "billing" as const, title: "Billing & Payment", summary: summaries.billing, icon: CreditCard, action: "Manage" },
+    { key: "account" as const, title: "Account", icon: UserRound, action: "Edit" },
+    { key: "password" as const, title: "Privacy & Security", icon: KeyRound, action: "Edit" },
+    { key: "billing" as const, title: "Billing & Payment", icon: CreditCard, action: "Manage" },
   ];
   return <section className="subscription-page account-settings-page">
     <header className="account-settings-heading"><h1>Account Settings</h1></header>
-    <div className="account-settings-list" role="list">{rows.map(row => <section key={row.key} role="listitem"><div className="account-settings-list-copy"><span><row.icon aria-hidden="true"/></span><div><h2>{row.title}</h2><p>{row.summary}</p></div></div><button type="button" onClick={() => setPanel(row.key)}><Pencil aria-hidden="true"/> {row.action}</button></section>)}</div>
-    {error && <p className="account-notice error" role="alert">{error} <button onClick={() => setRefresh(v => v + 1)}>Try again</button></p>}{message && <p className="account-notice" role="status">{message}</p>}{!data && !error && <p className="account-notice">Loading account details…</p>}
+    <div className="account-settings-list" role="list">{rows.map(row => <section key={row.key} role="listitem"><div className="account-settings-list-copy"><span><row.icon aria-hidden="true"/></span><div><h2>{row.title}</h2></div></div><button type="button" onClick={() => setPanel(row.key)}><Pencil aria-hidden="true"/> {row.action}</button></section>)}</div>
+    {error && <p className="account-notice error" role="alert">{error} <button onClick={() => setRefresh(v => v + 1)}>Try again</button></p>}{message && <p className="account-notice" role="status">{message}</p>}
     {panel && <div className={`account-settings-modal${panel === "billing" ? " is-wide" : ""}${panel === "account" ? " is-account" : ""}`} role="dialog" aria-modal="true" aria-labelledby="account-panel-title"><button className="account-settings-scrim" type="button" onClick={() => setPanel(null)} aria-label="Close settings"/><article><header><div><h2 id="account-panel-title">{rows.find(row => row.key === panel)?.title}</h2><p>{panel === "account" ? "Update your profile and review account access." : panel === "password" ? "Change your password through a secure email link." : "Manage your plan and payment history."}</p></div><button className="account-modal-close" type="button" onClick={() => setPanel(null)} aria-label="Close"><X aria-hidden="true"/></button></header><div className="account-modal-body">
       {panel === "account" && <form className="account-modal-form" onSubmit={saveUsername}><section className="account-overview" aria-label="Account status"><div><small>ACCESS</small><b><i aria-hidden="true"/> Active</b></div><div><small>EMAIL</small><b><BadgeCheck aria-hidden="true"/> Verified</b></div><div><small>PLAN</small><b>{data ? planName : "Loading…"}</b></div></section><label><span>Username</span><input value={username} minLength={3} maxLength={64} pattern="[a-zA-Z0-9_.-]+" autoComplete="username" onChange={event => { setUsername(event.target.value); setProfileMessage(""); }}/><small>Use 3–64 letters, numbers, periods, underscores, or hyphens.</small></label><label><span>Email address</span><input value={email || "Not available"} disabled/><small>Your verified email cannot be changed here.</small></label>{profileMessage && <p className="account-inline-message" role="status">{profileMessage}</p>}<footer><button type="button" onClick={() => setPanel(null)}>Cancel</button><button className="primary" type="submit">Save changes</button></footer></form>}
       {panel === "password" && <div className="account-security-copy"><div className="account-modal-icon"><KeyRound aria-hidden="true"/></div><p>Password instructions will be sent to <b>{email || "your account email"}</b>.</p><button className="primary" type="button" disabled={resetBusy || !email} onClick={requestPasswordReset}>{resetBusy ? "Sending…" : "Send password reset link"}</button>{resetMessage && <p className="account-inline-message" role="status">{resetMessage}</p>}</div>}

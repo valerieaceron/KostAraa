@@ -9,6 +9,11 @@ export const createGridProduct = () => ({
   taxMode: 'exempt', taxPercentage: 0, targetMargin: 30, platform: 0, other: 0, notes: '',
 });
 
+export function libraryItemSignature(item) {
+  if (!item) return '';
+  return JSON.stringify(item);
+}
+
 export function libraryItemToGridProduct(item, inventory = []) {
   const product = savedItemToProduct(item, inventory);
   const materials = [
@@ -34,6 +39,7 @@ export function libraryItemToGridProduct(item, inventory = []) {
     other: Number(product.otherCosts?.other) || 0,
     notes: item.notes || '',
     savedItem: item,
+    librarySignature: libraryItemSignature(item),
   };
 }
 
@@ -93,11 +99,11 @@ export function gridValidation(row, inventory, business) {
 
 export function gridStorageKey(user) {
   const id = user?.id || user?.username || user?.email;
-  return id ? `kostaraa.grid.v2.${encodeURIComponent(String(id))}` : null;
+  return id ? `kostaraa.grid.v3.${encodeURIComponent(String(id))}` : null;
 }
 
 export function gridSignature(row, calculated) {
-  const {savedItem, savedSignature, ...inputs} = row;
+  const {savedItem, savedSignature, librarySignature, ...inputs} = row;
   // Compare the saved business cost basis as well as the editable cells.
   return JSON.stringify([inputs, calculated.draft, calculated.results, calculated.metadata.pricing]);
 }

@@ -4,6 +4,6 @@ export const allowanceLabel = value => value === null ? 'Unlimited' : Number(val
 const benefit = (value, singular, plural) => `${allowanceLabel(value)} ${value !== null && Number(value) === 1 ? singular : plural}`;
 export const planBenefits = plan => [
   benefit(plan.inventory_limit, 'inventory record', 'inventory records'),
-  benefit(plan.products_limit, 'registered product', 'registered products'),
+  benefit(plan.products_limit, 'saved product or service', 'saved products and services'),
   `${allowanceLabel(plan.competitor_crawl_limit)} Competitor ${plan.competitor_crawl_limit !== null && Number(plan.competitor_crawl_limit) === 1 ? 'Analysis' : 'Analyses'} (coming soon)`,
 ];

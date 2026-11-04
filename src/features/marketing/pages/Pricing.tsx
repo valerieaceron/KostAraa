@@ -56,50 +56,55 @@ export default function Pricing(){
 
   const signedIn=Boolean(sessionStorage.getItem("kostaraa.token"));
   const isPaid=(plan:any)=>Number(plan.price)>0;
+  const displayPlanName=(plan:any)=>isPaid(plan)?"Business Plus":"Starter";
   const planHref=(plan:any)=>signedIn
     ? `/workspace?page=subscription&plan=${encodeURIComponent(plan.id)}`
     : isPaid(plan)
       ? `/signup?plan=${encodeURIComponent(plan.id)}`
       : "/signup";
-  const planCta=(plan:any)=>isPaid(plan)?`Choose ${plan.name}`:"Start Free";
+  const planCta=(plan:any)=>isPaid(plan)?"Choose Business Plus":"Start Free";
 
   return <main className="pricing-page marketing-gradient-page"><MarketingHeader active="pricing" overlay/>
-    <section className="pricing-hero marketing-page-hero"><div className="marketing-page-hero-inner"><h1>Start free.<br/><span>Grow when you’re ready.</span></h1><p>Both plans give you online access to Kostaraa’s costing and planning tools. Choose Annual when you need more records, an ad-free workspace, secure backup, and multi-device access.</p></div></section>
+    <section className="pricing-hero marketing-page-hero"><div className="marketing-page-hero-inner"><h1>Start free.<br/><span>Grow when you’re ready.</span></h1><p>Both plans give you online access to Kostaraa’s costing and planning tools. Choose Business Plus when you need more records, an ad-free workspace, secure backup, and multi-device access.</p></div></section>
     <section className="pricing-content" id="pricing-plans">
       {loading&&<p role="status">Loading plans…</p>}
       {error&&<p role="alert">{error} <button onClick={()=>setRefresh(value=>value+1)}>Try again</button></p>}
       {!loading&&!error&&!plans.length&&<p>No plans are available right now.</p>}
       {!loading&&!error&&plans.length>0&&<div className="pricing-cards superhuman-cards">{plans.map(plan=>{
         const paid=isPaid(plan);
-        const benefits=planBenefits(plan);
+        const displayName=displayPlanName(plan);
+        const benefits=[
+          ...planBenefits(plan).filter(benefit=>!benefit.toLowerCase().includes("competitor")),
+          ...(paid?["Upload and download files"]:[]),
+        ];
         return <article className={paid?"recommended":""} key={plan.id}>
-          <div className="plan-heading"><small className="plan-tier">{plan.name}</small>{paid&&<span className="plan-badge">Best value</span>}</div>
-          <div className="plan-name"><h2>{plan.name}</h2></div>
+          {paid?<div className="plan-heading"><small className="plan-tier">Annual Subscription</small><span className="plan-badge">Best value</span></div>:<div className="plan-heading"><small className="plan-tier">Free</small></div>}
+          <div className="plan-name"><h2>{displayName}</h2></div>
           <p className="plan-audience">{plan.description}</p>
           <div className="price-box"><strong>{planPrice(plan)}</strong><small>{paid?`Billed every ${planTerm(plan)}`:"No charge · no expiry"}</small></div>
-          <a className={paid?"button":"button ghost"} href={planHref(plan)}>{planCta(plan)}<ArrowRight aria-hidden="true"/></a>
-          <div className="plan-benefits"><b>{paid?"Everything in Free, plus:":"The essentials to get started"}</b><ul>{benefits.map(benefit=><li key={benefit}><Check aria-hidden="true"/><span>{benefit}</span></li>)}</ul></div>
+          {paid?<button className="button is-muted" type="button" disabled aria-label="Business Plus enrollment coming soon">Coming soon</button>:<a className="button ghost" href={planHref(plan)}>{planCta(plan)}<ArrowRight aria-hidden="true"/></a>}
+          <div className="plan-benefits"><b>{paid?"Everything in Starter, plus:":"The essentials to get started"}</b><ul>{benefits.map(benefit=><li key={benefit}><Check aria-hidden="true"/><span>{benefit}</span></li>)}</ul></div>
         </article>;
       })}<article className="setup-service">
-        <div className="plan-heading"><small className="plan-tier">Optional add-on</small><span className="plan-badge">One-time</span></div>
-        <div className="plan-name"><h2>Guided Setup</h2></div>
-        <p className="plan-audience">Get personal help preparing Kostaraa with your business costs and first product.</p>
-        <div className="price-box"><strong>₱499.00</strong><small>One-time payment · no recurring fee</small></div>
-        <a className="button ghost" href="/contact?topic=guided-setup">Get Setup Help<ArrowRight aria-hidden="true"/></a>
-        <div className="plan-benefits"><b>Setup support includes:</b><ul><li><Check aria-hidden="true"/><span>Review of your Business Settings</span></li><li><Check aria-hidden="true"/><span>Help adding your first inventory costs</span></li><li><Check aria-hidden="true"/><span>Guidance through your first product costing</span></li></ul></div>
+        <div className="plan-heading"><small className="plan-tier">Business Plus add-on</small><span className="plan-badge">One-time</span></div>
+        <div className="plan-name"><h2>Personal Setup Service</h2></div>
+        <p className="plan-audience">Available with Business Plus. Share your business details, and we’ll set up your workspace for you.</p>
+        <div className="price-box"><strong>₱499.00</strong><small>One-time payment · Business Plus required</small></div>
+        <button className="button ghost is-muted" type="button" disabled aria-label="Personal Setup Service coming soon">Coming soon</button>
+        <div className="plan-benefits"><b>We set it up for you:</b><ul><li><Check aria-hidden="true"/><span>Review your business details</span></li><li><Check aria-hidden="true"/><span>Add your Business Settings and starting inventory</span></li><li><Check aria-hidden="true"/><span>Set up your first product costing</span></li><li><Check aria-hidden="true"/><span>Give you one guided walkthrough</span></li></ul></div>
       </article></div>}
-      <div className="comparison-title"><h2>Compare Free and Annual</h2><p>Both plans include online access to Kostaraa’s costing, planning, and guidance tools. Annual adds higher limits, an ad-free workspace, secure backup, and multi-device access.</p></div>
+      <div className="comparison-title"><h2>Compare Starter and Business Plus</h2><p>Both plans include online access to Kostaraa’s costing, planning, and guidance tools. Business Plus adds higher limits, an ad-free workspace, secure backup, and multi-device access.</p></div>
       {!loading&&!error&&plans.length>0&&<div className="pricing-tier-sticky" aria-label="Kostaraa plans">
         <div className="pricing-tier-grid">
           <div className="pricing-tier-intro"><b>Compare plans</b><span>See what each tier includes</span></div>
           {plans.map(plan=>{const paid=isPaid(plan);return <div className={`pricing-tier-summary${paid?" recommended":""}`} key={`sticky-${plan.id}`}>
-            <div className="pricing-tier-name"><b>{plan.name}</b>{paid&&<span>Best value</span>}</div>
+            <div className="pricing-tier-name"><b>{displayPlanName(plan)}</b>{paid&&<span>Best value</span>}</div>
             <div className="pricing-tier-price"><strong>{planPrice(plan)}</strong><small>{paid?`/ ${planTerm(plan)}`:"Free forever"}</small></div>
-            <a href={planHref(plan)} className={paid?"button":"button ghost"}>{planCta(plan)}<ArrowRight aria-hidden="true"/></a>
+            {paid?<button className="button is-muted" type="button" disabled aria-label="Business Plus enrollment coming soon">Coming soon</button>:<a href={planHref(plan)} className="button ghost">{planCta(plan)}<ArrowRight aria-hidden="true"/></a>}
           </div>})}
         </div>
       </div>}
-      <div className="comparison-wrap"><table><colgroup><col className="comparison-feature-column"/><col className="comparison-plan-column"/><col className="comparison-plan-column"/></colgroup><thead className="comparison-table-head"><tr><th scope="col">Features</th><th scope="col">Free</th><th scope="col">Annual</th></tr></thead><tbody>{rows.map(row=>row.length===1
+      <div className="comparison-wrap"><table><colgroup><col className="comparison-feature-column"/><col className="comparison-plan-column"/><col className="comparison-plan-column"/></colgroup><thead className="comparison-table-head"><tr><th scope="col">Features</th><th scope="col">Starter</th><th scope="col">Business Plus</th></tr></thead><tbody>{rows.map(row=>row.length===1
         ? <tr className="comparison-group" key={row[0]}><th colSpan={3}>{row[0]}</th></tr>
         : <tr key={row[0]}>{row.map((cell,index)=><td key={index} className={cell==="×"?"no":cell==="✓"?"yes":""}>{cell}</td>)}</tr>
       )}</tbody></table></div>
@@ -116,8 +121,8 @@ export default function Pricing(){
     </section>
     <section className="pricing-final-cta" aria-labelledby="pricing-final-title">
       <div className="pricing-final-cta-inner">
-        <div><h2 id="pricing-final-title">Ready to price with more confidence?</h2><p>Begin free with the essential tools, or choose Annual for more records, an ad-free workspace, secure backup, and multi-device access.</p></div>
-        <div className="pricing-final-actions"><a className="button ghost" href="/signup">Start Free<ArrowRight aria-hidden="true"/></a><a className="button" href="/signup?plan=annual">Choose Annual<ArrowRight aria-hidden="true"/></a></div>
+        <div><h2 id="pricing-final-title">Ready to price with more confidence?</h2><p>Begin with Starter, or choose Business Plus for more records, an ad-free workspace, secure backup, and multi-device access.</p></div>
+        <div className="pricing-final-actions"><a className="button ghost" href="/signup">Start Free<ArrowRight aria-hidden="true"/></a><button className="button is-muted" type="button" disabled aria-label="Business Plus enrollment coming soon">Coming soon</button></div>
       </div>
     </section>
     <MarketingFooter/>
