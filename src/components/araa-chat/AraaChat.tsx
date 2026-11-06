@@ -8,7 +8,7 @@ import "./araa-librarian.css";
 type GuideAction = { label: string; page: string; section?: string; field?: string; event?: string };
 type GuideMessage = { role: "araa" | "user"; text: string; action?: GuideAction };
 type GuideContext = { page?: string; inventoryCount?: number; savedProductCount?: number; productionReady?: boolean };
-type GuideMilestone = { id: number; type: "business-settings-complete" | "first-inventory" | "unsaved-grid"; name?: string; count?: number };
+type GuideMilestone = { id: number; type: "business-expenses" | "business-settings-complete" | "first-inventory" | "unsaved-grid"; name?: string; count?: number; planning?: boolean };
 
 function araaNoticeKey() {
   try {
@@ -24,6 +24,9 @@ function markAraaActivityTriggered(key: string) { try { localStorage.setItem(ara
 function businessSettingsGuideKey(key: string) { return `${key}.business-settings-to-inventory.v1`; }
 function businessSettingsGuideSeen(key: string) { try { return localStorage.getItem(businessSettingsGuideKey(key)) === "1"; } catch { return false; } }
 function markBusinessSettingsGuideSeen(key: string) { try { localStorage.setItem(businessSettingsGuideKey(key), "1"); } catch { /* The guide still appears for this session. */ } }
+function businessExpensesGuideKey(key: string) { return `${key}.business-expenses-guide.v1`; }
+function businessExpensesGuideSeen(key: string) { try { return localStorage.getItem(businessExpensesGuideKey(key)) === "1"; } catch { return false; } }
+function markBusinessExpensesGuideSeen(key: string) { try { localStorage.setItem(businessExpensesGuideKey(key), "1"); } catch { /* The guide still appears for this session. */ } }
 
 const appLibrary = [
   { keywords: ["dashboard", "overview", "home", "attention", "insight"], answer: "Dashboard gives you a quick view of pricing health, setup progress, customer details, saved-product cost insights, and your profit and break-even plan. Use its quick actions to add inventory, open Calculator, or review Product Library." },
@@ -68,9 +71,27 @@ function WorkspaceGuide({context, milestone, onAction}: {context: GuideContext; 
   ]);
   const [input, setInput] = useState("");
   const handledMilestone = useRef<number | null>(null);
+  const messagesRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      const container = messagesRef.current;
+      if (container) container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [messages]);
   useEffect(() => {
     if (!milestone || handledMilestone.current === milestone.id) return;
     handledMilestone.current = milestone.id;
+    if (milestone.type === "business-expenses") {
+      setMessages(current => [...current, {
+        role: "araa",
+        text: milestone.planning
+          ? "Start with the regular costs needed to run your business, such as rent, electricity, water, internet, permits, and subscriptions. Since your business is still planning or newly operating, enter a realistic monthly estimate for now. You can replace it with actual amounts later."
+          : "Add the regular costs you actually pay to run the business, such as rent, electricity, water, internet, permits, and subscriptions. For changing bills like electricity, use your average from the last 2–3 months instead of your highest bill.",
+        action: { label: "Start adding expenses", page: "account", section: "overhead" },
+      }]);
+      return;
+    }
     if (milestone.type === "business-settings-complete") {
       setMessages(current => [...current, {
         role: "araa",
@@ -101,7 +122,7 @@ function WorkspaceGuide({context, milestone, onAction}: {context: GuideContext; 
     setInput("");
   };
   return <section className="araa-app-guide">
-    <div className="araa-messages" aria-live="polite">{messages.map((message, index) => <div className={`araa-message ${message.role}`} key={index}><p>{message.text}</p>{message.action && <button className="araa-message-action" type="button" onClick={() => onAction(message.action!)}>{message.action.label}<span aria-hidden="true">→</span></button>}</div>)}</div>
+    <div ref={messagesRef} className="araa-messages" aria-live="polite">{messages.map((message, index) => <div className={`araa-message ${message.role}`} key={index}><p>{message.text}</p>{message.action && <button className="araa-message-action" type="button" onClick={() => onAction(message.action!)}>{message.action.label}<span aria-hidden="true">→</span></button>}</div>)}</div>
     <div className="araa-suggestions"><button type="button" onClick={() => setMessages(current => [...current, nextStep(context)])}>What should I do next?</button>{["How do I use Inventory?", "How do I cost a product?"].map(question => <button type="button" key={question} onClick={() => ask(question)}>{question}</button>)}</div>
     <form onSubmit={event => { event.preventDefault(); ask(input); }}><input value={input} onChange={event => setInput(event.target.value)} placeholder="Ask Araa about a module…" aria-label="Ask Araa how to use Kostaraa"/><button type="submit" aria-label="Send question">→</button></form>
   </section>;
@@ -141,6 +162,17 @@ export function AraaChat({ workspace = false, context = {}, onNavigate }: { work
     const closeAraa = () => setOpen(false);
     const guide = (event: Event) => {
       const detail = (event as CustomEvent).detail || {};
+      if (detail.type === "business-expenses") {
+        if (businessExpensesGuideSeen(noticeKey)) return;
+        markBusinessExpensesGuideSeen(noticeKey);
+        markAraaActivityTriggered(noticeKey);
+        const planning = detail.planning === true;
+        setMilestone({ id: Date.now(), type: "business-expenses", planning });
+        setNoticeCopy({ title: "Let’s add your business expenses", body: planning ? "Estimates are okay while you are getting started." : "Use your usual monthly costs and recent averages." });
+        setUnread(false);
+        setOpen(true);
+        return;
+      }
       if (detail.type === "business-settings-complete") {
         if (context.inventoryCount || businessSettingsGuideSeen(noticeKey)) return;
         markBusinessSettingsGuideSeen(noticeKey);

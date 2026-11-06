@@ -246,7 +246,16 @@ export default function BusinessProfile({focusSection="identity",focusField="",e
   useEffect(()=>{let cancelled=false;(async()=>{try{const data=await apiJson("/api/business-profile");if(cancelled)return;const next=normalizeBusinessProfile(data,profile||{});setProfile(next);setRemoteProfileExists(Boolean(next.meta?.businessProfileId));localStorage.setItem("kostaraa.businessProfile",JSON.stringify(next));window.dispatchEvent(new CustomEvent("kostaraa:business-settings-changed",{detail:next}))}catch{}})();return()=>{cancelled=true}},[]);
   useEffect(()=>{if(!editing)return;const close=(event:KeyboardEvent)=>{if(event.key==="Escape"&&!saving)setEditing(null)};document.addEventListener("keydown",close);return()=>document.removeEventListener("keydown",close)},[editing,saving]);
   useEffect(()=>{if(!focusSection||!profile)return;const frame=requestAnimationFrame(()=>document.getElementById(`profile-${focusSection}`)?.scrollIntoView({behavior:"smooth",block:"start"}));return()=>cancelAnimationFrame(frame)},[focusSection,profile]);
-  const openEditor=(key:string)=>{setDraft(key==="identity"?{identity:clone(profile.identity||{}),businessStage:clone(profile.businessStage||{}),salesChannels:clone(profile.salesChannels||[])}:key==="manpower"?{manpower:clone(profile.manpower||[]),ownerLabor:clone(profile.ownerLabor||{})}:key==="overhead"?{locationExpenses:clone(profile.locationExpenses||{}),overhead:clone(profile.overhead||{})}:key==="operations"?operationsDraft(profile.operations||{}):clone(profile[key]??{}));setSaveError("");setEditing(key)};
+  const openEditor=(key:string)=>{
+    setDraft(key==="identity"?{identity:clone(profile.identity||{}),businessStage:clone(profile.businessStage||{}),salesChannels:clone(profile.salesChannels||[])}:key==="manpower"?{manpower:clone(profile.manpower||[]),ownerLabor:clone(profile.ownerLabor||{})}:key==="overhead"?{locationExpenses:clone(profile.locationExpenses||{}),overhead:clone(profile.overhead||{})}:key==="operations"?operationsDraft(profile.operations||{}):clone(profile[key]??{}));
+    setSaveError("");
+    setEditing(key);
+    if(key==="overhead"){
+      const stage=String(profile.businessStage?.stage||"");
+      const planning=stage==="Still planning"||stage==="Newly operating"||!stage;
+      window.setTimeout(()=>window.dispatchEvent(new CustomEvent("kostaraa:araa-guide",{detail:{type:"business-expenses",planning}})),0);
+    }
+  };
   useEffect(()=>{if(!editRequest){handledEditRequest.current=0;return}if(handledEditRequest.current===editRequest||!profile)return;handledEditRequest.current=editRequest;openEditor(focusSection||"identity");onEditRequestHandled?.()},[editRequest,focusSection,profile]);
   useEffect(()=>{
     if(editing!=="operations"||!draft)return;
