@@ -256,7 +256,7 @@
 /* Validation guidance follows the field that needs attention. */
 .grid-workbook td.grid-cell-needs-fix{outline:3px solid #d58425;outline-offset:-3px;background:#fff8e9!important;box-shadow:inset 0 0 0 5px #fbe5bb}
 .grid-validation-tooltip{position:fixed;z-index:900;box-sizing:border-box;padding:20px;background:#fff;border:1px solid #d58425;border-radius:12px;box-shadow:0 12px 40px #223b6433;color:#344b67;font:13px/1.5 ui-sans-serif,system-ui,sans-serif;max-height:calc(100dvh - 24px);overflow:visible}
-.grid-validation-tooltip::before{content:'';position:absolute;left:var(--guide-arrow,24px);top:var(--guide-arrow-top,-7px);width:12px;height:12px;transform:rotate(45deg);background:#fff;border-left:1px solid #d58425;border-top:1px solid #d58425}
+.grid-validation-tooltip::before{content:'';position:absolute;left:var(--guide-arrow,24px);top:var(--guide-arrow-top,-7px);width:12px;height:12px;transform:rotate(var(--guide-arrow-rotation,45deg));background:#fff;border-left:1px solid #d58425;border-top:1px solid #d58425}
 .grid-validation-tooltip h2{font-size:16px;line-height:1.4;margin:0 20px 10px 0;color:#223c5e}
 .grid-validation-tooltip p{margin:8px 0}
 .grid-validation-tooltip .grid-guide-close{position:absolute;right:8px;top:9px;border:0;background:transparent;color:#71839b;padding:4px;cursor:pointer}

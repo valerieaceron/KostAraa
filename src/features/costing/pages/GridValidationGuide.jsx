@@ -20,7 +20,7 @@ export function GridValidationGuide({target, address, label, issue, onClose, onN
       const left = Math.max(12, Math.min(rect.left, window.innerWidth - width - 12));
       const above = rect.bottom + height + 20 > window.innerHeight && rect.top > height + 20;
       const top = Math.max(12, Math.min(above ? rect.top - height - 12 : rect.bottom + 12, window.innerHeight - height - 12));
-      setPosition({left, top, width, '--guide-arrow': `${Math.max(18, Math.min(rect.left + rect.width / 2 - left, width - 24))}px`, '--guide-arrow-top': above ? '100%' : '-7px'});
+      setPosition({left, top, width, '--guide-arrow': `${Math.max(18, Math.min(rect.left + rect.width / 2 - left, width - 24))}px`, '--guide-arrow-top': above ? 'calc(100% - 6px)' : '-7px', '--guide-arrow-rotation': above ? '225deg' : '45deg'});
     };
     place();
     window.addEventListener('scroll', place, true);
