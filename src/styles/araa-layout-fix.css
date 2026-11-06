@@ -83,16 +83,49 @@
   body:not(.site-locked) .araa.open .araa-panel.araa-coming-panel{bottom:calc(84px + env(safe-area-inset-bottom))!important}
 }
 @media(max-width:500px){
-  body:not(.site-locked) .araa-panel.araa-coming-panel{
-    left:12px!important;
-    right:12px!important;
-    bottom:154px!important;
+  body:not(.site-locked) .kws-shell>.araa.open .araa-panel.araa-coming-panel{
+    top:calc(64px + env(safe-area-inset-top))!important;
+    left:8px!important;
+    right:8px!important;
+    bottom:calc(8px + env(safe-area-inset-bottom))!important;
     width:auto!important;
     max-width:none!important;
-    height:min(520px,calc(100dvh - 172px))!important;
-    min-height:min(300px,calc(100dvh - 172px));
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
     border-radius:16px;
+  }
+  body:not(.site-locked) .kws-shell>.araa.open .araa-librarian-summary{
+    min-height:0;
+    overflow:hidden!important;
+  }
+  body:not(.site-locked) .kws-shell>.araa.open .araa-app-guide{
+    min-height:0;
+    height:100%;
+  }
+  body:not(.site-locked) .kws-shell>.araa.open .araa-app-guide .araa-messages{
+    min-height:0;
+    flex:1 1 auto;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+  }
+  body:not(.site-locked) .kws-shell>.araa.open .araa-app-guide :is(.araa-suggestions,form){
+    flex:0 0 auto;
+  }
+  body:not(.site-locked) .araa-app-guide .araa-message.araa{
+    position:static!important;
+    right:auto!important;
+    bottom:auto!important;
+    left:auto!important;
+    z-index:auto!important;
+    display:flex!important;
+    width:100%!important;
   }
   .araa-guide-title{padding:15px 14px 12px}
   .araa-app-guide .araa-messages{padding:12px 14px}
+}
+
+/* Business Settings is a modal layer; keep the familiar bottom-right guide above it. */
+body:not(.site-locked):has(.bp-editor-modal) .kws-shell>.araa{
+  z-index:1405!important;
 }

@@ -5,7 +5,7 @@
    launchers visible and reachable throughout that entire range, including
    tablets and wider phone landscape views. */
 @media(max-width:800px){
-  body:not(.site-locked) .araa,
+  body:not(.site-locked) .kws-shell>.araa,
   body:not(.site-locked) .accessibility{
     position:fixed!important;
     display:block!important;
@@ -13,7 +13,7 @@
     right:12px!important;
     z-index:140!important;
   }
-  body:not(.site-locked) .araa{bottom:calc(84px + env(safe-area-inset-bottom))!important}
+  body:not(.site-locked) .kws-shell>.araa{bottom:calc(84px + env(safe-area-inset-bottom))!important}
   body:not(.site-locked) .accessibility{bottom:calc(16px + env(safe-area-inset-bottom))!important}
   body:not(.site-locked) .araa-launcher,
   body:not(.site-locked) .access-launcher,

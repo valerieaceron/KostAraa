@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Copy, Download, FileUp, MoreHorizontal, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
+import { Copy, Download, FileUp, Info, MoreHorizontal, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
 import { formatCurrency, getInventoryCostUnit, getInventoryUnitCost } from '../utils/calculations';
 import { apiJson, getAllApiItems, getApiItem, getCreatedInventoryItem, isOfflineUser } from '../utils/api';
 import { titleCaseName } from '../utils/display-text';
@@ -74,8 +74,8 @@ export function validateDraft(draft) {
   };
 }
 
-function InventoryField({ label, error, hint, optional, children, className = '' }) {
-  return <label className={`inventory-field ${className}`}><span>{label}</span>{optional ? <small>Optional</small> : null}{children}{hint ? <em>{hint}</em> : null}{error ? <strong>{error}</strong> : null}</label>;
+function InventoryField({ label, help, error, hint, optional, children, className = '' }) {
+  return <label className={`inventory-field ${className}`}><span className="inventory-field-label"><span>{label}</span>{help ? <span className="inventory-field-help" tabIndex={0} role="button" aria-label={`About ${label}`} onPointerEnter={(event) => { const active = document.activeElement; if (active?.classList.contains('inventory-field-help') && active !== event.currentTarget) active.blur(); }} onClick={(event) => { event.preventDefault(); event.stopPropagation(); }}><Info className="h-4 w-4" aria-hidden="true" /><span role="tooltip">{help}</span></span> : null}</span>{optional ? <small>Optional</small> : null}{children}{hint ? <em>{hint}</em> : null}{error ? <strong>{error}</strong> : null}</label>;
 }
 
 function InventoryActions({ item, openUp, onEdit, onDuplicate, onDelete }) {
@@ -137,9 +137,9 @@ export function MaterialDialog({ draft, errors, mode, saving, saveError, allowed
       <div className="inventory-dialog-grid">
         <InventoryField label="Material name" error={errors.material} className="wide"><input autoFocus value={draft.material} onChange={(event) => onChange('material', event.target.value)} /></InventoryField>
         <InventoryField label="Category" error={errors.category}><select value={draft.category} onChange={(event) => onChange('category', event.target.value)}>{ITEM_CATEGORIES.map((category) => <option key={category}>{category}</option>)}</select></InventoryField>
-        <InventoryField label="Base unit" error={errors.baseUnit}><select aria-label="Base unit" value={draft.baseUnit} onChange={(event) => onChange('baseUnit', event.target.value)}><option value="">Select measurement</option>{allowedUnits.map((unit) => <option key={unit} value={unit}>{displayUnit(unit)}</option>)}</select></InventoryField>
-        <InventoryField label="Purchase amount" error={errors.itemCost}><span className="inventory-money-input"><b>PHP</b><input min="0.001" max="999999999999.99" step="0.001" type="number" value={draft.itemCost} onChange={(event) => onChange('itemCost', event.target.value)} /></span></InventoryField>
-        <InventoryField label="Purchase quantity" error={errors.qty} hint="How many base units were included in the purchase."><input min="0.0001" max="9999999999.9999" step="0.0001" type="number" value={draft.qty} onChange={(event) => onChange('qty', event.target.value)} /></InventoryField>
+        <InventoryField label="Measurement unit" help="Choose the unit used for the quantity you purchased. For example: kg, L, pcs, pack, or box." error={errors.baseUnit}><select aria-label="Measurement unit" value={draft.baseUnit} onChange={(event) => onChange('baseUnit', event.target.value)}><option value="">Select measurement</option>{allowedUnits.map((unit) => <option key={unit} value={unit}>{displayUnit(unit)}</option>)}</select></InventoryField>
+        <InventoryField label="Total purchase cost" help="Enter the full amount you paid for this purchase—not the cost of one unit. Example: enter ₱120 if the whole purchase cost ₱120." error={errors.itemCost}><span className="inventory-money-input"><b>PHP</b><input aria-label="Total purchase cost" min="0.001" max="999999999999.99" step="0.001" type="number" value={draft.itemCost} onChange={(event) => onChange('itemCost', event.target.value)} /></span></InventoryField>
+        <InventoryField label="Quantity purchased" help="Enter the total amount you received using the measurement unit above. Example: if ₱120 bought 2 kg, enter 2." error={errors.qty} hint="Use the measurement unit selected above."><input aria-label="Quantity purchased" min="0.0001" max="9999999999.9999" step="0.0001" type="number" value={draft.qty} onChange={(event) => onChange('qty', event.target.value)} /></InventoryField>
         {showsCupRule ? <InventoryField label="Grams per cup" optional hint="Use only when recipes measure this item by cup." className="wide"><input min="0" step="0.01" type="number" value={draft.gramsPerCup} onChange={(event) => onChange('gramsPerCup', event.target.value)} /></InventoryField> : null}
         {showsPieceRule ? <InventoryField label={`Pieces per ${draft.baseUnit}`} optional hint={`Enter how many individual pieces are inside one ${draft.baseUnit}.`} className="wide"><input min="0" step="1" type="number" value={draft.piecesPerUnit} onChange={(event) => onChange('piecesPerUnit', event.target.value)} /></InventoryField> : null}
       </div>
