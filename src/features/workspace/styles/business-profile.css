@@ -1042,3 +1042,11 @@
   .kws-content .business-settings-page .bp-editor-modal.is-expenses>article{width:100%}
   .kws-content .business-settings-page .bp-editor-modal>article>header h2{font-size:22px}
 }
+
+.bp-page>header{flex-direction:row;align-items:center;flex-wrap:wrap}
+.bp-setup-summary{margin:0;color:#687991;font-size:13px;white-space:nowrap}
+.bp-row-copy h2{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.bp-step-complete{display:inline-flex;align-items:center;justify-content:center;flex:0 0 22px;width:22px;height:22px;border-radius:50%;background:#e7f6ee;color:#24845b}
+.bp-step-complete svg{width:14px;height:14px;stroke-width:2.5}
+.bp-setup-success{margin:0 0 20px;border:1px solid #c7e9d6;border-radius:10px;background:#effaf3;padding:13px 16px;color:#256346;font-size:14px;line-height:1.5}
+@media(max-width:520px){.bp-row-copy h2{font-size:14px}}

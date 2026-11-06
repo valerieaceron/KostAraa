@@ -77,3 +77,18 @@
 .kws-close{position:absolute;right:14px;top:14px;font-size:22px;line-height:1}
 .kws-mobile-menu .kws-nav-group>button{min-height:44px}
 }
+
+.kws-nav-group>button{position:relative}
+.kws-module-label{position:relative;display:inline-flex;align-items:center}
+.kws-module-label>.kws-setup-badge{position:absolute;top:-21px;right:-17px;z-index:1;display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;box-sizing:border-box;padding:0 6px;border-radius:8px;background:#ed1745;color:#fff;font-size:11px;font-weight:600;line-height:1;box-shadow:0 2px 5px #b64c5826;pointer-events:none;transform-origin:50% 100%;animation:kws-setup-shake 5s ease-in-out 5s infinite}
+.kws-module-label>.kws-setup-badge::after{content:"";position:absolute;bottom:-5px;left:5px;width:10px;height:7px;clip-path:polygon(0 0,100% 0,0 100%);background:#ed1745}
+.kws-shell.sidebar-collapsed .kws-sidebar .kws-module-label{display:contents}
+.kws-shell.sidebar-collapsed .kws-sidebar .kws-module-label>span{display:none}
+.kws-shell.sidebar-collapsed .kws-sidebar .kws-setup-badge{top:0;right:2px}
+
+@keyframes kws-setup-shake{
+  0%,10%,100%{transform:translateX(0) rotate(0deg)}
+  2%,6%{transform:translateX(-2px) rotate(-8deg)}
+  4%,8%{transform:translateX(2px) rotate(8deg)}
+}
+@media(prefers-reduced-motion:reduce){.kws-module-label>.kws-setup-badge{animation:none}}

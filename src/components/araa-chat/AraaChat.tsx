@@ -21,7 +21,7 @@ function araaNoticeSeen(key: string) { try { return localStorage.getItem(key) ==
 function araaActivityKey(key: string) { return `${key}.first-edit`; }
 function araaActivityTriggered(key: string) { try { return localStorage.getItem(araaActivityKey(key)) === "1"; } catch { return false; } }
 function markAraaActivityTriggered(key: string) { try { localStorage.setItem(araaActivityKey(key), "1"); } catch { /* The notice still appears for this session. */ } }
-function businessSettingsGuideKey(key: string) { return `${key}.business-settings-to-inventory.v1`; }
+function businessSettingsGuideKey(key: string) { return `${key}.business-settings-to-inventory.v2`; }
 function businessSettingsGuideSeen(key: string) { try { return localStorage.getItem(businessSettingsGuideKey(key)) === "1"; } catch { return false; } }
 function markBusinessSettingsGuideSeen(key: string) { try { localStorage.setItem(businessSettingsGuideKey(key), "1"); } catch { /* The guide still appears for this session. */ } }
 
@@ -142,7 +142,7 @@ export function AraaChat({ workspace = false, context = {}, onNavigate }: { work
     const guide = (event: Event) => {
       const detail = (event as CustomEvent).detail || {};
       if (detail.type === "business-settings-complete") {
-        if (context.inventoryCount || businessSettingsGuideSeen(noticeKey)) return;
+        if (businessSettingsGuideSeen(noticeKey)) return;
         markBusinessSettingsGuideSeen(noticeKey);
         markAraaActivityTriggered(noticeKey);
         setMilestone({ id: Date.now(), type: "business-settings-complete" });
