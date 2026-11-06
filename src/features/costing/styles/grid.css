@@ -295,3 +295,6 @@
 .grid-workbook tbody td.grid-column-selected:not(.grid-product-column){position:relative;z-index:1}
 .grid-workbook tbody td.grid-column-selected::before{content:"";position:absolute;inset:0 0 -1px;z-index:10;box-sizing:border-box;border-inline:2px solid #3a78bf;pointer-events:none}
 .grid-workbook tbody tr:last-child td.grid-column-selected::before{bottom:0;border-bottom:2px solid #3a78bf}
+
+/* Keep name capitalization stable without rewriting text during editing. */
+.grid-workbook .grid-product-column>input{text-transform:capitalize}
