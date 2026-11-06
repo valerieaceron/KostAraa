@@ -32,7 +32,9 @@ export async function apiJson(path, options = {}) {
   }
   if (!response.ok || data.type === 'error' || data.success === false) {
     if (data.code === 'PLAN_LIMIT' && data.upgrade) window.dispatchEvent(new window.CustomEvent('kostaraa:upgrade-needed', {detail: data.message}));
-    throw new Error(data.message || data.error || 'Unable to connect to the API.');
+    const error = new Error(data.message || data.error || 'Unable to connect to the API.');
+    error.status = response.status;
+    throw error;
   }
   return data;
 }

@@ -3,6 +3,7 @@ import { Copy, Download, FileUp, MoreHorizontal, Pencil, Plus, Search, Trash2, X
 import { formatCurrency, getInventoryCostUnit, getInventoryUnitCost } from '../utils/calculations';
 import { apiJson, getAllApiItems, getApiItem, getCreatedInventoryItem, isOfflineUser } from '../utils/api';
 import { titleCaseName } from '../utils/display-text';
+import { inventoryPurchaseErrors } from '../utils/inventory-validation';
 import '../styles/inventory.css';
 
 const ALL_UNITS = ['mg', 'g', 'kg', 'oz', 'lb', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'fl oz', 'mm', 'cm', 'm', 'inch', 'ft', 'yard', 'pcs', 'dozen', 'pack', 'box'];
@@ -20,7 +21,7 @@ function unitCostLabel(item) {
   return `${formatCurrency(getInventoryUnitCost(item))} per ${getInventoryCostUnit(item)}`;
 }
 
-function inventoryApiPayload(item) {
+export function inventoryApiPayload(item) {
   return {
     material: item.material,
     itemCost: Number(item.itemCost) || 0,
@@ -42,7 +43,7 @@ function inventoryApiPayload(item) {
   };
 }
 
-function normalizeApiInventoryItem(item) {
+export function normalizeApiInventoryItem(item) {
   const type = item.item_type || 'ingredient';
   return {
     ...item,
@@ -64,12 +65,12 @@ function extractInventoryItems(data) {
   return candidates.find(Array.isArray) || [];
 }
 
-function validateDraft(draft) {
+export function validateDraft(draft) {
   return {
-    material: !String(draft.material).trim() ? 'Material name is required.' : '',
-    itemCost: Number(draft.itemCost) <= 0 ? 'Purchase amount must be greater than 0.' : '',
-    qty: Number(draft.qty) <= 0 ? 'Purchase quantity must be greater than 0.' : '',
-    baseUnit: !ALL_UNITS.includes(draft.baseUnit) ? 'Choose a valid measurement unit.' : '',
+    material: !String(draft.material ?? '').trim() ? 'Material name is required' : '',
+    category: !String(draft.category ?? '').trim() ? 'Category is required' : !ITEM_CATEGORIES.includes(draft.category) ? 'Choose a valid category.' : '',
+    ...inventoryPurchaseErrors(draft.itemCost, draft.qty),
+    baseUnit: !String(draft.baseUnit ?? '').trim() ? 'Base unit is required' : !ALL_UNITS.includes(draft.baseUnit) ? 'Choose a valid measurement unit.' : '',
   };
 }
 
@@ -105,7 +106,21 @@ function InventoryActions({ item, openUp, onEdit, onDuplicate, onDelete }) {
   </div>;
 }
 
-function MaterialDialog({ draft, errors, mode, saving, saveError, allowedUnits, onChange, onClose, onDelete, onSave }) {
+export function MaterialDialog({ draft, errors, mode, saving, saveError, allowedUnits, onChange, onClose, onDelete, onSave }) {
+  const contentRef = useRef(null);
+  useEffect(() => {
+    const previous = document.activeElement;
+    const trapFocus = (event) => {
+      if (event.key !== 'Tab') return;
+      const controls = [...contentRef.current.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled)')];
+      const first = controls[0], last = controls.at(-1);
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    const content = contentRef.current;
+    content.addEventListener('keydown', trapFocus);
+    return () => { content.removeEventListener('keydown', trapFocus); if (previous?.isConnected) previous.focus(); };
+  }, []);
   const showsCupRule = WEIGHT_UNITS.includes(draft.baseUnit) || VOLUME_UNITS.includes(draft.baseUnit);
   const showsPieceRule = ['pack', 'box'].includes(draft.baseUnit);
   useEffect(() => {
@@ -116,19 +131,19 @@ function MaterialDialog({ draft, errors, mode, saving, saveError, allowedUnits, 
 
   return <div className="inventory-dialog" role="dialog" aria-modal="true" aria-labelledby="inventory-dialog-title">
     <button className="inventory-dialog-scrim" type="button" onClick={onClose} aria-label="Close material dialog" />
-    <article>
+    <article ref={contentRef}>
       <header><div><h2 id="inventory-dialog-title">{mode === 'edit' ? 'Edit material details' : 'Add material details'}</h2></div><button type="button" onClick={onClose} aria-label="Close"><X /></button></header>
       {saveError ? <p className="inventory-alert error">{saveError}</p> : null}
       <div className="inventory-dialog-grid">
         <InventoryField label="Material name" error={errors.material} className="wide"><input autoFocus value={draft.material} onChange={(event) => onChange('material', event.target.value)} /></InventoryField>
-        <InventoryField label="Category"><select value={draft.category} onChange={(event) => onChange('category', event.target.value)}>{ITEM_CATEGORIES.map((category) => <option key={category}>{category}</option>)}</select></InventoryField>
+        <InventoryField label="Category" error={errors.category}><select value={draft.category} onChange={(event) => onChange('category', event.target.value)}>{ITEM_CATEGORIES.map((category) => <option key={category}>{category}</option>)}</select></InventoryField>
         <InventoryField label="Base unit" error={errors.baseUnit}><select aria-label="Base unit" value={draft.baseUnit} onChange={(event) => onChange('baseUnit', event.target.value)}><option value="">Select measurement</option>{allowedUnits.map((unit) => <option key={unit} value={unit}>{displayUnit(unit)}</option>)}</select></InventoryField>
-        <InventoryField label="Purchase amount" error={errors.itemCost}><span className="inventory-money-input"><b>PHP</b><input min="0" step="0.01" type="number" value={draft.itemCost} onChange={(event) => onChange('itemCost', event.target.value)} /></span></InventoryField>
-        <InventoryField label="Purchase quantity" error={errors.qty} hint="How many base units were included in the purchase."><input min="0" step="0.01" type="number" value={draft.qty} onChange={(event) => onChange('qty', event.target.value)} /></InventoryField>
+        <InventoryField label="Purchase amount" error={errors.itemCost}><span className="inventory-money-input"><b>PHP</b><input min="0.001" max="999999999999.99" step="0.001" type="number" value={draft.itemCost} onChange={(event) => onChange('itemCost', event.target.value)} /></span></InventoryField>
+        <InventoryField label="Purchase quantity" error={errors.qty} hint="How many base units were included in the purchase."><input min="0.0001" max="9999999999.9999" step="0.0001" type="number" value={draft.qty} onChange={(event) => onChange('qty', event.target.value)} /></InventoryField>
         {showsCupRule ? <InventoryField label="Grams per cup" optional hint="Use only when recipes measure this item by cup." className="wide"><input min="0" step="0.01" type="number" value={draft.gramsPerCup} onChange={(event) => onChange('gramsPerCup', event.target.value)} /></InventoryField> : null}
         {showsPieceRule ? <InventoryField label={`Pieces per ${draft.baseUnit}`} optional hint={`Enter how many individual pieces are inside one ${draft.baseUnit}.`} className="wide"><input min="0" step="1" type="number" value={draft.piecesPerUnit} onChange={(event) => onChange('piecesPerUnit', event.target.value)} /></InventoryField> : null}
       </div>
-      <div className="inventory-dialog-actions">{mode === 'edit' ? <button className="danger" type="button" onClick={onDelete}>Delete material</button> : null}<span/><button type="button" onClick={onClose}>Cancel</button><button className="primary" type="button" disabled={saving} onClick={onSave}>{saving ? 'Saving…' : mode === 'edit' ? 'Save changes' : 'Add material'}</button></div>
+      <div className="inventory-dialog-actions">{mode === 'edit' && onDelete ? <button className="danger" type="button" onClick={onDelete}>Delete material</button> : null}<span/><button type="button" onClick={onClose}>Cancel</button><button className="primary" type="button" disabled={saving} onClick={onSave}>{saving ? 'Saving…' : mode === 'edit' ? 'Save changes' : 'Add material'}</button></div>
     </article>
   </div>;
 }
@@ -254,7 +269,8 @@ export default function Inventory({ inventory, setInventory, unitOptions = ALL_U
       if (!rows.length) throw new Error('The spreadsheet does not contain any material rows.');
       const importedItems = rows.map((row, index) => {
         const material = String(row.Material || '').trim(); const itemCost = Number(row['Purchase Amount']); const qty = Number(row['Purchase Quantity'] ?? row['Stock Qty']); const rawUnit = String(row['Base Unit'] || '').trim().toLowerCase(); const baseUnit = ['grams', 'gram'].includes(rawUnit) ? 'g' : rawUnit;
-        if (!material) throw new Error(`Row ${index + 2}: Material is required.`); if (!(itemCost > 0)) throw new Error(`Row ${index + 2}: Purchase Amount must be greater than 0.`); if (!(qty > 0)) throw new Error(`Row ${index + 2}: Purchase Quantity must be greater than 0.`); if (!ALL_UNITS.includes(baseUnit)) throw new Error(`Row ${index + 2}: Base Unit is not supported.`);
+        const purchaseErrors = inventoryPurchaseErrors(itemCost, qty);
+        if (!material) throw new Error(`Row ${index + 2}: Material is required.`); if (purchaseErrors.itemCost) throw new Error(`Row ${index + 2}: ${purchaseErrors.itemCost}`); if (purchaseErrors.qty) throw new Error(`Row ${index + 2}: ${purchaseErrors.qty}`); if (!ALL_UNITS.includes(baseUnit)) throw new Error(`Row ${index + 2}: Base Unit is not supported.`);
         const category = ITEM_CATEGORIES.includes(row.Category) ? row.Category : 'Raw Material'; return { id: crypto.randomUUID(), material, category, item_type: categoryToType(category), itemCost, qty, baseUnit, gramsPerCup: Number(row['Grams Per Cup']) || 0, piecesPerUnit: Number(row['Pieces Per Pack']) || 0 };
       });
       if (isOfflineUser()) savedItems.push(...importedItems);

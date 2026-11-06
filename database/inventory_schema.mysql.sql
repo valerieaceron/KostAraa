@@ -13,7 +13,7 @@ CREATE TABLE `inventory_items` (
   `category` varchar(100) DEFAULT NULL,
   `sku` varchar(80) DEFAULT NULL,
   `description` text DEFAULT NULL,
-  `purchase_cost` decimal(14,2) unsigned NOT NULL,
+  `purchase_cost` decimal(15,3) unsigned NOT NULL,
   `purchase_quantity` decimal(14,4) unsigned NOT NULL,
   `base_unit` enum('mg','g','kg','oz','lb','ml','l','tsp','tbsp','cup','fl oz','mm','cm','m','inch','ft','yard','pcs','dozen','pack','box') NOT NULL,
   `grams_per_cup` decimal(14,4) unsigned DEFAULT NULL,

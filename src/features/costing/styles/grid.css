@@ -252,3 +252,32 @@
   .kws-shell.grid-workspace .kws-content .grid-workbook .grid-page-header h1{margin:0 0 2px;font-size:22px}
   .kws-shell.grid-workspace .kws-content .grid-workbook .grid-page-header p{font-size:12px}
 }
+
+/* Validation guidance follows the field that needs attention. */
+.grid-workbook td.grid-cell-needs-fix{outline:3px solid #d58425;outline-offset:-3px;background:#fff8e9!important;box-shadow:inset 0 0 0 5px #fbe5bb}
+.grid-validation-tooltip{position:fixed;z-index:900;box-sizing:border-box;padding:20px;background:#fff;border:1px solid #d58425;border-radius:12px;box-shadow:0 12px 40px #223b6433;color:#344b67;font:13px/1.5 ui-sans-serif,system-ui,sans-serif;max-height:calc(100dvh - 24px);overflow:visible}
+.grid-validation-tooltip::before{content:'';position:absolute;left:var(--guide-arrow,24px);top:var(--guide-arrow-top,-7px);width:12px;height:12px;transform:rotate(45deg);background:#fff;border-left:1px solid #d58425;border-top:1px solid #d58425}
+.grid-validation-tooltip h2{font-size:16px;line-height:1.4;margin:0 20px 10px 0;color:#223c5e}
+.grid-validation-tooltip p{margin:8px 0}
+.grid-validation-tooltip .grid-guide-close{position:absolute;right:8px;top:9px;border:0;background:transparent;color:#71839b;padding:4px;cursor:pointer}
+.grid-guide-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}
+.grid-guide-actions button,.grid-production-dialog .grid-production-actions button{padding:8px 11px;border:1px solid #b9cce4;border-radius:6px;background:white;color:#2e69ad;font:inherit;font-weight:600;cursor:pointer}
+.grid-guide-actions button.primary,.grid-production-dialog .grid-production-actions button.primary{background:#3472b9;border-color:#3472b9;color:#fff}
+.grid-production-dialog{position:fixed;inset:0;margin:auto;box-sizing:border-box;width:min(520px,calc(100vw - 24px));max-height:calc(100dvh - 32px);overflow:auto;border:1px solid #c4d4e8;border-radius:16px;padding:25px;color:#405572;background:white;font:14px/1.6 ui-sans-serif,system-ui,sans-serif}
+.grid-production-dialog::backdrop{background:#0f244594}
+.grid-production-dialog header{display:flex;align-items:center;justify-content:space-between;gap:15px}
+.grid-production-dialog h2{font-size:22px;margin:0}
+.grid-production-dialog header button{border:0;background:transparent;color:#405572;cursor:pointer}
+.grid-production-dialog .inventory-field{margin-top:16px}
+.grid-production-dialog .grid-production-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.grid-production-dialog button:disabled{opacity:.55;cursor:wait}
+
+.grid-workbook .grid-percentage-input{display:flex;align-items:center;min-width:0}
+.grid-workbook .grid-percentage-input input{flex:1;width:0;padding-right:2px}
+.grid-workbook .grid-percentage-input span{flex:none;padding-right:12px;color:#253a52;pointer-events:none}
+
+.grid-workbook td.grid-cell-info{outline:3px solid #3472b9;outline-offset:-3px;background:#edf5ff!important}
+.grid-info-tooltip{border-color:#3472b9}
+.grid-info-tooltip::before{border-color:#3472b9}
+.grid-info-tooltip ul{margin:10px 0;padding-left:18px}
+.grid-info-tooltip li{margin:5px 0}

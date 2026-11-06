@@ -1,12 +1,13 @@
-import {useEffect, useMemo, useRef, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {ArrowUpDown, Check, ChevronDown, ChevronUp, Columns3, Download, Filter, Plus, Redo2, Search, Save, Trash2, Undo2, X} from 'lucide-react';
-import {formatCurrency, formatNumber} from '../utils/calculations';
-import {isBetaUser} from '../utils/beta-access';
+import {formatCurrency, formatNumber, getInventoryCostUnit} from '../utils/calculations';
 import {getSessionUser} from '../utils/api';
 import {titleCaseName} from '../utils/display-text';
-import {calculateGridProduct, createGridMaterial, createGridProduct, gridSignature, gridStorageKey, gridUnits, gridValidation, libraryItemSignature, libraryItemToGridProduct, selectGridMaterial} from '../utils/grid-model';
+import {calculateGridProduct, createGridMaterial, createGridProduct, gridSignature, gridStorageKey, gridUnits, gridValidation, gridValidationIssue, libraryItemSignature, libraryItemToGridProduct, selectGridMaterial} from '../utils/grid-model';
 import {DetailModal} from './ProductsServices';
 import '../styles/grid.css';
+import {featureVisitCount} from '../utils/feature-usage';
+import {GridValidationGuide, GridInventoryDialog, GridProductionDialog} from './GridValidationGuide';
 
 const columns = [
   {key: 'name', label: 'Product name', group: 'Product', width: 210, input: true, required: true},
@@ -23,9 +24,9 @@ const columns = [
   {key: 'marketing', label: 'Marketing %', group: 'Pricing inputs', width: 112, input: true},
   {key: 'markup', label: 'Markup %', group: 'Pricing inputs', width: 106, input: true},
   {key: 'taxMode', label: 'Tax type', group: 'Pricing inputs', width: 140, input: true, optional: true},
-  {key: 'taxPercentage', label: 'Tax %', group: 'Pricing inputs', width: 85, input: true, optional: true},
+  {key: 'taxPercentage', label: 'Tax %', group: 'Pricing inputs', width: 85, optional: true},
   {key: 'targetMargin', label: 'Target margin %', group: 'Pricing inputs', width: 132, input: true, optional: true},
-  {key: 'targetPrice', label: 'Target price', group: 'Pricing inputs', width: 124, input: true},
+  {key: 'targetPrice', label: 'Target price', group: 'Pricing inputs', width: 124, input: true, required: true},
   {key: 'totalCost', label: 'Total cost/item', group: 'Results', width: 125, result: true},
   {key: 'suggested', label: 'Suggested price', group: 'Results', width: 135, result: true},
   {key: 'profit', label: 'Estimated profit/item', group: 'Results', width: 145, result: true},
@@ -41,7 +42,7 @@ const viewColumns = {
 const hiddenForView = view => columns.filter(column => !viewColumns[view].includes(column.key)).map(column => column.key);
 const legacyEssentials = ['name', 'totalCost', 'suggested', 'targetPrice', 'profit', 'margin'];
 const defaultHidden = hiddenForView('pricing');
-const numericFields = ['marketing', 'markup', 'targetPrice', 'platform', 'other', 'taxPercentage', 'targetMargin'];
+const numericFields = ['marketing', 'markup', 'targetPrice', 'platform', 'other', 'targetMargin'];
 const taxRates = {exempt: 0, vat: 12, percentage: 3, income8: 8};
 
 function readSheet(key) {
@@ -59,7 +60,7 @@ function readSheet(key) {
   return {rows: [createGridProduct(), createGridProduct(), createGridProduct()], hidden, columnWidths};
 }
 
-export default function Grid({betaAccess = false, inventory, business, libraryItems = [], onSave, onDeleteItems, onOpenSettings, onViewEdit, onDuplicate, onArchive}) {
+export default function Grid({inventory, business, libraryItems = [], onSave, onDeleteItems, onInventoryChange, onViewEdit, onDuplicate, onArchive}) {
   const [storageKey] = useState(() => gridStorageKey(getSessionUser()));
   const [initial] = useState(() => readSheet(storageKey));
   const [rows, setRows] = useState(initial.rows);
@@ -68,6 +69,8 @@ export default function Grid({betaAccess = false, inventory, business, libraryIt
   const [rowHeights, setRowHeights] = useState({});
   const [savingId, setSavingId] = useState(null);
   const [errors, setErrors] = useState({});
+  const [guide, setGuide] = useState(null);
+  const [setup, setSetup] = useState(null);
   const [storageError, setStorageError] = useState(false);
   const [preview, setPreview] = useState(null);
   const [active, setActive] = useState({row: 0, column: 'name', component: 0});
@@ -381,6 +384,36 @@ export default function Grid({betaAccess = false, inventory, business, libraryIt
       if (selectNumber && control instanceof HTMLInputElement && control.type === 'number') control.select();
     });
   };
+  const guideTarget = useCallback(() => guide && sheetRef.current?.querySelector(`[data-row="${guide.rowIndex}"][data-column="${guide.issue.column}"]`), [guide]);
+  const showIssue = (row, issue) => {
+    const rowIndex = rows.findIndex(entry => entry.id === row.id);
+    setSearchQuery(''); setRowFilter('all'); setSelectedIds(new Set());
+    setHidden(current => current.filter(key => key !== issue.column));
+    setExpandedMaterialRows(current => new Set(current).add(row.id));
+    setGuide({rowId: row.id, rowIndex, issue});
+    setErrors(current => ({...current, [row.id]: issue.message}));
+  };
+  useEffect(() => {
+    if (!guide || setup) return;
+    const component = guide.issue.materialIndex || 0;
+    focusCell(guide.rowIndex, guide.issue.column, guide.issue.column === 'material' ? component * 2 + 1 : component);
+  }, [guide, setup]);
+  const checkNextIssue = () => {
+    const row = rows.find(entry => entry.id === guide.rowId);
+    if (!row) { setGuide(null); return; }
+    if (guide.issue.type === 'info') {
+      setGuide(null);
+      setNotice('If you changed Tax type, click Update Library to save the change.');
+      return;
+    }
+    const issue = gridValidationIssue(row, inventory, business);
+    if (issue) showIssue(row, issue);
+    else {
+      setErrors(current => ({...current, [row.id]: ''}));
+      setGuide(null);
+      setNotice(`${row.name} is ready. Click Save to Library to save this product.`);
+    }
+  };
   const addProduct = () => {
     const index = rows.length;
     setSearchQuery('');
@@ -442,8 +475,9 @@ export default function Grid({betaAccess = false, inventory, business, libraryIt
   };
   const save = async (row, calculated, showPreview = true) => {
     if (saveLock.current) return false;
-    const validation = gridValidation(row, inventory, business);
-    if (validation) { setErrors(current => ({...current, [row.id]: validation})); return false; }
+    const issue = gridValidationIssue(row, inventory, business);
+    if (issue) { showIssue(row, issue); return false; }
+    setGuide(null);
     saveLock.current = true; setSavingId(row.id); setErrors(current => ({...current, [row.id]: ''}));
     try {
       const item = await onSave(calculated.draft, calculated.metadata);
@@ -452,7 +486,14 @@ export default function Grid({betaAccess = false, inventory, business, libraryIt
         .filter(entry => entry.id === row.id || String(entry.savedItem?.id) !== String(item.id))
         .map(entry => entry.id === row.id ? {...entry, savedItem: item, savedSignature: signature, librarySignature: libraryItemSignature(item)} : entry));
       clearHistory();
-      if (showPreview) setPreview(item);
+      if (showPreview && featureVisitCount('grid') <= 3) {
+        setSearchQuery(''); setRowFilter('all'); setSelectedIds(new Set());
+        setHidden(current => current.filter(key => key !== 'taxMode'));
+        setGuide({rowId: row.id, rowIndex: rows.findIndex(entry => entry.id === row.id), issue: {
+          type: 'info', column: 'taxMode', message: 'Your product is saved. Please check your tax type.',
+          options: ['Tax exempt: no tax applies.', 'VAT: your business is VAT-registered.', 'Percentage tax: your business uses percentage tax.', 'Income tax 8%: your business uses the 8% option.'],
+        }});
+      } else if (showPreview) setPreview(item);
       return true;
     } catch (error) { setErrors(current => ({...current, [row.id]: error.message || 'Unable to save. Your inputs are kept.'})); return false; }
     finally { saveLock.current = false; setSavingId(null); }
@@ -482,7 +523,10 @@ export default function Grid({betaAccess = false, inventory, business, libraryIt
     let saved = 0;
     for (const row of targets) {
       const index = rows.findIndex(entry => entry.id === row.id);
-      if (index >= 0 && await save(row, calculations[index], false)) saved += 1;
+      if (index >= 0) {
+        if (await save(row, calculations[index], false)) saved += 1;
+        else break;
+      }
     }
     setSelectedIds(new Set());
     setNotice(`${saved} of ${targets.length} selected product${targets.length === 1 ? '' : 's'} saved to the Library.`);
@@ -660,7 +704,7 @@ export default function Grid({betaAccess = false, inventory, business, libraryIt
     setActive({row: rowIndex, column: key, component: 0});
     setEditingCell(null);
     event.currentTarget.focus();
-    if (!editable) setNotice('This value is calculated by Kostaraa. Press Ctrl/Cmd+C to copy it.');
+    if (!editable) setNotice(key === 'taxPercentage' ? 'Select Tax type to change Tax %.' : 'This value is calculated by Kostaraa. Press Ctrl/Cmd+C to copy it.');
   };
   const editCell = (rowIndex, key, editable) => {
     if (!editable || savingId) return;
@@ -690,8 +734,13 @@ export default function Grid({betaAccess = false, inventory, business, libraryIt
       {column.key === 'material' ? <div className="grid-add-material">{hiddenCount ? <button className="grid-material-toggle" type="button" onClick={() => toggleMaterials(row)}><ChevronDown aria-hidden="true"/> Show {hiddenCount} more</button> : <><button disabled={disabled} onClick={() => addMaterial(row, 'material')}>+ Material</button><button disabled={disabled} onClick={() => addMaterial(row, 'packaging')}>+ Packaging</button>{row.materials.length>1&&<button className="grid-material-toggle collapse" type="button" onClick={() => toggleMaterials(row)}><ChevronUp aria-hidden="true"/> Collapse</button>}</>}</div> : <div className={`grid-material-spacer${hiddenCount?' has-more':''}`}>{hiddenCount?`+${hiddenCount} more`:''}</div>}
     </div>;
     }
+    if (column.key === 'taxPercentage') return <output title="Select Tax type to change this value">{formatNumber(row.taxPercentage)}%</output>;
     if (column.key === 'itemType') return <select tabIndex={inputTabIndex} disabled={disabled} aria-label={label} value={row.itemType} onChange={event => update(row.id, 'itemType', event.target.value)}><option>Product</option><option>Service</option></select>;
     if (column.key === 'taxMode') return <select className="grid-tax-select" tabIndex={inputTabIndex} disabled={disabled} aria-label={label} value={row.taxMode} onMouseDown={event => {event.stopPropagation();if(!cellEditing){setActive({row:index,column:'taxMode',component:0});setEditingCell({row:index,column:'taxMode'});setCopiedCell(null);}}} onChange={event => {update(row.id, 'taxMode', event.target.value); update(row.id, 'taxPercentage', taxRates[event.target.value]);}}><option value="exempt">Tax exempt</option><option value="vat">VAT</option><option value="percentage">Percentage tax</option><option value="income8">Income tax 8%</option></select>;
+    if (['marketing', 'markup'].includes(column.key)) return <div className="grid-percentage-input">
+      <input tabIndex={inputTabIndex} disabled={disabled} aria-label={label} type="number" min="0" step="any" value={row[column.key]} onChange={event => update(row.id, column.key, event.target.value)} />
+      {String(row[column.key] ?? '').trim() && <span aria-hidden="true">%</span>}
+    </div>;
     if (column.input) return <input tabIndex={inputTabIndex} disabled={disabled} aria-label={label} type={numericFields.includes(column.key) ? 'number' : 'text'} min="0" max={['taxPercentage', 'targetMargin'].includes(column.key) ? '99.99' : undefined} step="any" value={column.key === 'name' ? titleCaseName(row[column.key]) : row[column.key]} placeholder={column.key === 'name' ? 'Product name…' : column.key === 'targetPrice' && hasInput(row) ? 'Add target price' : ''} onChange={event => update(row.id, column.key, event.target.value)} />;
     const moneyValues = {materialsCost: calculated.results.materialCost, packagingCost: calculated.results.packagingCost, labor: calculated.results.costBreakdown.Labor, operation: calculated.results.overheadCost, totalCost: calculated.results.totalVariableCost, suggested: calculated.pricing.suggestedSellingPrice, profit: calculated.profit, breakEven: calculated.pricing.breakEvenSellingPrice};
     if (column.key === 'margin') return output(`${formatNumber(calculated.margin)}%`, row, calculated.profit < 0 ? 'grid-negative' : '');
@@ -699,7 +748,6 @@ export default function Grid({betaAccess = false, inventory, business, libraryIt
     return output(formatCurrency(moneyValues[column.key]), row, column.key === 'profit' && calculated.profit < 0 ? 'grid-negative' : '');
   };
 
-  if (!betaAccess && !isBetaUser()) return null;
   return <div className={`beta-grid-page grid-workbook${saveGuideActive?' grid-save-guide-active':''}`} onKeyDownCapture={historyKeyboard}>
     <header className="grid-page-header">
       <div><h1>Product Library Grid</h1><p>View and update your Product Library in one worksheet.</p></div>
@@ -727,13 +775,13 @@ export default function Grid({betaAccess = false, inventory, business, libraryIt
       {dataViewActive&&<button className="grid-clear-data-view" type="button" onClick={()=>{setSearchQuery('');setRowFilter('all');setSortRule('original')}}><X aria-hidden="true"/> Clear</button>}
     </div>
     <div className="grid-formula-bar">
-      <div className="grid-cell-context"><span>{cellAddress}</span><p><strong>{selectedColumn?.label}</strong>{selectedColumn?.input ? numericFields.includes(selectedColumn.key)||selectedColumn.key==='quantity' ? ' · Type to replace · Delete to clear' : ' · Double-click or press Enter to edit' : ' · Calculated by Kostaraa · Copy available'}</p></div>
+      <div className="grid-cell-context"><span>{cellAddress}</span><p><strong>{selectedColumn?.label}</strong>{selectedColumn?.key === 'taxPercentage' ? ' · Select Tax type to change this value' : selectedColumn?.input ? numericFields.includes(selectedColumn.key)||selectedColumn.key==='quantity' ? ' · Type to replace · Delete to clear' : ' · Double-click or press Enter to edit' : ' · Calculated by Kostaraa · Copy available'}</p></div>
       <div className="grid-view-control">
         <span>Show columns</span>
         <div className="grid-view-switcher" role="group" aria-label="Choose worksheet columns">{[['full', 'Detailed costing'], ['pricing', 'Price testing']].map(([view, label]) => <button key={view} className={currentView === view ? 'active' : ''} aria-pressed={currentView === view} onClick={() => applyView(view)}>{label}</button>)}</div>
       </div>
     </div>
-    {!production && <p className="grid-setup-note">Set items produced per month in <button onClick={() => onOpenSettings?.()}>Business Settings</button> to include labor and operating costs.</p>}
+    {!production && <p className="grid-setup-note">Set items produced per month in <button onClick={() => setSetup({type: 'production'})}>Business Settings</button> to include labor and operating costs.</p>}
     {!inventory.length && <p className="grid-setup-note">Add materials to Inventory first, then choose them in the Material column.</p>}
     <datalist id="grid-inventory-options">{inventory.map(item => <option key={item.id} value={item.material}/>)}</datalist>
     <div className="grid-table-wrap" ref={sheetRef} tabIndex={0} aria-label="Scrollable product costing sheet">
@@ -756,9 +804,9 @@ export default function Grid({betaAccess = false, inventory, business, libraryIt
               const cellActive = active.row === index && active.column === column.key;
               const cellEditing = editingCell?.row === index && editingCell?.column === column.key;
               const cellCopied = copiedCell?.row === index && copiedCell?.column === column.key;
-              return <td key={column.key} data-row={index} data-column={column.key} tabIndex={cellActive ? 0 : -1} onMouseDown={event=>selectCell(event,index,column.key,column.input)} onDoubleClick={event=>{if(!event.target.closest('button'))editCell(index,column.key,column.input)}} className={`${column.input ? 'grid-editable' : 'grid-calculated'}${column.result ? ' grid-result' : ''}${column.key === 'name' ? ' grid-product-column' : ''}${fillCapable ? ' grid-fill-capable' : ''}${inFillRange ? ' grid-fill-range' : ''}${cellActive ? ' grid-cell-active' : ''}${cellEditing ? ' grid-cell-editing' : ''}${cellCopied ? ' grid-cell-copied' : ''}`}>{renderCell(column, row, index, calculated)}{showFillHandle&&<button className="grid-fill-handle" type="button" title={`Drag to copy ${column.label.toLowerCase()}`} aria-label={`Drag to copy ${column.label.toLowerCase()} to other product rows`} onPointerDown={event=>beginFill(event,index,column.key)}/>} {column.key === 'name' && errors[row.id] && <p className="grid-cell-error" role="alert">{errors[row.id]}</p>}</td>;
+              return <td key={column.key} data-row={index} data-column={column.key} tabIndex={cellActive ? 0 : -1} aria-invalid={guide?.issue.type !== 'info' && guide?.rowId === row.id && guide.issue.column === column.key || undefined} aria-describedby={guide?.rowId === row.id && guide.issue.column === column.key && !setup ? 'grid-validation-message' : undefined} onMouseDown={event=>selectCell(event,index,column.key,column.input)} onDoubleClick={event=>{if(!event.target.closest('button'))editCell(index,column.key,column.input)}} className={`${column.input ? 'grid-editable' : 'grid-calculated'}${column.result ? ' grid-result' : ''}${column.key === 'name' ? ' grid-product-column' : ''}${fillCapable ? ' grid-fill-capable' : ''}${inFillRange ? ' grid-fill-range' : ''}${cellActive ? ' grid-cell-active' : ''}${cellEditing ? ' grid-cell-editing' : ''}${cellCopied ? ' grid-cell-copied' : ''}${guide?.rowId === row.id && guide.issue.column === column.key ? guide.issue.type === 'info' ? ' grid-cell-info' : ' grid-cell-needs-fix' : ''}`}>{renderCell(column, row, index, calculated)}{showFillHandle&&<button className="grid-fill-handle" type="button" title={`Drag to copy ${column.label.toLowerCase()}`} aria-label={`Drag to copy ${column.label.toLowerCase()} to other product rows`} onPointerDown={event=>beginFill(event,index,column.key)}/>}</td>;
             })}
-            <td className="grid-row-actions">{unchanged ? <button aria-label={`Overview for ${row.name}`} onClick={() => setPreview(row.savedItem)}><Check size={14}/> {row.savedItem?.status || 'Saved'} · Overview</button> : <><button className="grid-save-product-action" disabled={Boolean(savingId) || !hasInput(row)} onClick={() => save(row, calculated)} aria-label={`${row.savedItem ? 'Update' : 'Save'} ${row.name || `product ${index + 1}`}`}><Save size={14}/>{savingId === row.id ? 'Saving…' : row.savedItem ? 'Update Library' : 'Save to Library'}</button></>}</td>
+            <td className="grid-row-actions">{errors[row.id] && <p className="grid-cell-error" role="alert">{errors[row.id]}</p>}{unchanged ? <button aria-label={`Overview for ${row.name}`} onClick={() => setPreview(row.savedItem)}><Check size={14}/> {row.savedItem?.status || 'Saved'} · Overview</button> : <><button className="grid-save-product-action" disabled={Boolean(savingId) || !hasInput(row)} onClick={() => save(row, calculated)} aria-label={`${row.savedItem ? 'Update' : 'Save'} ${row.name || `product ${index + 1}`}`}><Save size={14}/>{savingId === row.id ? 'Saving…' : row.savedItem ? 'Update Library' : 'Save to Library'}</button></>}</td>
           </tr>;
         })}{!displayedRows.length&&<tr className="grid-no-results"><td colSpan={visibleColumns.length+2}><Search aria-hidden="true"/><strong>No matching rows</strong><span>Try another search or clear the current filter.</span><button type="button" onClick={()=>{setSearchQuery('');setRowFilter('all');setSortRule('original')}}>Clear search and filters</button></td></tr>}</tbody>
       </table>
@@ -766,6 +814,15 @@ export default function Grid({betaAccess = false, inventory, business, libraryIt
     </div>
     <div className="grid-sheet-footer"><span>{libraryItems.length} Library items · {rows.filter(row => !row.savedItem && hasInput(row)).length} unsaved drafts · Drag header and row edges to resize</span><span>Numbers: select then type to replace · Delete: clear · Enter: edit · Ctrl/Cmd+C and Ctrl/Cmd+V: copy and paste</span></div>
     {notice && <p className="grid-notice" role="status">{notice}</p>}
+    {guide && !setup && rows.some(row => row.id === guide.rowId) && <GridValidationGuide target={guideTarget} address={`${String.fromCharCode(65 + visibleColumns.findIndex(column => column.key === guide.issue.column))}${guide.rowIndex + 1}`} label={columns.find(column => column.key === guide.issue.column)?.label || 'Field'} issue={guide.issue} onClose={() => setGuide(null)} onNext={checkNextIssue} onSetup={() => setSetup({type: guide.issue.action, rowId: guide.rowId, materialIndex: guide.issue.materialIndex || 0, inventoryId: guide.issue.inventoryId})}/>}
+    {setup?.type === 'inventory' && <GridInventoryDialog material={rows.find(row => row.id === setup.rowId)?.materials[setup.materialIndex]} item={inventory.find(item => String(item.id) === String(setup.inventoryId))} inventory={inventory} onClose={() => setSetup(null)} onSave={(saved, nextInventory) => {
+      onInventoryChange(nextInventory);
+      changeRows(current => current.map(row => row.id !== setup.rowId ? row : {...row, materials: row.materials.map((material, index) => index !== setup.materialIndex ? material : {...material, materialId: saved.id, name: saved.material, usedUnit: getInventoryCostUnit(saved), kind: saved.item_type === 'packaging' ? 'packaging' : 'material'})}));
+      setErrors(current => ({...current, [setup.rowId]: ''}));
+      setSetup(null);
+      setNotice('Inventory saved and selected in your product. Check the next field to continue.');
+    }}/>}
+    {setup?.type === 'production' && <GridProductionDialog onClose={() => setSetup(null)} onSave={() => {setSetup(null);setNotice('Production saved. Grid costs have been recalculated. Check the next field to continue.');}}/>}
     {preview && <DetailModal item={preview} onClose={() => setPreview(null)} onViewEdit={onViewEdit} onDuplicate={onDuplicate} onArchive={async id => {await onArchive(id);setPreview(null);setRows(current=>current.map(row=>row.savedItem?.id===id?{...row,savedItem:null,savedSignature:null}:row));clearHistory();}}/>}
   </div>;
 }

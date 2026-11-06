@@ -1,10 +1,19 @@
 import {useEffect, useRef} from 'react';
 import {apiJson, isOfflineUser} from '../costing/utils/api';
+import {recordFeatureVisit} from '../costing/utils/feature-usage';
 
 export function useUsageAnalytics(enabled:boolean, feature:string) {
   const tracker = useRef<any>(null);
   const current = useRef(feature);
+  const countedFeature = useRef('');
   current.current = feature;
+
+  useEffect(() => {
+    if (!enabled) { countedFeature.current = ''; return; }
+    if (countedFeature.current === feature) return;
+    countedFeature.current = feature;
+    recordFeatureVisit(feature);
+  }, [enabled, feature]);
 
   useEffect(() => {
     if (!enabled || isOfflineUser() || !sessionStorage.getItem('kostaraa.token')) return;

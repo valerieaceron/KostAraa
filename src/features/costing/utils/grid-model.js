@@ -2,10 +2,10 @@ import {blankProduct} from '../data/demoData.js';
 import {calculateProduct, calculateSellingPrice, getInventoryCostUnit, getInventoryUnitCost, computeInventoryMaterialCost, savedItemToProduct} from './calculations.js';
 
 export const gridUnits = ['pcs', 'mg', 'g', 'kg', 'oz', 'lb', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'fl oz', 'mm', 'cm', 'm', 'inch', 'ft', 'yard', 'dozen', 'pack', 'box'];
-export const createGridMaterial = (kind = 'material') => ({id: crypto.randomUUID(), kind, materialId: '', name: '', usedQuantity: 1, usedUnit: 'pcs'});
+export const createGridMaterial = (kind = 'material') => ({id: crypto.randomUUID(), kind, materialId: '', name: '', usedQuantity: '', usedUnit: 'pcs'});
 export const createGridProduct = () => ({
   id: crypto.randomUUID(), name: '', itemType: 'Product', category: 'Other',
-  materials: [createGridMaterial()], marketing: 0, markup: 50, targetPrice: '',
+  materials: [createGridMaterial()], marketing: '', markup: '', targetPrice: '',
   taxMode: 'exempt', taxPercentage: 0, targetMargin: 30, platform: 0, other: 0, notes: '',
 });
 
@@ -77,24 +77,36 @@ export function calculateGridProduct(row, inventory, business) {
   return {draft, results, pricing, price, profit, margin, breakEvenUnits, metadata};
 }
 
-export function gridValidation(row, inventory, business) {
-  if (!row.name.trim()) return 'Enter a product name.';
-  if (!row.materials.some(material => material.materialId)) return 'Choose a material from Inventory.';
-  for (const material of row.materials) {
-    if (!material.materialId && material.name.trim()) return `Choose “${material.name}” from Inventory first.`;
+export function gridValidationIssue(row, inventory, business) {
+  const issue = (column, message, extra = {}) => ({column, message, ...extra});
+  if (!row.name.trim()) return issue('name', 'Enter a product name.');
+  if (!row.materials.some(material => material.materialId)) return issue('material', 'Choose a material from Inventory.', {materialIndex: 0, action: 'inventory', hint: 'Choose Raw or Pack, then select a material from the list. If it’s missing, add it below.'});
+  for (const [materialIndex, material] of row.materials.entries()) {
+    const extra = {materialIndex};
+    if (!material.materialId && material.name.trim()) return issue('material', `Choose “${material.name}” from Inventory first.`, {...extra, action: 'inventory'});
     if (!material.materialId) continue;
     const item = inventory.find(entry => String(entry.id) === String(material.materialId));
-    if (!item) return `${material.name || 'A material'} is no longer in Inventory.`;
-    if (!Number.isFinite(Number(material.usedQuantity)) || Number(material.usedQuantity) <= 0) return 'Material quantities must be greater than zero.';
-    if (!(getInventoryUnitCost(item) > 0)) return `Add a purchase cost and quantity for ${item.material} in Inventory.`;
-    if (!(computeInventoryMaterialCost(material, inventory) > 0)) return `Check the quantity and unit for ${item.material}.`;
+    if (!item) return issue('material', `${material.name || 'A material'} is no longer in Inventory.`, {...extra, action: 'inventory'});
+    if (!String(material.usedQuantity ?? '').trim()) return issue('quantity', 'Quantity is required.', {...extra, hint: `Quantity is required. Enter how much ${material.name || item.material} you use for one product, measured in ${material.usedUnit}.`});
+    if (!Number.isFinite(Number(material.usedQuantity)) || Number(material.usedQuantity) <= 0) return issue('quantity', 'Material quantities must be greater than zero.', {...extra, hint: `Enter how much ${material.name || item.material} you use for one product, measured in ${material.usedUnit}. Use a number greater than 0.`});
+    if (!(getInventoryUnitCost(item) > 0)) return issue('material', `Add a purchase cost and quantity for ${item.material} in Inventory.`, {...extra, action: 'inventory', inventoryId: item.id});
+    if (!(computeInventoryMaterialCost(material, inventory) > 0)) return issue('unit', `Check the quantity and unit for ${item.material}.`, {...extra, hint: `Choose a unit that matches this material (${getInventoryCostUnit(item)}).`});
   }
-  if (!((Number(business.labor?.workingDays) || 0) * (Number(business.labor?.outputPerDay) || 0) > 0)) return 'Set items produced per month in Business Settings.';
+  if (!((Number(business.labor?.workingDays) || 0) * (Number(business.labor?.outputPerDay) || 0) > 0)) return issue('labor', 'Set items produced per month in Business Settings.', {action: 'production', hint: 'Add your production quantity to calculate labor and operating costs.'});
+  if (!String(row.marketing ?? '').trim()) return issue('marketing', 'Marketing % is required.', {hint: 'Marketing % is required. Enter the percentage of your selling price to set aside for marketing, including product discounts and promotions, or 0 if none.'});
+  if (!String(row.markup ?? '').trim()) return issue('markup', 'Markup % is required.', {hint: 'Markup % is required. Enter the percentage to add on top of your cost to earn a profit.'});
+  if (!String(row.targetPrice ?? '').trim()) return issue('targetPrice', 'Target price is required.', {hint: 'Target price is required. Enter the price you plan to charge for one product.'});
+  if (!Number.isFinite(Number(row.targetPrice)) || Number(row.targetPrice) <= 0) return issue('targetPrice', 'Target price must be greater than 0.', {hint: 'Enter the price you plan to charge for one product. Use a number greater than 0.'});
   for (const field of ['marketing', 'markup', 'targetPrice', 'taxPercentage', 'targetMargin', 'platform', 'other']) {
-    if (!Number.isFinite(Number(row[field])) || Number(row[field]) < 0) return 'Prices, costs and percentages must be positive or zero.';
+    if (!Number.isFinite(Number(row[field])) || Number(row[field]) < 0) return issue(field, 'Enter 0 or a number greater than 0.');
   }
-  if (Number(row.taxPercentage) >= 100 || Number(row.targetMargin) >= 100) return 'Tax and target margin must be below 100%.';
-  return '';
+  if (Number(row.taxPercentage) >= 100) return issue('taxPercentage', 'Enter a percentage below 100%.');
+  if (Number(row.targetMargin) >= 100) return issue('targetMargin', 'Enter a percentage below 100%.');
+  return null;
+}
+
+export function gridValidation(row, inventory, business) {
+  return gridValidationIssue(row, inventory, business)?.message || '';
 }
 
 export function gridStorageKey(user) {

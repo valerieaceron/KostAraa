@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {calculateGridProduct, createGridProduct, createGridMaterial, gridSignature, gridStorageKey, gridValidation, libraryItemSignature, libraryItemToGridProduct, selectGridMaterial} from '../src/features/costing/utils/grid-model.js';
+import {calculateGridProduct, createGridProduct, createGridMaterial, gridSignature, gridStorageKey, gridValidation, gridValidationIssue, libraryItemSignature, libraryItemToGridProduct, selectGridMaterial} from '../src/features/costing/utils/grid-model.js';
 import {buildSavedItem, calculateProduct, calculateSellingPrice} from '../src/features/costing/utils/calculations.js';
 const business = {labor:{monthlyCost:2000,workingDays:20,outputPerDay:10},overhead:{rent:500,utilities:200,miscellaneous:300}};
 const inventory = [{id:1,material:'Paper',itemCost:100,qty:10,baseUnit:'pcs'},{id:2,material:'Box',itemCost:50,qty:10,baseUnit:'pcs'}];
@@ -67,4 +67,86 @@ test('library signatures change when a saved product changes without making a gr
  const signature=gridSignature(row,calculateGridProduct(row,inventory,business));
  assert.equal(gridSignature({...row,librarySignature:'new-library-version'},calculateGridProduct(row,inventory,business)),signature);
  assert.notEqual(libraryItemSignature(saved),libraryItemSignature({...saved,productName:'Updated in Library'}));
+});
+
+
+test('field guidance identifies the exact missing field and material line, one issue at a time',()=>{
+ const row=example();
+ assert.equal(gridValidationIssue({...row,name:''},inventory,business).column,'name');
+ const missing={...row,materials:[createGridMaterial()]};
+ const issue=gridValidationIssue(missing,inventory,business);
+ assert.equal(issue.column,'material');assert.equal(issue.materialIndex,0);assert.equal(issue.action,'inventory');
+ assert.match(issue.hint,/Raw/);assert.match(issue.hint,/select a material/);
+ const invalidQuantity={...row,materials:[row.materials[0],{...row.materials[1],usedQuantity:0}]};
+ const quantityIssue=gridValidationIssue(invalidQuantity,inventory,business);
+ assert.equal(quantityIssue.column,'quantity');assert.equal(quantityIssue.materialIndex,1);
+ assert.equal(gridValidationIssue({...row,materials:[{...row.materials[0],usedUnit:'kg'}]},inventory,business).column,'unit');
+ const noCost=gridValidationIssue(row,[{...inventory[0],itemCost:0},inventory[1]],business);
+ assert.equal(noCost.inventoryId,1);assert.equal(noCost.action,'inventory');
+ const noProduction=gridValidationIssue(row,inventory,{...business,labor:{workingDays:26,outputPerDay:0}});
+ assert.equal(noProduction.column,'labor');assert.equal(noProduction.action,'production');
+ assert.equal(gridValidationIssue({...row,platform:-1},inventory,business).column,'platform');
+ assert.equal(gridValidationIssue({...row,taxPercentage:100,targetMargin:100},inventory,business).column,'taxPercentage');
+ assert.equal(gridValidationIssue({...row,targetMargin:100},inventory,business).column,'targetMargin');
+ assert.equal(gridValidationIssue(row,inventory,business),null);
+});
+
+
+test('new materials start with an empty quantity and guide users to fill it before saving',()=>{
+ assert.equal(createGridProduct().materials[0].usedQuantity,'');
+ assert.equal(createGridMaterial('packaging').usedQuantity,'');
+ const row=example();
+ for(const value of ['', ' ', null, undefined]) {
+  const incomplete={...row,materials:[{...row.materials[0],usedQuantity:value}]};
+  const issue=gridValidationIssue(incomplete,inventory,business);
+  assert.equal(issue.column,'quantity');
+  assert.equal(issue.message,'Quantity is required.');
+  assert.equal(issue.materialIndex,0);
+  assert.match(issue.hint,/one product/);
+  assert.match(issue.hint,/pcs/);
+ }
+ const selected=selectGridMaterial(createGridMaterial(),'Paper',inventory);
+ assert.equal(selected.usedQuantity,'');
+ assert.equal(gridValidationIssue({...row,materials:[{...selected,usedQuantity:0.001}]},inventory,business),null);
+ assert.equal(libraryItemToGridProduct(buildSavedItem(calculateGridProduct(row,inventory,business).draft,calculateGridProduct(row,inventory,business).results,business,calculateGridProduct(row,inventory,business).metadata),inventory).materials[0].usedQuantity,2);
+});
+
+
+test('marketing and markup start blank and require an explicit percentage, including zero',()=>{
+ const blank=createGridProduct();
+ assert.equal(blank.marketing,'');assert.equal(blank.markup,'');
+ const row=example();
+ for(const value of ['', ' ', null, undefined]) {
+  const marketing=gridValidationIssue({...row,marketing:value},inventory,business);
+  assert.equal(marketing.column,'marketing');assert.equal(marketing.message,'Marketing % is required.');
+  assert.match(marketing.hint,/selling price/);assert.match(marketing.hint,/0 if none/);
+  const markup=gridValidationIssue({...row,markup:value},inventory,business);
+  assert.equal(markup.column,'markup');assert.equal(markup.message,'Markup % is required.');
+  assert.match(markup.hint,/on top of your cost/);assert.doesNotMatch(markup.hint,/0 for no markup/);
+ }
+ assert.equal(gridValidationIssue({...row,marketing:'',markup:''},inventory,business).column,'marketing');
+ assert.equal(gridValidationIssue({...row,marketing:0,markup:''},inventory,business).column,'markup');
+ assert.equal(gridValidationIssue({...row,marketing:0,markup:0},inventory,business),null);
+ assert.equal(gridValidationIssue({...row,marketing:'0',markup:'0'},inventory,business),null);
+ const calculated=calculateGridProduct(row,inventory,business);
+ const restored=libraryItemToGridProduct(buildSavedItem(calculated.draft,calculated.results,business,calculated.metadata),inventory);
+ assert.equal(restored.marketing,10);assert.equal(restored.markup,50);
+});
+
+
+test('target price starts blank and points to the selling-price field when saving',()=>{
+ assert.equal(createGridProduct().targetPrice,'');
+ const row=example();
+ for(const value of ['', ' ', null, undefined]) {
+  const issue=gridValidationIssue({...row,targetPrice:value},inventory,business);
+  assert.equal(issue.column,'targetPrice');
+  assert.equal(issue.message,'Target price is required.');
+  assert.match(issue.hint,/charge for one product/);
+ }
+ for(const value of [0,-1,'invalid',Infinity]) {
+  const issue=gridValidationIssue({...row,targetPrice:value},inventory,business);
+  assert.equal(issue.column,'targetPrice');assert.match(issue.message,/greater than 0/);
+ }
+ assert.equal(gridValidationIssue({...row,targetPrice:0.001},inventory,business),null);
+ assert.equal(gridValidationIssue({...row,targetPrice:100},inventory,business),null);
 });

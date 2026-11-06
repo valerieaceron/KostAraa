@@ -1,3 +1,5 @@
+import {apiJson, isOfflineUser} from './api.js';
+
 function profileRecord(data) {
   return data?.profile || data?.business_profile || data?.result?.profile || data?.result?.business_profile || data?.result?.data || data?.result || data?.data?.profile || data?.data?.business_profile || data?.data || data || {};
 }
@@ -140,4 +142,14 @@ export function businessProfilePayload(profile, setupStatus, onboardingStep) {
     pricing_preferences: { pricing_decision_methods: profile.pricingStrategy?.decisionMethods || [], desired_price_position: profile.pricingStrategy?.pricePosition || '', lowest_usual_price: number(profile.pricingStrategy?.lowestUsualPrice), highest_usual_price: number(profile.pricingStrategy?.highestUsualPrice), profit_plan: profile.pricingStrategy?.profitPlan || '', desired_profit_margin: number(profile.pricingStrategy?.desiredProfitMargin), discount_practice: profile.pricingStrategy?.discountPractice || '', biggest_discount: profile.pricingStrategy?.biggestDiscount || '', selling_type: profile.pricingStrategy?.sellingType || '', usual_retail_price: number(profile.pricingStrategy?.retailPrice), usual_wholesale_price: number(profile.pricingStrategy?.wholesalePrice), minimum_wholesale_order: number(profile.pricingStrategy?.minimumWholesaleOrder) },
     sales_channels: (profile.salesChannels || []).map((row) => ({ channel_name: row.name || '', commission_percentage: number(row.commissionPercentage), transaction_fee_percentage: number(row.transactionFeePercentage), listing_fee: number(row.listingFee), delivery_subsidy: number(row.deliverySubsidy), advertising_cost: number(row.advertisingCost), refund_allowance: number(row.refundAllowance), other_costs: number(row.otherCosts), packaging_requirement: row.packagingRequirement || '' })),
   };
+}
+
+export async function loadBusinessProfile(fallback = {}) {
+  if (isOfflineUser()) return normalizeBusinessProfile({}, fallback);
+  try {
+    return normalizeBusinessProfile(await apiJson('/api/business-profile'), fallback);
+  } catch (error) {
+    if (error.status !== 404 || error.message !== 'Business profile not found.') throw error;
+    return normalizeBusinessProfile({}, {...fallback, meta: {...fallback.meta, businessProfileId: null}});
+  }
 }
