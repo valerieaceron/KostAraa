@@ -281,3 +281,17 @@
 .grid-info-tooltip::before{border-color:#3472b9}
 .grid-info-tooltip ul{margin:10px 0;padding-left:18px}
 .grid-info-tooltip li{margin:5px 0}
+
+/* A letter selects the visible column; selecting a cell returns to cell mode. */
+.grid-workbook .grid-column-selector{display:block;width:100%;min-height:0;padding:0;border:0;border-radius:0;background:transparent;color:inherit;font:inherit;line-height:inherit;text-align:center;cursor:pointer}
+.grid-workbook .grid-column-selector:focus-visible{outline:2px solid #3a78bf;outline-offset:1px}
+.grid-workbook thead th.grid-column-selected,
+.grid-workbook tbody td.grid-column-selected,
+.grid-workbook tbody tr:hover td.grid-column-selected{box-shadow:inset 2px 0 #3a78bf,inset -2px 0 #3a78bf}
+.grid-workbook .grid-column-letters th.grid-column-selected{color:#245f9f;background:#dceafb;box-shadow:inset 2px 0 #3a78bf,inset -2px 0 #3a78bf,inset 0 2px #3a78bf}
+.grid-workbook .grid-column-letters th.grid-column-selected::after{content:"";position:absolute;top:100%;left:0;width:100%;height:26px;box-sizing:border-box;border-inline:2px solid #3a78bf;pointer-events:none}
+.grid-workbook tbody tr:last-child td.grid-column-selected{box-shadow:inset 2px 0 #3a78bf,inset -2px 0 #3a78bf,inset 0 -2px #3a78bf}
+/* Paint selection above controls so their backgrounds cannot cover the edges. */
+.grid-workbook tbody td.grid-column-selected:not(.grid-product-column){position:relative;z-index:1}
+.grid-workbook tbody td.grid-column-selected::before{content:"";position:absolute;inset:0 0 -1px;z-index:10;box-sizing:border-box;border-inline:2px solid #3a78bf;pointer-events:none}
+.grid-workbook tbody tr:last-child td.grid-column-selected::before{bottom:0;border-bottom:2px solid #3a78bf}

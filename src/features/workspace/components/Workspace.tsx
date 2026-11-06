@@ -21,7 +21,7 @@ import {normalizeBusinessProfile} from "../../costing/utils/businessProfile";
 import {GettingStartedGuide,ProfileSetupPrompt} from "./GettingStartedGuide";
 import {currentGuideKey,guideEntry,readGuideProgress,writeGuideProgress} from "../getting-started";
 
-import {businessSetupSteps,businessSetupKey,readBusinessSetup} from "../business-setup";
+import {businessSetupSteps,businessSetupKey,readBusinessSetup,profileBusinessSetup,syncBusinessSetupProfile} from "../business-setup";
 
 const defaultLabor={staffCount:0,monthlyCost:0,workingDays:0,outputPerDay:0};
 const defaultOverhead={rent:0,utilities:0,miscellaneous:0};
@@ -63,7 +63,7 @@ function calculatorDraftPayload(product:any,results:any,business:any,metadata:an
 
 function KostaraaLayout({page,setPage,businessSection,setBusinessSection,onLogout,children,businessProfileId,onEditProfile,guideContext}:{page:string;setPage:(page:string)=>void;businessSection:string;setBusinessSection:(section:string)=>void;onLogout:()=>void;children:any;businessProfileId:any;onEditProfile:(field?:string)=>void;guideContext:any}){
   const[completedSetup,setCompletedSetup]=useState<string[]>(()=>readBusinessSetup(localStorage,businessSetupKey()));
-  useEffect(()=>{const update=()=>setCompletedSetup(readBusinessSetup(localStorage,businessSetupKey()));const progress=(event:Event)=>setCompletedSetup((event as CustomEvent).detail);window.addEventListener("kostaraa:business-setup-progress",progress);window.addEventListener("storage",update);return()=>{window.removeEventListener("kostaraa:business-setup-progress",progress);window.removeEventListener("storage",update)}},[]);
+  useEffect(()=>{const update=()=>setCompletedSetup(readBusinessSetup(localStorage,businessSetupKey()));const progress=(event:Event)=>setCompletedSetup((event as CustomEvent).detail);const profileChanged=(event:Event)=>{const completed=profileBusinessSetup((event as CustomEvent).detail);setCompletedSetup(completed);try{localStorage.setItem(businessSetupKey(),JSON.stringify(completed))}catch{}};window.addEventListener("kostaraa:business-settings-changed",profileChanged);window.addEventListener("kostaraa:business-setup-progress",progress);window.addEventListener("storage",update);return()=>{window.removeEventListener("kostaraa:business-settings-changed",profileChanged);window.removeEventListener("kostaraa:business-setup-progress",progress);window.removeEventListener("storage",update)}},[]);
   const remainingSetup=businessSetupSteps.length-completedSetup.length;
   const[mobileOpen,setMobileOpen]=useState(false);
   const[sidebarCollapsed,setSidebarCollapsed]=useState(()=>{try{return localStorage.getItem("kostaraa.sidebar-collapsed")==="1"}catch{return false}});
@@ -118,7 +118,7 @@ export function Workspace(){
     window.addEventListener("kostaraa:business-settings-changed",update);
     return()=>window.removeEventListener("kostaraa:business-settings-changed",update);
   },[]);
-  useEffect(()=>{let cancelled=false;(async()=>{try{const data=await apiJson("/api/business-profile");if(cancelled)return;const profile=withSynchronizedOperationCost(normalizeBusinessProfile(data,{}));setBusinessProfileId(profile.meta?.businessProfileId||null);localStorage.setItem("kostaraa.businessProfile",JSON.stringify(profile));applyBusinessSettings(profile)}catch{}})();return()=>{cancelled=true}},[]);
+  useEffect(()=>{let cancelled=false;(async()=>{try{const data=await apiJson("/api/business-profile");if(cancelled)return;const profile=withSynchronizedOperationCost(await syncBusinessSetupProfile(normalizeBusinessProfile(data,{}),readBusinessSetup(localStorage,businessSetupKey())));if(cancelled)return;window.dispatchEvent(new CustomEvent("kostaraa:business-settings-changed",{detail:profile}));setBusinessProfileId(profile.meta?.businessProfileId||null);localStorage.setItem("kostaraa.businessProfile",JSON.stringify(profile));applyBusinessSettings(profile)}catch(error:any){if(!cancelled)setSyncError(error?.message||"Unable to load setup progress. Please refresh and try again.")}})();return()=>{cancelled=true}},[]);
   useEffect(()=>{if(isOfflineUser())return;let cancelled=false;(async()=>{try{const data=await getAllApiItems("/api/inventory/getAll");if(!cancelled)setInventoryState(data.map(normalizeInventoryItem))}catch{if(!cancelled)setSyncError("Unable to load Inventory from the server. Please refresh and try again.")}})();return()=>{cancelled=true}},[]);
   useEffect(()=>{if(isOfflineUser())return;let cancelled=false;(async()=>{try{const data=await getAllApiItems("/api/product-library/items");if(!cancelled){const items=data.map(apiDraftToLibraryItem);setSavedItems(items);saveSavedItems(items)}}catch{if(!cancelled)setSyncError("Unable to load the Product Library from the server. Please refresh and try again.")}})();return()=>{cancelled=true}},[]);
 
