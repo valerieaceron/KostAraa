@@ -37,6 +37,13 @@ const rows=[
   ["In-app issue reporting","✓","✓"],
 ];
 
+const starterBenefits=[
+  "10 inventory records",
+  "3 saved products and services",
+  "Access to profit insights and price comparison",
+  "Araa assistance",
+];
+
 export default function Pricing(){
   const [plans,setPlans]=useState<any[]>([]);
   const [error,setError]=useState("");
@@ -73,10 +80,9 @@ export default function Pricing(){
       {!loading&&!error&&plans.length>0&&<div className="pricing-cards superhuman-cards">{plans.map(plan=>{
         const paid=isPaid(plan);
         const displayName=displayPlanName(plan);
-        const benefits=[
-          ...planBenefits(plan).filter(benefit=>!benefit.toLowerCase().includes("competitor")),
-          ...(paid?["Upload and download files"]:[]),
-        ];
+        const benefits=paid
+          ? [...planBenefits(plan).filter(benefit=>!benefit.toLowerCase().includes("competitor")),"Upload and download files"]
+          : starterBenefits;
         return <article className={paid?"recommended":""} key={plan.id}>
           {paid?<div className="plan-heading"><small className="plan-tier">Annual Subscription</small><span className="plan-badge">Best value</span></div>:<div className="plan-heading"><small className="plan-tier">Free</small></div>}
           <div className="plan-name"><h2>{displayName}</h2></div>

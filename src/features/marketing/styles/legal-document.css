@@ -14,10 +14,10 @@
 .legal-page-document .legal-hero h1 {
   margin: 0 0 12px;
   color: #252525;
-  font-size: clamp(36px, 4vw, 48px) !important;
-  font-weight: 600;
-  line-height: 1.12;
-  letter-spacing: -.035em;
+  font-size: 20px !important;
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: -.01em;
 }
 
 .legal-page-document .legal-hero p {
@@ -51,7 +51,7 @@
   margin: 0 0 10px;
   color: #252525;
   font-size: 20px !important;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.35;
   letter-spacing: -.01em;
 }
@@ -82,7 +82,7 @@
   }
 
   .legal-page-document .legal-hero h1 {
-    font-size: 34px !important;
+    font-size: 20px !important;
   }
 
   .legal-page-document .legal-content {

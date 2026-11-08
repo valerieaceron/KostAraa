@@ -41,7 +41,8 @@ const viewColumns = {
 };
 const hiddenForView = view => columns.filter(column => !viewColumns[view].includes(column.key)).map(column => column.key);
 const legacyEssentials = ['name', 'totalCost', 'suggested', 'targetPrice', 'profit', 'margin'];
-const defaultHidden = hiddenForView('pricing');
+const defaultHidden = hiddenForView('full');
+const columnViewVersion = 2;
 const numericFields = ['marketing', 'markup', 'targetPrice', 'platform', 'other', 'targetMargin'];
 const taxRates = {exempt: 0, vat: 12, percentage: 3, income8: 8};
 
@@ -50,7 +51,11 @@ function readSheet(key) {
   let columnWidths = {};
   try {
     const stored = key && JSON.parse(localStorage.getItem(key) || 'null');
-    if (Array.isArray(stored?.hidden)) hidden = stored.hidden;
+    if (Array.isArray(stored?.hidden)) {
+      const wasPreviousPricingDefault = stored.columnViewVersion !== columnViewVersion
+        && stored.hidden.join(',') === hiddenForView('pricing').join(',');
+      hidden = wasPreviousPricingDefault ? defaultHidden : stored.hidden;
+    }
     const storedVisible = columns.filter(column => !hidden.includes(column.key)).map(column => column.key);
     if (storedVisible.join(',') === legacyEssentials.join(',')) hidden = defaultHidden;
     if (stored?.columnWidths && typeof stored.columnWidths === 'object') columnWidths = stored.columnWidths;
@@ -271,14 +276,14 @@ export default function Grid({inventory, business, libraryItems = [], onSave, on
   useEffect(() => {
     if (!storageKey) return;
     const timer = setTimeout(() => {
-      try { localStorage.setItem(storageKey, JSON.stringify({hidden,columnWidths})); setStorageError(false); }
+      try { localStorage.setItem(storageKey, JSON.stringify({hidden,columnWidths,columnViewVersion})); setStorageError(false); }
       catch { setStorageError(true); }
     }, 300);
     return () => clearTimeout(timer);
   }, [columnWidths, hidden, storageKey]);
   // Save the worksheet view immediately on navigation too.
   useEffect(() => {
-    const snapshot = () => { try { if (storageKey) localStorage.setItem(storageKey, JSON.stringify({hidden,columnWidths})); } catch { /* Reported by the autosave status. */ } };
+    const snapshot = () => { try { if (storageKey) localStorage.setItem(storageKey, JSON.stringify({hidden,columnWidths,columnViewVersion})); } catch { /* Reported by the autosave status. */ } };
     window.addEventListener('pagehide', snapshot);
     return () => { snapshot(); window.removeEventListener('pagehide', snapshot); };
   }, [columnWidths, hidden, storageKey]);
@@ -767,7 +772,7 @@ export default function Grid({inventory, business, libraryItems = [], onSave, on
         <button type="button" onClick={redoGrid} disabled={Boolean(savingId) || !redoStack.current.length} title="Redo (Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y)" aria-label="Redo last Grid change"><Redo2 size={15}/><span>Redo</span></button>
       </div>
       <button className="grid-secondary-action" onClick={exportGrid}><Download size={15}/> Download Excel</button>
-      <details className="grid-column-menu"><summary><Columns3 size={15}/> Customize</summary><div>{columns.filter(column => column.key !== 'name').map(column => <label key={column.key}><input type="checkbox" checked={!hidden.includes(column.key)} onChange={() => setHidden(current => current.includes(column.key) ? current.filter(key => key !== column.key) : [...current, column.key])}/>{column.label}</label>)}<footer><button onClick={() => applyView('pricing')}>Use Price testing view</button><button onClick={resetSizes}>Reset row and column sizes</button></footer></div></details>
+      <details className="grid-column-menu"><summary><Columns3 size={15}/> Customize</summary><div>{columns.filter(column => column.key !== 'name').map(column => <label key={column.key}><input type="checkbox" checked={!hidden.includes(column.key)} onChange={() => setHidden(current => current.includes(column.key) ? current.filter(key => key !== column.key) : [...current, column.key])}/>{column.label}</label>)}<footer><button onClick={() => applyView('pricing')}>Use Pricing Focus view</button><button onClick={resetSizes}>Reset row and column sizes</button></footer></div></details>
       {selectedIds.size ? <div className="grid-bulk-actions" role="group" aria-label="Actions for selected products"><span>{selectedIds.size} selected</span><button type="button" disabled={Boolean(savingId)} onClick={bulkSave}><Save size={14}/> Save selected</button><button className="danger" type="button" disabled={Boolean(savingId)} onClick={bulkDelete}><Trash2 size={14}/> Delete selected</button></div> : null}
       {storageError && <span className="grid-draft-status">Couldn’t save this worksheet on this device</span>}
     </div>
@@ -782,7 +787,7 @@ export default function Grid({inventory, business, libraryItems = [], onSave, on
       <div className="grid-cell-context"><span>{cellAddress}</span><p><strong>{selectedColumn?.label}</strong>{selectedColumn?.key === 'taxPercentage' ? ' · Select Tax type to change this value' : selectedColumn?.input ? numericFields.includes(selectedColumn.key)||selectedColumn.key==='quantity' ? ' · Type to replace · Delete to clear' : ' · Double-click or press Enter to edit' : ' · Calculated by Kostaraa · Copy available'}</p></div>
       <div className="grid-view-control">
         <span>Show columns</span>
-        <div className="grid-view-switcher" role="group" aria-label="Choose worksheet columns">{[['full', 'Detailed costing'], ['pricing', 'Price testing']].map(([view, label]) => <button key={view} className={currentView === view ? 'active' : ''} aria-pressed={currentView === view} onClick={() => applyView(view)}>{label}</button>)}</div>
+        <div className="grid-view-switcher" role="group" aria-label="Choose worksheet columns">{[['full', 'Detailed costing'], ['pricing', 'Pricing Focus']].map(([view, label]) => <button key={view} className={currentView === view ? 'active' : ''} aria-pressed={currentView === view} onClick={() => applyView(view)}>{label}</button>)}</div>
       </div>
     </div>
     {!production && <p className="grid-setup-note">Set items produced per month in <button onClick={() => setSetup({type: 'production'})}>Business Settings</button> to include labor and operating costs.</p>}
