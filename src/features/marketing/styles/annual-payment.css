@@ -108,3 +108,12 @@
   .annual-payment-footer p { max-width: none; }
   .annual-payment-footer a { width: 100%; }
 }
+
+.annual-payment-step .annual-payment-scan{margin:0 0 14px;color:#315f99;font-size:13px;line-height:1.5}
+
+.annual-payment-referral>input:not(:disabled){background:#fff;color:#253b59;cursor:text}
+.annual-payment .annual-payment-affiliate-button{margin:10px 0;min-height:38px;border:1px solid #b9cdea;border-radius:8px;background:#edf4ff;color:#315f99;padding:8px 14px;font-size:13px}
+.annual-payment .annual-payment-affiliate-button:disabled{opacity:.6;cursor:not-allowed}
+.annual-payment-step .annual-payment-affiliate-success{margin:4px 0 10px;border:1px solid #bfe2cd;border-radius:8px;background:#effaf3;padding:10px;color:#286345;font-size:13px;line-height:1.5}
+
+.annual-payment-step .annual-payment-affiliate-help{margin:6px 0 10px;color:#687991;font-size:12px;line-height:1.5}

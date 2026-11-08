@@ -1,0 +1,11 @@
+.kws-sidebar-upgrade{margin:4px 0 8px;padding:12px;border:1px solid #dce7f5;border-radius:10px;background:#f5f9ff;color:#536783}
+.kws-sidebar-upgrade strong{display:block;font-size:12px;font-weight:600;line-height:1.4}
+.kws-sidebar-upgrade p{margin:4px 0 7px;font-size:11px;line-height:1.5;color:#687991}
+.kws-sidebar-upgrade a{display:inline-flex;align-items:center;gap:4px;color:#2f68aa;font-size:12px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.kws-sidebar-upgrade a:hover{color:#174e9d}
+.kws-sidebar-upgrade a:focus-visible{outline:2px solid #3a74ba;outline-offset:3px;border-radius:2px}
+.kws-shell.sidebar-collapsed .kws-sidebar .kws-sidebar-upgrade{display:none}
+
+/* The affiliate payment reminder already provides an upgrade link. */
+.kws-sidebar:has(.af-expiry-note) .kws-sidebar-upgrade,
+.kws-mobile-menu:has(.af-expiry-note) .kws-sidebar-upgrade{display:none}

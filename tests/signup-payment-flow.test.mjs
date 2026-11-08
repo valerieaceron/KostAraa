@@ -11,11 +11,11 @@ function storage() {
 }
 async function component(file, name, globals) {
   const {code} = await transformWithOxc(await readFile(new URL(file, import.meta.url), 'utf8'), file, {jsx: {runtime: 'classic'}});
-  const executable = code.replace(/^import .*;\n/gm, '').replace(/^export default /gm, '').replace(/^export /gm, '');
+  const executable = code.replace(/^import .*;\n/gm, '').replace(/^export default /gm, '').replace(/^export /gm, '').replaceAll('import.meta.env.DEV', '__DEV__');
   return vm.runInNewContext(`${executable}\n${name}`, {
     React: {createElement: (type, props, ...children) => ({type, props: props || {}, children})},
     useState: value => [typeof value === 'function' ? value() : value, () => {}],
-    useEffect: () => {}, URLSearchParams, ...globals,
+    useEffect: () => {}, URLSearchParams, __DEV__: false, ...globals,
   });
 }
 function find(node, predicate) {
@@ -54,14 +54,57 @@ test('pay later continues to verification, clears the checkout credential and pr
   savePlanIntent(local, {id: 42}, 2);
   session.setItem('kostaraa.signupCheckout', JSON.stringify({token: 'a'.repeat(64), email: 'owner@example.test', deliveryFailed: true}));
   const location = {href: ''};
+  let hook=0;
+  const AnnualPaymentModal=()=>{};
   const PaymentPage = await component('../src/features/marketing/pages/SignupPaymentPage.tsx', 'SignupPaymentPage', {
-    localStorage: local, sessionStorage: session, location,
+    localStorage: local, sessionStorage: session, location, AnnualPaymentModal,
+    useState: initial => [hook++===1?{plan:{id:2,price:899},instructions:{}}:typeof initial==='function'?initial():initial,()=>{}],
   });
   const tree = PaymentPage();
-  const payLater = find(tree, node => node.type === 'button' && node.children.some(child => typeof child === 'string' && child.startsWith('Pay later')));
-  assert.ok(payLater);
-  payLater.props.onClick();
+  const modal = find(tree, node => node.type === AnnualPaymentModal);
+  assert.ok(modal);
+  assert.equal(find(tree, node => node.props.className === 'auth-card auth-card-signup'), undefined);
+  modal.props.onPayLater();
   assert.equal(location.href, '/verify-email?email=owner%40example.test&delivery=failed');
   assert.equal(session.getItem('kostaraa.signupCheckout'), null);
   assert.equal(readPlanIntent(local, {id: 42}), '2');
+});
+
+
+test('checkout loading does not expose the intermediate payment account card', async () => {
+  const session=storage();
+  session.setItem('kostaraa.signupCheckout', JSON.stringify({token:'a'.repeat(64)}));
+  const PaymentPage=await component('../src/features/marketing/pages/SignupPaymentPage.tsx','SignupPaymentPage',{sessionStorage:session});
+  const tree=PaymentPage();
+  assert.equal(find(tree,node=>node.type==='h1'),undefined);
+  assert.equal(find(tree,node=>node.props.className==='auth-card auth-card-signup'),undefined);
+  assert.ok(find(tree,node=>node.props.role==='status'));
+});
+
+test('genuine expired checkout errors remain visible with recovery options', async () => {
+  const session=storage();
+  session.setItem('kostaraa.signupCheckout', JSON.stringify({token:'a'.repeat(64)}));
+  let hook=0;
+  const PaymentPage=await component('../src/features/marketing/pages/SignupPaymentPage.tsx','SignupPaymentPage',{
+    sessionStorage:session,
+    useState:initial=>[hook++===2?'Your checkout session is invalid or expired.':typeof initial==='function'?initial():initial,()=>{}],
+  });
+  const tree=PaymentPage();
+  assert.ok(find(tree,node=>node.props.role==='alert'));
+  assert.ok(find(tree,node=>node.type==='button'&&node.children.includes('Try again')));
+});
+
+test('the payment URL enables test mode only for development and exactly mode=test',async()=>{
+  for (const [development,search,expected] of [[true,'?mode=test',true],[true,'',false],[true,'?mode=other',false],[false,'?mode=test',false]]) {
+    const session=storage();
+    session.setItem('kostaraa.signupCheckout',JSON.stringify({token:'a'.repeat(64)}));
+    let hook=0;
+    const AnnualPaymentModal=()=>{};
+    const PaymentPage=await component('../src/features/marketing/pages/SignupPaymentPage.tsx','SignupPaymentPage',{
+      __DEV__:development,location:{search},sessionStorage:session,AnnualPaymentModal,
+      useState:initial=>[hook++===1?{plan:{id:2},instructions:{}}:typeof initial==='function'?initial():initial,()=>{}],
+    });
+    const tree=PaymentPage();
+    assert.equal(find(tree,node=>node.type===AnnualPaymentModal).props.testMode,expected);
+  }
 });

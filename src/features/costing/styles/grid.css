@@ -298,3 +298,12 @@
 
 /* Keep name capitalization stable without rewriting text during editing. */
 .grid-workbook .grid-product-column>input{text-transform:capitalize}
+
+.grid-row-limit-note{display:flex;align-items:flex-start;gap:12px;margin:4px 12px 16px;padding:16px 18px;border:1px solid #e5b64b;border-left:5px solid #b77908;border-radius:10px;background:#fff7df;color:#704500;position:sticky;left:12px;box-sizing:border-box;max-width:calc(100% - 24px)}
+.grid-row-limit-note>svg{flex-shrink:0;margin-top:1px;color:#996000}
+.grid-row-limit-note strong{display:block;font-size:15px;font-weight:700;line-height:1.4}
+.grid-row-limit-note p{margin:4px 0 0;font-size:14px;line-height:1.5;color:#704500}
+
+.grid-row-limit-note a{color:#704500;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.grid-row-limit-note a:hover{color:#412800}
+.grid-row-limit-note a:focus-visible{outline:2px solid #996000;outline-offset:3px;border-radius:2px}

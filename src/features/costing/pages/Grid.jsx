@@ -1,7 +1,7 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {ArrowUpDown, Check, ChevronDown, ChevronUp, Columns3, Download, Filter, Plus, Redo2, Search, Save, Trash2, Undo2, X} from 'lucide-react';
+import {Info, ArrowUpDown, Check, ChevronDown, ChevronUp, Columns3, Download, Filter, Plus, Redo2, Search, Save, Trash2, Undo2, X} from 'lucide-react';
 import {formatCurrency, formatNumber, getInventoryCostUnit} from '../utils/calculations';
-import {getSessionUser} from '../utils/api';
+import {apiJson, getSessionUser} from '../utils/api';
 import {titleCaseName} from '../utils/display-text';
 import {calculateGridProduct, createGridMaterial, createGridProduct, gridSignature, gridStorageKey, gridUnits, gridValidation, gridValidationIssue, libraryItemSignature, libraryItemToGridProduct, selectGridMaterial} from '../utils/grid-model';
 import {DetailModal} from './ProductsServices';
@@ -69,6 +69,19 @@ export default function Grid({inventory, business, libraryItems = [], onSave, on
   const [storageKey] = useState(() => gridStorageKey(getSessionUser()));
   const [initial] = useState(() => readSheet(storageKey));
   const [rows, setRows] = useState(initial.rows);
+  const [paidPlan, setPaidPlan] = useState(false);
+  const rowLimitReached = !paidPlan && rows.length >= 3;
+  const rowLimitMessage = 'Free users can have up to 3 product rows. Upgrade to add more.';
+
+  useEffect(() => {
+    let active = true;
+    apiJson('/api/payments').then(response => {
+      const subscription = response.result?.subscription;
+      if (active) setPaidPlan(subscription?.membership_type === 'beta' || subscription?.plan === 'beta'
+        || subscription?.plan === 'paid' || Number(subscription?.plan_details?.price) > 0);
+    }).catch(() => { /* Keep the free allowance when the plan cannot be loaded. */ });
+    return () => { active = false; };
+  }, []);
   const [hidden, setHidden] = useState(initial.hidden);
   const [columnWidths, setColumnWidths] = useState(initial.columnWidths);
   const [rowHeights, setRowHeights] = useState({});
@@ -422,13 +435,17 @@ export default function Grid({inventory, business, libraryItems = [], onSave, on
       setNotice(`${row.name} is ready. Click Save to Library to save this product.`);
     }
   };
-  const addProduct = () => {
-    const index = rows.length;
+  const addProduct = (column = 'name') => {
+    if (!paidPlan && rowsRef.current.length >= 3) {
+      setNotice(rowLimitMessage);
+      return;
+    }
+    const index = rowsRef.current.length;
     setSearchQuery('');
     setRowFilter('all');
     setSortRule('original');
     changeRows(current => [...current, createGridProduct()]);
-    focusCell(index, 'name');
+    focusCell(index, typeof column === 'string' ? column : 'name');
   };
   const addMaterial = (row, kind) => {
     setExpandedMaterialRows(current => new Set(current).add(row.id));
@@ -632,7 +649,7 @@ export default function Grid({inventory, business, libraryItems = [], onSave, on
       const position = displayedRows.findIndex(entry => entry.index === rowIndex);
       const nextEntry = displayedRows[position + (event.shiftKey ? -1 : 1)];
       if (nextEntry) focusCell(nextEntry.index, key, 0);
-      else if (!event.shiftKey && !dataViewActive) {const next=rows.length;changeRows(current => [...current, createGridProduct()]);focusCell(next,key,0)}
+      else if (!event.shiftKey && !dataViewActive) {addProduct(key)}
     } else if (event.altKey && ['ArrowUp', 'ArrowDown'].includes(event.key)) {
       event.preventDefault(); focusCell(Math.max(0, Math.min(rows.length - 1, rowIndex + (event.key === 'ArrowDown' ? 1 : -1))), key, component);
     }
@@ -682,6 +699,11 @@ export default function Grid({inventory, business, libraryItems = [], onSave, on
     if (matrix.length > 200) { event.preventDefault(); setNotice('Paste up to 200 product rows at a time.'); return; }
     const startRow = Number(cell.dataset.row);
     const startColumn = visibleColumns.findIndex(column => column.key === cell.dataset.column);
+    if (!paidPlan && startRow + matrix.length > Math.max(3, rowsRef.current.length)) {
+      event.preventDefault();
+      setNotice(rowLimitMessage);
+      return;
+    }
     event.preventDefault();
     changeRows(current => {
       const next = current.map(row => ({...row, materials: row.materials.map(material => ({...material}))}));
@@ -766,7 +788,7 @@ export default function Grid({inventory, business, libraryItems = [], onSave, on
       </div>
     </header>
     <div className="grid-toolbar">
-      <button onClick={addProduct}><Plus size={15}/> Add product</button>
+      <button onClick={addProduct} disabled={rowLimitReached} title={rowLimitReached ? rowLimitMessage : undefined}><Plus size={15}/> Add product</button>
       <div className="grid-history-actions" role="group" aria-label="Grid edit history">
         <button type="button" onClick={undoGrid} disabled={Boolean(savingId) || !undoStack.current.length} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo last Grid change"><Undo2 size={15}/><span>Undo</span></button>
         <button type="button" onClick={redoGrid} disabled={Boolean(savingId) || !redoStack.current.length} title="Redo (Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y)" aria-label="Redo last Grid change"><Redo2 size={15}/><span>Redo</span></button>
@@ -819,7 +841,8 @@ export default function Grid({inventory, business, libraryItems = [], onSave, on
           </tr>;
         })}{!displayedRows.length&&<tr className="grid-no-results"><td colSpan={visibleColumns.length+2}><Search aria-hidden="true"/><strong>No matching rows</strong><span>Try another search or clear the current filter.</span><button type="button" onClick={()=>{setSearchQuery('');setRowFilter('all');setSortRule('original')}}>Clear search and filters</button></td></tr>}</tbody>
       </table>
-      <button className="grid-add-row" onClick={addProduct}><Plus size={14}/> Add product row</button>
+      <button className="grid-add-row" onClick={addProduct} disabled={rowLimitReached} title={rowLimitReached ? rowLimitMessage : undefined}><Plus size={14}/> Add product row</button>
+      {rowLimitReached && <div className="grid-row-limit-note" role="status"><Info size={22} aria-hidden="true"/><div><strong>Free plan limit reached</strong><p>Free users can have up to 3 product rows. <a href="/workspace?page=subscription&plan=annual">Upgrade to add more</a>.</p></div></div>}
     </div>
     <div className="grid-sheet-footer"><span>{libraryItems.length} Library items · {rows.filter(row => !row.savedItem && hasInput(row)).length} unsaved drafts · Drag header and row edges to resize</span><span>Numbers: select then type to replace · Delete: clear · Enter: edit · Ctrl/Cmd+C and Ctrl/Cmd+V: copy and paste</span></div>
     {notice && <p className="grid-notice" role="status">{notice}</p>}

@@ -9,3 +9,10 @@ export function receiptValidationError(file) {
   }
   return "";
 }
+
+/** Match the entered reference against the numbers read by the payment API. */
+export function receiptReferenceError(references, reference) {
+  if (!/^[0-9]{10,32}$/.test(reference)) return "Enter the full 10–32 digit reference number shown on your receipt.";
+  if (!references.includes(reference)) return "The reference number does not match your receipt. Check the number or upload the correct receipt.";
+  return "";
+}
