@@ -29,6 +29,6 @@ export default function AffiliateExpiryNotice(){
   const expired=offer.expired||countdown.expired;
   return <a className={`af-expiry-note${expired?" is-expired":""}`} href={`/workspace?page=subscription&plan=${encodeURIComponent(offer.plan_id)}`} title={expired?"Affiliate discount expired. Your referrer stays attached.":`40% affiliate discount expires in ${countdown.label}`}>
     <Clock3 aria-hidden="true"/>
-    <span className="af-expiry-copy"><b>{expired?"Affiliate discount expired":"Your 40% discount expires in"}</b>{!expired&&<strong role="timer" aria-live="off">{countdown.label}</strong>}<small>{expired?"Your affiliate stays attached. You can still pay at the regular price.":"Pay before the timer ends to keep your discount."}</small><span className="af-expiry-action">{expired?"View payment options →":"Complete payment →"}</span></span>
+    <span className="af-expiry-copy">{expired?<><b>Affiliate discount expired</b><small>Your affiliate stays attached. You can still pay at the regular price.</small></>:<><strong role="timer" aria-live="off">{countdown.label}</strong><b>Your 40% discount expires in</b></>}<span className="af-expiry-action">{expired?"View payment options →":"Complete payment →"}</span></span>
   </a>;
 }
