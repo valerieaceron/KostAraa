@@ -3,6 +3,7 @@ import {useEffect,useMemo,useState} from "react";
 import {LayoutDashboard,Table2,Package,Calculator as CalculatorIcon,LibraryBig,LogOut,PanelLeftClose,PanelLeftOpen,Settings2,type LucideIcon} from "lucide-react";
 import BetaSupportModal from "./BetaSupportModal";
 import Subscription from "./Subscription";
+import {clearSharedSession} from "../../auth/session-sharing";
 import {AccountMenu} from "./AccountMenu";
 import {AraaChat} from "../../../components/araa-chat/AraaChat";
 import {useUsageAnalytics} from "../useUsageAnalytics";
@@ -17,7 +18,7 @@ import {blankProduct} from "../../costing/data/demoData";
 import {buildSavedItem,calculateProduct,savedItemToProduct,computeInventoryMaterialCost,getInventoryUnitCost,getInventoryCostUnit} from "../../costing/utils/calculations";
 import {loadState,saveBusiness,saveInventory,saveProduct,saveSavedItems} from "../../costing/utils/storage";
 import {apiJson,getAllApiItems,isOfflineUser,normalizeInventoryItem} from "../../costing/utils/api";
-import {normalizeBusinessProfile} from "../../costing/utils/businessProfile";
+import {loadBusinessProfile} from "../../costing/utils/businessProfile";
 import {GettingStartedGuide,ProfileSetupPrompt} from "./GettingStartedGuide";
 import {currentGuideKey,guideEntry,readGuideProgress,writeGuideProgress} from "../getting-started";
 
@@ -104,11 +105,14 @@ export function Workspace(){
   const[savedItems,setSavedItems]=useState(initial.savedItems);
   const[businessProfileId,setBusinessProfileId]=useState<any>(null);
   const[syncError,setSyncError]=useState("");
+  const[profileMissing,setProfileMissing]=useState(false);
   const[editingItemId,setEditingItemId]=useState<string|null>(null);
   const[productLibraryFilter,setProductLibraryFilter]=useState("All products");
   const results=useMemo(()=>calculateProduct(product,inventory),[product,inventory]);
 
   const applyBusinessSettings=(profile:any)=>{
+    setProfileMissing(!profile.meta?.businessProfileId);
+    setBusinessProfileId(profile.meta?.businessProfileId||null);
     const next={...initial.business,...businessSettingsCosts(profile)};
     setBusiness(next);saveBusiness(next);
     setProductState((current:any)=>{const updated=withBusinessCosts(current,next);saveProduct(updated);return updated});
@@ -118,13 +122,13 @@ export function Workspace(){
     window.addEventListener("kostaraa:business-settings-changed",update);
     return()=>window.removeEventListener("kostaraa:business-settings-changed",update);
   },[]);
-  useEffect(()=>{let cancelled=false;(async()=>{try{const data=await apiJson("/api/business-profile");if(cancelled)return;const profile=withSynchronizedOperationCost(await syncBusinessSetupProfile(normalizeBusinessProfile(data,{}),readBusinessSetup(localStorage,businessSetupKey())));if(cancelled)return;window.dispatchEvent(new CustomEvent("kostaraa:business-settings-changed",{detail:profile}));setBusinessProfileId(profile.meta?.businessProfileId||null);localStorage.setItem("kostaraa.businessProfile",JSON.stringify(profile));applyBusinessSettings(profile)}catch(error:any){if(!cancelled)setSyncError(error?.message||"Unable to load setup progress. Please refresh and try again.")}})();return()=>{cancelled=true}},[]);
+  useEffect(()=>{let cancelled=false;(async()=>{try{const data=await loadBusinessProfile();if(cancelled)return;const profile=withSynchronizedOperationCost(await syncBusinessSetupProfile(data,readBusinessSetup(localStorage,businessSetupKey())));if(cancelled)return;window.dispatchEvent(new CustomEvent("kostaraa:business-settings-changed",{detail:profile}));setBusinessProfileId(profile.meta?.businessProfileId||null);localStorage.setItem("kostaraa.businessProfile",JSON.stringify(profile));applyBusinessSettings(profile)}catch(error:any){if(!cancelled)setSyncError(error?.message||"Unable to load setup progress. Please refresh and try again.")}})();return()=>{cancelled=true}},[]);
   useEffect(()=>{if(isOfflineUser())return;let cancelled=false;(async()=>{try{const data=await getAllApiItems("/api/inventory/getAll");if(!cancelled)setInventoryState(data.map(normalizeInventoryItem))}catch{if(!cancelled)setSyncError("Unable to load Inventory from the server. Please refresh and try again.")}})();return()=>{cancelled=true}},[]);
   useEffect(()=>{if(isOfflineUser())return;let cancelled=false;(async()=>{try{const data=await getAllApiItems("/api/product-library/items");if(!cancelled){const items=data.map(apiDraftToLibraryItem);setSavedItems(items);saveSavedItems(items)}}catch{if(!cancelled)setSyncError("Unable to load the Product Library from the server. Please refresh and try again.")}})();return()=>{cancelled=true}},[]);
 
-  useEffect(()=>{if(sessionStorage.getItem("kostaraa.session")==="active")setReady(true);else{if(new URLSearchParams(location.search).get("page")==="subscription")sessionStorage.setItem("kostaraa.planIntent","annual");location.replace("/login")}},[]);
+  useEffect(()=>{if(sessionStorage.getItem("kostaraa.session")==="active")setReady(true);else{if(new URLSearchParams(location.search).get("page")==="subscription")sessionStorage.setItem("kostaraa.planIntent",new URLSearchParams(location.search).get("plan")||"annual");location.replace("/login")}},[]);
   const analytics=useUsageAnalytics(ready,page==="account"?`business_profile.${businessSection}`:page==="products"?"product_library":page);
-  const logout=()=>{analytics.end();sessionStorage.removeItem("kostaraa.session");sessionStorage.removeItem("kostaraa.token");sessionStorage.removeItem("kostaraa.user");location.href="/"};
+  const logout=()=>{analytics.end();clearSharedSession();location.href="/"};
   const setProduct=(next:any)=>{setProductState(next);saveProduct(next)};
   const setInventory=(next:any)=>{setInventoryState(next);if(isOfflineUser())saveInventory(next)};
   const persistItems=(items:any[])=>{setSavedItems(items);saveSavedItems(items)};
@@ -201,7 +205,7 @@ export function Workspace(){
   if(!ready)return <div className="ws-loading">Opening Kostaraa…</div>;
   const pages:any={
     grid:<Grid onInventoryChange={setInventory} inventory={inventory} business={business} libraryItems={savedItems} onSave={(draft:any,metadata:any)=>saveLibraryItem(metadata,undefined,draft)} onDeleteItems={deleteItems} onViewEdit={editItem} onDuplicate={duplicateItem} onArchive={archiveItem}/>,
-    dashboard:<BusinessDashboard business={business} savedItems={savedItems} onViewEdit={editItem} onDuplicate={duplicateItem} onArchive={archiveItem} setPage={setPage}/>,
+    dashboard:<BusinessDashboard profileMissing={profileMissing} onSetupProfile={()=>{setBusinessSection("identity");setProfileEditRequest(value=>value+1);navigatePage("account")}} business={business} savedItems={savedItems} onViewEdit={editItem} onDuplicate={duplicateItem} onArchive={archiveItem} setPage={setPage}/>,
     products:<ProductsServices items={savedItems} onViewEdit={editItem} onDuplicate={duplicateItem} onArchive={archiveItem} onDelete={deleteItem} onDeleteItems={deleteItems} onUpdateItem={updateItem} setPage={setPage} pricingStatus={productLibraryFilter} onPricingStatusChange={setProductLibraryFilter}/>,
     inventory:<AdaptiveInventory inventory={inventory} setInventory={setInventory}/>,
     calculator:<CalculatorProfileCosts business={business} onOpenSettings={()=>{setReturnToCalculator(true);setBusinessSection("overhead");setProfileFocusField("");setProfileEditRequest(value=>value+1);setPage("account")}}><Calculator product={product} setProduct={setProduct} results={results} inventory={inventory} business={business} onSaveItem={saveLibraryItem} onDuplicateCurrent={()=>duplicateItem(buildSavedItem(product,results,business,{itemType:"Product",category:"Other",status:"Draft"}))} onReset={resetCalculator} editingItem={savedItems.find((item:any)=>item.id===editingItemId)}/></CalculatorProfileCosts>,

@@ -6,6 +6,7 @@ import Blog from "../features/marketing/pages/Blog";
 import BlogPost from "../features/marketing/pages/BlogPost";
 import Contact from "../features/marketing/pages/Contact";
 import Home from "../features/marketing/pages/Home";
+import SignupPayment from "../features/marketing/pages/SignupPaymentPage";
 import Pricing from "../features/marketing/pages/Pricing";
 import Privacy from "../features/marketing/pages/Privacy";
 import Terms from "../features/marketing/pages/Terms";
@@ -25,6 +26,7 @@ const routes = {
   "/login": Login,
   "/onboarding": Onboarding,
   "/pricing": Pricing,
+  "/payment": SignupPayment,
   "/privacy": Privacy,
   "/signup": Signup,
   "/terms": Terms,

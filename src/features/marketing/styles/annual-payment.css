@@ -30,6 +30,12 @@
 .annual-payment-total strong { font-family: "Poppins", Arial, sans-serif; font-size: 30px; font-weight: 600; line-height: 1.2; }
 .annual-payment-steps { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
 .annual-payment-step { min-width: 0; }
+.annual-payment-qr { width: 100%; max-width: 320px; margin: 12px auto; }
+.annual-payment-qr + p { margin-top: 12px; text-align: center; }
+.annual-payment-qr > img { display: block; width: 100%; height: auto; }
+/* Frame the original QR with its white margin; keep the QR pixels unchanged. */
+.annual-payment-qr.is-qr-only { position: relative; aspect-ratio: 1; overflow: hidden; background: #fff; }
+.annual-payment-qr.is-qr-only > img { position: absolute; width: 147.945205%; max-width: none; left: -23.972603%; top: -50%; }
 .annual-payment h3 { display: flex; align-items: center; gap: 9px; margin: 0 0 12px; font-family: "Poppins", Arial, sans-serif; font-size: 15px; font-weight: 600; line-height: 1.4; }
 .annual-payment h3 > span { display: grid; width: 24px; height: 24px; flex-shrink: 0; place-items: center; border-radius: 50%; background: #edf4fc; color: #2c609e; font-size: 12px; }
 .annual-payment-step > p { font-size: 14px; }

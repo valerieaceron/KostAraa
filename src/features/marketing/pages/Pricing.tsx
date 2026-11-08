@@ -65,7 +65,7 @@ export default function Pricing(){
   const isPaid=(plan:any)=>Number(plan.price)>0;
   const displayPlanName=(plan:any)=>isPaid(plan)?"Business Plus":"Starter";
   const planHref=(plan:any)=>signedIn
-    ? `/workspace?page=subscription&plan=${encodeURIComponent(plan.id)}`
+    ? isPaid(plan) ? `/workspace?page=subscription&plan=${encodeURIComponent(plan.id)}` : "/workspace"
     : isPaid(plan)
       ? `/signup?plan=${encodeURIComponent(plan.id)}`
       : "/signup";
@@ -88,7 +88,7 @@ export default function Pricing(){
           <div className="plan-name"><h2>{displayName}</h2></div>
           <p className="plan-audience">{plan.description}</p>
           <div className="price-box"><strong>{planPrice(plan)}</strong><small>{paid?`Billed every ${planTerm(plan)}`:"No charge · no expiry"}</small></div>
-          {paid?<button className="button is-muted" type="button" disabled aria-label="Business Plus enrollment coming soon">Coming soon</button>:<a className="button ghost" href={planHref(plan)}>{planCta(plan)}<ArrowRight aria-hidden="true"/></a>}
+          <a className={`button${paid?"":" ghost"}`} href={planHref(plan)}>{planCta(plan)}<ArrowRight aria-hidden="true"/></a>
           <div className="plan-benefits"><b>{paid?"Everything in Starter, plus:":"The essentials to get started"}</b><ul>{benefits.map(benefit=><li key={benefit}><Check aria-hidden="true"/><span>{benefit}</span></li>)}</ul></div>
         </article>;
       })}<article className="setup-service">
@@ -106,7 +106,7 @@ export default function Pricing(){
           {plans.map(plan=>{const paid=isPaid(plan);return <div className={`pricing-tier-summary${paid?" recommended":""}`} key={`sticky-${plan.id}`}>
             <div className="pricing-tier-name"><b>{displayPlanName(plan)}</b>{paid&&<span>Best value</span>}</div>
             <div className="pricing-tier-price"><strong>{planPrice(plan)}</strong><small>{paid?`/ ${planTerm(plan)}`:"Free forever"}</small></div>
-            {paid?<button className="button is-muted" type="button" disabled aria-label="Business Plus enrollment coming soon">Coming soon</button>:<a href={planHref(plan)} className="button ghost">{planCta(plan)}<ArrowRight aria-hidden="true"/></a>}
+            <a href={planHref(plan)} className={`button${paid?"":" ghost"}`}>{planCta(plan)}<ArrowRight aria-hidden="true"/></a>
           </div>})}
         </div>
       </div>}
@@ -128,7 +128,7 @@ export default function Pricing(){
     <section className="pricing-final-cta" aria-labelledby="pricing-final-title">
       <div className="pricing-final-cta-inner">
         <div><h2 id="pricing-final-title">Ready to price with more confidence?</h2><p>Begin with Starter, or choose Business Plus for more records, an ad-free workspace, secure backup, and multi-device access.</p></div>
-        <div className="pricing-final-actions"><a className="button ghost" href="/signup">Start Free<ArrowRight aria-hidden="true"/></a><button className="button is-muted" type="button" disabled aria-label="Business Plus enrollment coming soon">Coming soon</button></div>
+        <div className="pricing-final-actions"><a className="button ghost" href="/signup">Start Free<ArrowRight aria-hidden="true"/></a>{plans.find(isPaid)&&<a className="button" href={planHref(plans.find(isPaid))}>Choose Business Plus<ArrowRight aria-hidden="true"/></a>}</div>
       </div>
     </section>
     <MarketingFooter/>

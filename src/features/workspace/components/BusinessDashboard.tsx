@@ -1,5 +1,6 @@
+import PaymentReminder from "./PaymentReminder";
 import {useMemo,useState} from "react";
-import {BookOpen,Calculator,Plus} from "lucide-react";
+import {BookOpen,Calculator,Plus,Settings2} from "lucide-react";
 import {DetailModal} from "../../costing/pages/ProductsServices";
 import {titleCaseName} from "../../costing/utils/display-text";
 import {withSynchronizedOperationCost} from "../business-profile-costs";
@@ -39,7 +40,7 @@ function priceComparison(target:number,suggested:number){
 }
 
 
-export default function BusinessDashboard({business,savedItems,onViewEdit,onDuplicate,onArchive,setPage,summaryOnly=false}:{business:any;savedItems:any[];onViewEdit:(item:any)=>void;onDuplicate:(item:any)=>void;onArchive:(id:string)=>void|Promise<void>;setPage:(page:string)=>void;summaryOnly?:boolean}){
+export default function BusinessDashboard({business,savedItems,onViewEdit,onDuplicate,onArchive,setPage,summaryOnly=false,profileMissing=false,onSetupProfile}:{business:any;savedItems:any[];onViewEdit:(item:any)=>void;onDuplicate:(item:any)=>void;onArchive:(id:string)=>void|Promise<void>;setPage:(page:string)=>void;summaryOnly?:boolean;profileMissing?:boolean;onSetupProfile?:()=>void}){
   const[selectedProduct,setSelectedProduct]=useState<any>(null);
   const data=useMemo(()=>{
     const profile=readProfile();
@@ -149,6 +150,8 @@ export default function BusinessDashboard({business,savedItems,onViewEdit,onDupl
 
   return <div className="business-dashboard">
     <header className="bd-heading"><div><h1>Dashboard</h1></div></header>
+    <PaymentReminder/>
+    {profileMissing&&<section className="bd-card bd-profile-setup" role="status"><span className="bd-notice-icon" aria-hidden="true"><Settings2/></span><div className="bd-notice-copy"><h2>Let’s set up your business profile</h2><p>Add your business details to personalize your costing and dashboard insights.</p></div><button type="button" onClick={onSetupProfile||(()=>setPage("account"))}>Set up business profile</button></section>}
 
     <section className="bd-card bd-recent-products">
       <header><div><h2>Recently added products</h2></div><button type="button" onClick={()=>setPage("products")}>View product library →</button></header>

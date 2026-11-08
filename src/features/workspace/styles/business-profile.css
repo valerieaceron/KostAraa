@@ -1050,3 +1050,5 @@
 .bp-step-complete svg{width:14px;height:14px;stroke-width:2.5}
 .bp-setup-success{margin:0 0 20px;border:1px solid #c7e9d6;border-radius:10px;background:#effaf3;padding:13px 16px;color:#256346;font-size:14px;line-height:1.5}
 @media(max-width:520px){.bp-row-copy h2{font-size:14px}}
+
+.bp-page>.bd-payment-reminder{margin-bottom:22px}

@@ -1249,3 +1249,24 @@
 ){
   font-weight:500!important;
 }
+
+.bd-payment-reminder,.bd-profile-setup{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:18px;padding:24px}
+.bd-payment-reminder{border-color:#efd28a;border-left:4px solid #dba634;background:#fff8e5;box-shadow:0 6px 20px rgba(140,103,26,.05)}
+.bd-notice-icon{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:#ffedb8;color:#946611}
+.bd-notice-icon svg{width:22px;height:22px}
+.bd-notice-copy small{display:block;margin-bottom:6px;color:#8a6217;font-size:10px;font-weight:700;letter-spacing:.1em}
+.bd-notice-copy h2{margin:0 0 7px;font-size:19px;line-height:1.35;color:#624915}
+.bd-notice-copy p{margin:0;max-width:760px;color:#796438;font-size:14px;line-height:1.65}
+.bd-payment-reminder>.button{display:inline-flex;align-items:center;justify-content:center;gap:10px;white-space:nowrap}
+.bd-payment-reminder>.button svg{width:17px;height:17px}
+.bd-payment-reminder.is-pending,.bd-profile-setup{border-color:#d9e5f5;background:#f3f7fd}
+.bd-payment-reminder.is-pending .bd-notice-icon,.bd-profile-setup .bd-notice-icon{background:#e4eefc;color:#3a74ba}
+.bd-payment-reminder.is-pending .bd-notice-copy h2,.bd-profile-setup .bd-notice-copy h2{color:#304d73}
+.bd-payment-reminder.is-pending .bd-notice-copy small{color:#3a74ba}
+.bd-payment-reminder.is-pending .bd-notice-copy p,.bd-profile-setup .bd-notice-copy p{color:#5f718b}
+.bd-profile-setup>button{white-space:nowrap;background:#fff}
+@media(max-width:1000px){
+  .bd-payment-reminder,.bd-profile-setup{grid-template-columns:40px minmax(0,1fr);gap:14px;padding:20px}
+  .bd-notice-icon{width:40px;height:40px}
+  .bd-payment-reminder>.button,.bd-profile-setup>button{grid-column:2;justify-self:start;white-space:normal}
+}
