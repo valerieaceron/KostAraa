@@ -1,6 +1,6 @@
 import Grid from "../../costing/pages/Grid";
 import {useEffect,useMemo,useState} from "react";
-import {LayoutDashboard,Table2,Package,Calculator as CalculatorIcon,LibraryBig,LogOut,PanelLeftClose,PanelLeftOpen,Settings2,type LucideIcon} from "lucide-react";
+import {LayoutDashboard,Table2,Package,Calculator as CalculatorIcon,LibraryBig,LogOut,PanelLeftClose,PanelLeftOpen,Building2,UserRound,type LucideIcon} from "lucide-react";
 import BetaSupportModal from "./BetaSupportModal";
 import Subscription from "./Subscription";
 import SidebarUpgrade from "./SidebarUpgrade";
@@ -34,7 +34,7 @@ const defaultOverhead={rent:0,utilities:0,miscellaneous:0};
 const navGroups:Array<{label:string;items:Array<{page:string;label:string;icon:LucideIcon;section?:string}>}>=[
   {label:"Overview",items:[{page:"dashboard",label:"Dashboard",icon:LayoutDashboard}]},
   {label:"Cost Management",items:[{page:"inventory",label:"Inventory",icon:Package},{page:"calculator",label:"Add New Product",icon:CalculatorIcon},{page:"products",label:"Product Library",icon:LibraryBig},{page:"grid",label:"Grid",icon:Table2}]},
-  {label:"Settings",items:[{page:"account",section:"identity",label:"Business Settings",icon:Settings2},{page:"subscription",label:"Account Settings",icon:Settings2}]},
+  {label:"Settings",items:[{page:"account",section:"identity",label:"Business",icon:Building2},{page:"subscription",label:"Account",icon:UserRound}]},
 ];
 function workspaceUser(){try{const user=JSON.parse(sessionStorage.getItem("kostaraa.user")||"{}");const fullName=String(user.name||user.fullName||user.username||user.email?.split("@")[0]||"User").trim();return{firstName:String(user.firstName||"").trim()||fullName.split(/\s+/)[0]||"User"}}catch{return{firstName:"User"}}}
 function withBusinessCosts(product:any,business:any){return{...product,operationalOverride:{enabled:false,laborCostPerUnit:0,overheadCostPerUnit:0},labor:{...defaultLabor,...(business.labor||{})},overhead:{...defaultOverhead,...(business.overhead||{})}}}
@@ -212,7 +212,7 @@ export function Workspace(){
     dashboard:<BusinessDashboard profileMissing={profileMissing} onSetupProfile={()=>{setBusinessSection("identity");setProfileEditRequest(value=>value+1);navigatePage("account")}} business={business} savedItems={savedItems} onViewEdit={editItem} onDuplicate={duplicateItem} onArchive={archiveItem} setPage={setPage}/>,
     products:<ProductsServices items={savedItems} onViewEdit={editItem} onDuplicate={duplicateItem} onArchive={archiveItem} onDelete={deleteItem} onDeleteItems={deleteItems} onUpdateItem={updateItem} setPage={setPage} pricingStatus={productLibraryFilter} onPricingStatusChange={setProductLibraryFilter}/>,
     inventory:<AdaptiveInventory inventory={inventory} setInventory={setInventory}/>,
-    calculator:<CalculatorProfileCosts business={business} onOpenSettings={()=>{setReturnToCalculator(true);setBusinessSection("overhead");setProfileFocusField("");setProfileEditRequest(value=>value+1);setPage("account")}}><Calculator product={product} setProduct={setProduct} results={results} inventory={inventory} business={business} onSaveItem={saveLibraryItem} onDuplicateCurrent={()=>duplicateItem(buildSavedItem(product,results,business,{itemType:"Product",category:"Other",status:"Draft"}))} onReset={resetCalculator} editingItem={savedItems.find((item:any)=>item.id===editingItemId)}/></CalculatorProfileCosts>,
+    calculator:<CalculatorProfileCosts business={business} onOpenSettings={()=>{setReturnToCalculator(true);setBusinessSection("overhead");setProfileFocusField("");setProfileEditRequest(value=>value+1);setPage("account")}}><Calculator savedProductCount={savedItems.length} product={product} setProduct={setProduct} results={results} inventory={inventory} business={business} onSaveItem={saveLibraryItem} onDuplicateCurrent={()=>duplicateItem(buildSavedItem(product,results,business,{itemType:"Product",category:"Other",status:"Draft"}))} onReset={resetCalculator} editingItem={savedItems.find((item:any)=>item.id===editingItemId)}/></CalculatorProfileCosts>,
     wallet:<AffiliatesPage key="wallet" mode="wallet" onNavigate={navigatePage}/>,
     "affiliate-records":<AffiliatesPage key="affiliate-records" mode="records" onNavigate={navigatePage}/>,
     "affiliate-apply":<AffiliateApplication onBack={()=>navigatePage("subscription")}/>,

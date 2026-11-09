@@ -15,7 +15,10 @@ import Workspace from "../features/workspace/WorkspacePage";
 
 import VerifyEmail from "../features/auth/VerifyEmailPage";
 
+import AffiliateApplicationForm from "../features/workspace/components/AffiliateApplicationForm";
+
 const routes = {
+  "/affiliate-application": AffiliateApplicationForm,
   "/forgot-password": PasswordReset,
   "/reset-password": PasswordReset,
   "/verify-email": VerifyEmail,

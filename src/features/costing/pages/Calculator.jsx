@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Copy, GripVertical, Info, Package, Plus, RotateCcw, Save, Trash2 } from 'lucide-react';
+import ProductTour from './ProductTour';
 import { Badge, Button, Modal, Select } from '../components/ui';
 import { calculateSellingPrice, formatCurrency, formatNumber } from '../utils/calculations';
 
@@ -15,9 +16,9 @@ const costColumns = [
 const isPackagingInventoryItem = (item) => String(item?.category || '').trim().toLowerCase() === 'packaging'
   || String(item?.item_type || '').trim().toLowerCase() === 'packaging';
 
-function Field({ label, value, onChange, type = 'text', prefix, suffix, icon: Icon }) {
+function Field({ label, value, onChange, type = 'text', prefix, suffix, icon: Icon, tour }) {
   return (
-    <label className="grid min-w-0 gap-1.5 text-sm font-semibold text-slate-600">
+    <label data-product-tour={tour} className="grid min-w-0 gap-1.5 text-sm font-semibold text-slate-600">
       <span>{label}</span>
       <span className="flex min-h-11 items-center gap-2 rounded-md border border-slate-200 bg-white px-3 transition focus-within:border-accent focus-within:ring-2 focus-within:ring-teal-100">
         {Icon ? <Icon className="h-4 w-4 text-slate-400" /> : null}
@@ -85,9 +86,9 @@ function InfoTip({ text, label = 'More information' }) {
   );
 }
 
-function SectionShell({ number, title, helper, action, children }) {
+function SectionShell({ number, title, helper, action, children, tour }) {
   return (
-    <section className="calculator-cost-section overflow-visible rounded-lg border border-slate-200 bg-white shadow-soft">
+    <section data-product-tour={tour} className="calculator-cost-section overflow-visible rounded-lg border border-slate-200 bg-white shadow-soft">
       <div className="calculator-section-header flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 bg-slate-50/80 px-4 py-3">
         <div className="flex min-w-0 gap-3">
           <span className="calculator-step-badge grid h-7 w-7 shrink-0 place-items-center rounded-md bg-accent text-sm font-black text-white">{number}</span>
@@ -105,7 +106,7 @@ function SectionShell({ number, title, helper, action, children }) {
   );
 }
 
-export default function Calculator({ product, setProduct, results, inventory = [], onSaveItem, onDuplicateCurrent, onReset, editingItem, operationCostsCard = null }) {
+export default function Calculator({ product, setProduct, results, inventory = [], onSaveItem, onDuplicateCurrent, onReset, editingItem, operationCostsCard = null, savedProductCount = 0 }) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
   const [saveOpen, setSaveOpen] = useState(false);
@@ -117,6 +118,7 @@ export default function Calculator({ product, setProduct, results, inventory = [
   const [targetSellingPrice, setTargetSellingPrice] = useState('');
   const [isOverviewStuck, setIsOverviewStuck] = useState(false);
   const overviewRef = useRef(null);
+  const tourRoot = useRef(null);
   const [draggedRow, setDraggedRow] = useState(null);
   const [rowModal, setRowModal] = useState(null);
   const [rowDraft, setRowDraft] = useState({ materialId: '', usedQuantity: '', usedUnit: 'pcs' });
@@ -335,12 +337,13 @@ export default function Calculator({ product, setProduct, results, inventory = [
   );
 
   return (
-    <div className="space-y-5">
+    <div ref={tourRoot} className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="calculator-page-title text-3xl font-black text-navy">Add New Product</h1>
         </div>
         {editingItem ? <Badge tone="warn">Editing saved item</Badge> : null}
+        <ProductTour root={tourRoot} editingItem={editingItem} savedProductCount={savedProductCount} paused={Boolean(rowModal || saveOpen)}/>
       </div>
 
       <section
@@ -348,18 +351,18 @@ export default function Calculator({ product, setProduct, results, inventory = [
         className={`calculator-product-overview rounded-lg border border-slate-200 bg-white p-4 shadow-soft${isOverviewStuck ? ' is-stuck' : ''}`}
       >
         <div className="calculator-product-overview-grid">
-          <Field label="Product name" icon={Package} value={product.productName} onChange={(value) => update('productName', value)} />
-          <aside className="calculator-top-metric calculator-top-cost" aria-live="polite">
+          <Field tour="name" label="Product name" icon={Package} value={product.productName} onChange={(value) => update('productName', value)} />
+          <aside data-product-tour="cost" className="calculator-top-metric calculator-top-cost" aria-live="polite">
             <span className="calculator-top-metric-label">Total cost of goods</span>
             <strong>{formatCurrency(totalCostOfGoods)}</strong>
             <small>Combined cost to produce one item</small>
           </aside>
-          <aside className="calculator-top-metric calculator-top-srp" aria-live="polite">
+          <aside data-product-tour="suggested" className="calculator-top-metric calculator-top-srp" aria-live="polite">
             <span className="calculator-top-metric-label">Suggested selling price</span>
             <strong>{suggestedSellingPrice > 0 ? formatCurrency(suggestedSellingPrice) : 'Not available'}</strong>
             <small>Recommended price based on your costing</small>
           </aside>
-          <aside className="calculator-top-metric calculator-top-target">
+          <aside data-product-tour="price" className="calculator-top-metric calculator-top-target">
             <label htmlFor="targetSellingPrice">
               Target selling price <small>(Optional)</small>
             </label>
@@ -390,11 +393,12 @@ export default function Calculator({ product, setProduct, results, inventory = [
         <div className="calculator-cost-column grid min-w-0 gap-5">
           <SectionShell
             number="1"
+            tour="materials"
             title="Raw Materials"
             helper="Select materials from Inventory. Cost used = inventory unit cost x used per product."
             action={<Button variant="ghost" onClick={() => openRowModal('ingredient')}><Plus className="h-4 w-4" /> Add material</Button>}
           >
-            <div className="overflow-x-auto">
+            <div data-product-tour={results.ingredientRows.length ? undefined : 'quantity'} className="overflow-x-auto">
               <div className="grid min-w-[800px] border-b border-slate-100 px-4 py-2" style={{ gridTemplateColumns: columnTemplate }}>
                 <span />
                 {columnOrder.map((key) => renderColumnHeader(key))}<span />
@@ -413,7 +417,7 @@ export default function Calculator({ product, setProduct, results, inventory = [
                 >
                   {renderDragHandle('ingredient', row.id)}
                   {columnOrder.map((key) => (
-                    <div key={key}>
+                    <div key={key} data-product-tour={key === 'quantity' && row.id === results.ingredientRows[0]?.id ? 'quantity' : undefined}>
                       <span className="mb-1 block text-xs font-bold text-slate-500 md:hidden">{costColumns.find((item) => item.key === key)?.label}</span>
                       {renderCostCell(row, 'ingredient', key, results.materialCost)}
                     </div>
@@ -430,6 +434,7 @@ export default function Calculator({ product, setProduct, results, inventory = [
 
           <SectionShell
             number="2"
+            tour="packaging"
             title="Packaging"
             helper="Select packaging supplies from Inventory. Cost used = inventory unit cost x used per product."
             action={<Button variant="ghost" onClick={() => openRowModal('packaging')}><Plus className="h-4 w-4" /> Add packaging</Button>}
@@ -468,11 +473,11 @@ export default function Calculator({ product, setProduct, results, inventory = [
             </div>
           </SectionShell>
 
-          {operationCostsCard}
+          <div data-product-tour="operations">{operationCostsCard}</div>
         </div>
 
         <aside className="calculator-results min-w-0 rounded-lg border border-slate-200 bg-slate-50/80 p-4 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
-          <div className="rounded-md border border-slate-200 bg-white p-3">
+          <div data-product-tour="marketing" className="rounded-md border border-slate-200 bg-white p-3">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-1.5">
@@ -505,7 +510,7 @@ export default function Calculator({ product, setProduct, results, inventory = [
             </div>
           </div>
 
-          <div className="mt-3 rounded-md border border-slate-200 bg-white p-3">
+          <div data-product-tour="markup" className="mt-3 rounded-md border border-slate-200 bg-white p-3">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-sm font-black text-navy">Markup Top up</p>
@@ -530,7 +535,7 @@ export default function Calculator({ product, setProduct, results, inventory = [
             </div>
           </div>
 
-          <div className="mt-3 rounded-md border border-slate-200 bg-white p-3">
+          <div data-product-tour="tax" className="mt-3 rounded-md border border-slate-200 bg-white p-3">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 items-center gap-1.5">
                 <p className="text-sm font-black leading-5 text-navy">Business Tax Percentage <span className="whitespace-nowrap">(VAT / Non-VAT)</span></p>
@@ -588,7 +593,7 @@ export default function Calculator({ product, setProduct, results, inventory = [
           </div>
 
           <div className="mt-4 grid gap-3">
-            <Button onClick={() => setSaveOpen(true)}><Save className="h-4 w-4" /> {editingItem ? 'Update Product / Service' : 'Save as Product / Service'}</Button>
+            <Button data-product-tour="save" onClick={() => setSaveOpen(true)}><Save className="h-4 w-4" /> {editingItem ? 'Update Product / Service' : 'Save as Product / Service'}</Button>
             <Button variant="ghost" onClick={onDuplicateCurrent}><Copy className="h-4 w-4" /> Duplicate Product</Button>
             <Button variant="ghost" onClick={resetAll}><RotateCcw className="h-4 w-4" /> Reset Calculator</Button>
           </div>

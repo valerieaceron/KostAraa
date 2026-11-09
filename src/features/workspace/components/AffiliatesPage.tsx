@@ -6,7 +6,7 @@ import "../styles/affiliates.css";
 const money=(value:any)=>`₱${Number(value||0).toLocaleString("en-PH",{minimumFractionDigits:2,maximumFractionDigits:2})}`;
 const date=(value:string)=>new Date(value).toLocaleDateString("en-PH",{year:"numeric",month:"short",day:"numeric"});
 
-export default function AffiliatesPage({mode,onNavigate}:{mode:"wallet"|"records";onNavigate:(page:string)=>void}){
+export default function AffiliatesPage({mode,onNavigate,embedded=false}:{mode:"wallet"|"records";onNavigate:(page:string)=>void;embedded?:boolean}){
   const [data,setData]=useState<any>(null);
   const [error,setError]=useState("");
   const [page,setPage]=useState(1);
@@ -14,16 +14,28 @@ export default function AffiliatesPage({mode,onNavigate}:{mode:"wallet"|"records
   const [copied,setCopied]=useState(false);
   const wallet=mode==="wallet";
   useEffect(()=>{
-    let active=true;
+    let active=true,requestId=0;
     setData(null);setError("");
-    apiJson(`/api/affiliates/${wallet?"wallet":"records"}?page=${page}`).then(response=>{if(active)setData(response.result)}).catch(err=>{if(active)setError(err.message||"Unable to load your affiliate account.")});
-    return()=>{active=false};
+    const load=()=>{
+      const current=++requestId;
+      return apiJson(`/api/affiliates/${wallet?"wallet":"records"}?page=${page}`).then(response=>{
+        if(active&&current===requestId){setData(response.result);setError("");}
+      }).catch(err=>{
+        if(active&&current===requestId){if(err.status===403)setData(null);setError(err.message||"Unable to load your affiliate account.");}
+      });
+    };
+    const refreshVisible=()=>{if(document.visibilityState==="visible")load();};
+    load();
+    const timer=window.setInterval(refreshVisible,30000);
+    window.addEventListener("focus",refreshVisible);
+    document.addEventListener("visibilitychange",refreshVisible);
+    return()=>{active=false;window.clearInterval(timer);window.removeEventListener("focus",refreshVisible);document.removeEventListener("visibilitychange",refreshVisible);};
   },[wallet,page,refresh]);
   async function copyCode(){
     try{await navigator.clipboard.writeText(data.affiliate_code);setCopied(true)}catch{setError("Select and copy your affiliate code below.")}
   }
   return <section className="af-page">
-    <header className="af-heading"><div><h1>{wallet?"Wallet":"Affiliate records"}</h1><p>{wallet?"Your confirmed affiliate rewards, all in one place.":"Customers who used your affiliate code and completed payment."}</p></div><button type="button" onClick={()=>setRefresh(value=>value+1)}><RefreshCw aria-hidden="true"/>Refresh</button></header>
+    <header className="af-heading"><div>{!embedded&&<h1>{wallet?"Wallet":"Affiliate records"}</h1>}<p>{wallet?"Your confirmed affiliate rewards, all in one place.":"Customers who used your affiliate code and completed payment."}</p></div><button type="button" onClick={()=>setRefresh(value=>value+1)}><RefreshCw aria-hidden="true"/>Refresh</button></header>
     {error&&<p className="af-notice" role="alert">{error} <button type="button" onClick={()=>setRefresh(value=>value+1)}>Try again</button></p>}
     {!data&&!error&&<p role="status">Loading your affiliate account…</p>}
     {data&&<>
