@@ -1,4 +1,5 @@
 import { ContactForm } from "../components/ContactForm";
+import { LatestNews } from "../components/LatestNews";
 import { MarketingHeader } from "../components/MarketingHeader";
 import { MarketingFooter } from "../components/MarketingFooter";
 import "../styles/marketing-page-hero.css";
@@ -14,5 +15,6 @@ export default function Contact(){return <main className="contact-page contact-r
     </div>
   </section>
   <section className="contact-content"><ContactForm/></section>
+  <LatestNews className="contact-latest-news"/>
   <MarketingFooter/>
 </main>}

@@ -25,7 +25,7 @@ font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-
 | Field label | 13px / 600 | 13px / 600 | Form and control labels |
 | Body text | 14px / 400 | 14px / 400 | Default readable copy |
 | Supporting text | 12px / 400 | 12px / 400 | Descriptions, categories, and hints |
-| Micro label | 11px / 600 | 11px / 600 | Table headings, eyebrows, and compact metadata |
+| Micro label | 11px / 600 | 11px / 600 | Table headings and compact metadata |
 
 Sizes are written as `font-size / font-weight`.
 
@@ -33,7 +33,8 @@ Sizes are written as `font-size / font-weight`.
 
 - Use Title Case for page titles, named sections, result labels, and card titles.
 - Use sentence case for instructional headings, labels, actions, descriptions, hints, and validation messages.
-- Reserve uppercase for short table headings and eyebrow labels only.
+- Reserve uppercase for short table headings only.
+- Never use eyebrow text, overlines, or small decorative labels above headings. Start each page or section directly with its heading.
 - Use weight 700 for headings and important numeric values.
 - Use weight 600 for labels and actions.
 - Use weight 500 for control values or secondary emphasis.
@@ -109,7 +110,7 @@ Audited against the frontend implementation on October 19, 2026.
 - Use 500 for editable values and overflow-menu commands.
 - Use 400 for repeated costs, units, hints, and pagination metadata.
 - Keep row amounts the same color as material names; hierarchy comes from weight, not decorative color.
-- Uppercase is limited to short table headings. Eyebrows are not currently used on Inventory.
+- Uppercase is limited to short table headings. Eyebrow designs are not used anywhere in the product.
 - Do not reintroduce category text beneath material names unless the information becomes necessary for row-level decisions.
 
 ## Implementation

@@ -9,7 +9,9 @@ import Home from "../features/marketing/pages/Home";
 import SignupPayment from "../features/marketing/pages/SignupPaymentPage";
 import Pricing from "../features/marketing/pages/Pricing";
 import Privacy from "../features/marketing/pages/Privacy";
+import SiteDirectory from "../features/marketing/pages/SiteDirectory";
 import Terms from "../features/marketing/pages/Terms";
+import TryKostaraa from "../features/marketing/pages/TryKostaraa";
 import Onboarding from "../features/onboarding/OnboardingPage";
 import Workspace from "../features/workspace/WorkspacePage";
 
@@ -32,7 +34,9 @@ const routes = {
   "/payment": SignupPayment,
   "/privacy": Privacy,
   "/signup": Signup,
+  "/sitemap": SiteDirectory,
   "/terms": Terms,
+  "/try-kostaraa": TryKostaraa,
   "/workspace": Workspace,
 };
 

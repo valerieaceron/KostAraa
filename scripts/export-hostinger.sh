@@ -4,7 +4,7 @@ set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
 base="${1:-http://localhost:3000}"
 out="$root/out"
-routes=("" about blog contact login pricing privacy signup terms workspace)
+routes=("" about blog contact login pricing privacy signup sitemap terms try-kostaraa workspace)
 
 rm -rf "$out"
 mkdir -p "$out"

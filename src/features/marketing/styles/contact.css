@@ -231,6 +231,10 @@
   font-weight: 600;
 }
 
+.contact-latest-news {
+  padding-top: 78px;
+}
+
 @media (max-width: 760px) {
   .contact-page .marketing-nav-overlay {
     height: 66px;
@@ -270,6 +274,7 @@
     min-height: 290px;
     padding: 40px 22px;
   }
+
 }
 
 @media (max-width: 420px) {

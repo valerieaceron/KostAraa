@@ -23,7 +23,7 @@ const rows=[
   ["Competitor analysis","Coming soon","Coming soon"],
   ["Records and access"],
   ["Inventory records","Up to 10","Up to 100"],
-  ["Saved products and services","Up to 3","Unlimited"],
+  ["Saved products and services","Up to 3","Up to 100"],
   ["Online workspace access","✓","✓"],
   ["Data storage","✓","✓"],
   ["Inventory import and export","×","✓"],
@@ -81,7 +81,7 @@ export default function Pricing(){
         const paid=isPaid(plan);
         const displayName=displayPlanName(plan);
         const benefits=paid
-          ? [...planBenefits(plan).filter(benefit=>!benefit.toLowerCase().includes("competitor")),"Upload and download files"]
+          ? [...planBenefits(plan).filter(benefit=>!benefit.toLowerCase().includes("competitor")).map(benefit=>benefit.toLowerCase().includes("saved products and services")?"100 saved products and services":benefit),"Upload and download files"]
           : starterBenefits;
         return <article className={paid?"recommended":""} key={plan.id}>
           {paid?<div className="plan-heading"><small className="plan-tier">Annual Subscription</small><span className="plan-badge">Best value</span></div>:<div className="plan-heading"><small className="plan-tier">Free</small></div>}

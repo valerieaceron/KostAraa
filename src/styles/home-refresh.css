@@ -393,8 +393,8 @@
   .home-refresh .home-final h2{font-size:36px}
 }
 
-/* Shared marketing-page rule: primary page headings remain 42px at every viewport. */
-.home-refresh .home-hero-copy h1{font-size:var(--marketing-heading-size)}
+/* Homepage hero heading remains 40px at every viewport. */
+.home-refresh .home-hero-copy h1{font-size:40px}
 
 .home-final-stat-markup{right:-13px;bottom:40px}
 @media(max-width:760px){.home-final-stat-markup{right:-4px;bottom:48px}}

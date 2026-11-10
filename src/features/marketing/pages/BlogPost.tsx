@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { MarketingHeader } from "../components/MarketingHeader";
 import { MarketingFooter } from "../components/MarketingFooter";
@@ -11,6 +11,7 @@ export default function BlogPost() {
   const [post, setPost] = useState<WordPressPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
+  const [showSignupCta, setShowSignupCta] = useState(true);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -67,6 +68,11 @@ export default function BlogPost() {
     </article>}
 
     {!loading && !post && <section className="insight-article-status"><h1>{failed ? "This insight is temporarily unavailable." : "Insight not found."}</h1><p>{failed ? "Please try again in a little while." : "The article may have been moved or unpublished."}</p><a href="/blog">Return to Insights</a></section>}
+    {!loading && post && showSignupCta && <aside className="insight-floating-cta" aria-label="Try Kostaraa for free">
+      <button type="button" onClick={() => setShowSignupCta(false)} aria-label="Dismiss Kostaraa offer"><X aria-hidden="true"/></button>
+      <div><strong>Price with more confidence.</strong><span>Turn your costs into clearer pricing decisions.</span></div>
+      <a href="/try-kostaraa">Try Kostaraa for Free</a>
+    </aside>}
     <MarketingFooter/>
   </main>;
 }

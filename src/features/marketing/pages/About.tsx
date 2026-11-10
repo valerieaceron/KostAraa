@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
+import { ContactForm } from "../components/ContactForm";
+import { LatestNews } from "../components/LatestNews";
 import { MarketingHeader } from "../components/MarketingHeader";
 import { MarketingFooter } from "../components/MarketingFooter";
 import "../styles/marketing-page-hero.css";
@@ -99,6 +101,16 @@ export default function About() {
           </div>
         </article>
       </section>
+    </section>
+
+    <LatestNews className="about-latest-news"/>
+
+    <section className="about-contact" aria-labelledby="about-contact-title">
+      <div className="about-contact-intro">
+        <h2 id="about-contact-title">Have a question about Kostaraa?</h2>
+        <p>Tell us what you are working on, ask about the platform, or share feedback with the team.</p>
+      </div>
+      <ContactForm/>
     </section>
 
     <section className="about-cta">
