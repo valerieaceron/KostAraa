@@ -19,28 +19,7 @@ for route in "${routes[@]}"; do
   curl --fail --silent --show-error "$base/${route}" -o "$target/index.html"
 done
 
-cat > "$out/.htaccess" <<'HTACCESS'
-Options -Indexes
-DirectoryIndex index.html
-
-<IfModule mod_headers.c>
-  Header always set X-Content-Type-Options "nosniff"
-  Header always set Referrer-Policy "strict-origin-when-cross-origin"
-  Header always set X-Frame-Options "SAMEORIGIN"
-  <FilesMatch "\.html$">
-    Header always set Cache-Control "no-cache, no-store, must-revalidate"
-    Header always set Pragma "no-cache"
-    Header always set Expires "0"
-  </FilesMatch>
-</IfModule>
-
-<IfModule mod_rewrite.c>
-  RewriteEngine On
-  RewriteCond %{REQUEST_FILENAME} -f [OR]
-  RewriteCond %{REQUEST_FILENAME} -d
-  RewriteRule ^ - [L]
-  RewriteRule ^ index.html [L]
-</IfModule>
-HTACCESS
+# Keep routing identical to the Vite export, including hidden files.
+cp "$root/public/.htaccess" "$out/.htaccess"
 
 echo "Hostinger export created at $out"

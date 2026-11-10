@@ -2,7 +2,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { MarketingHeader } from "../components/MarketingHeader";
 import { MarketingFooter } from "../components/MarketingFooter";
-import { CMS_POSTS_ENDPOINT, isPlaceholderPost, postDate, textFromHtml, type WordPressPost } from "../lib/wordpress";
+import { fetchPublishedPosts, postDate, textFromHtml, type WordPressPost } from "../lib/wordpress";
 import "../styles/marketing-page-hero.css";
 import "../styles/blog.css";
 
@@ -36,23 +36,21 @@ export default function Blog() {
     const query = new URLSearchParams({ per_page: String(POSTS_PER_PAGE), page: String(page), _embed: "1" });
 
     setLoading(true);
+    setPosts([]);
+    setFailed(false);
 
-    fetch(`${CMS_POSTS_ENDPOINT}?${query}`, { headers: { Accept: "application/json" }, signal: controller.signal })
-      .then(response => {
-        if (!response.ok) throw new Error(`CMS request failed: ${response.status}`);
-        const pages = Math.max(1, Number(response.headers.get("X-WP-TotalPages")) || 1);
-        setTotalPages(pages);
-        return response.json() as Promise<WordPressPost[]>;
-      })
-      .then(items => {
-        setPosts(items.filter(post => !isPlaceholderPost(post)));
+    fetchPublishedPosts(query, controller.signal)
+      .then(({ posts, totalPages }) => {
+        if (controller.signal.aborted) return;
+        setTotalPages(totalPages);
+        setPosts(posts);
         setFailed(false);
       })
-      .catch(error => {
-        if (error instanceof DOMException && error.name === "AbortError") return;
+      .catch(() => {
+        if (controller.signal.aborted) return;
         setFailed(true);
       })
-      .finally(() => setLoading(false));
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
 
     return () => controller.abort();
   }, [page]);

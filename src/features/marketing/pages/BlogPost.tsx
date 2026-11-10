@@ -2,11 +2,12 @@ import { ArrowLeft } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { MarketingHeader } from "../components/MarketingHeader";
 import { MarketingFooter } from "../components/MarketingFooter";
-import { CMS_POSTS_ENDPOINT, isPlaceholderPost, postDate, safePostHtml, textFromHtml, type WordPressPost } from "../lib/wordpress";
+import { fetchPublishedPosts, postSlugFromPath, postDate, safePostHtml, textFromHtml, type WordPressPost } from "../lib/wordpress";
+import { applyBlogMetadata } from "../lib/blogMetadata";
 import "../styles/blog.css";
 
 export default function BlogPost() {
-  const slug = decodeURIComponent(window.location.pathname.replace(/^\/blog\//, "").replace(/\/$/, ""));
+  const slug = postSlugFromPath(window.location.pathname);
   const [post, setPost] = useState<WordPressPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
@@ -15,31 +16,35 @@ export default function BlogPost() {
     const controller = new AbortController();
     const query = new URLSearchParams({ slug, _embed: "1" });
 
-    fetch(`${CMS_POSTS_ENDPOINT}?${query}`, { headers: { Accept: "application/json" }, signal: controller.signal })
-      .then(response => {
-        if (!response.ok) throw new Error(`CMS request failed: ${response.status}`);
-        return response.json() as Promise<WordPressPost[]>;
-      })
-      .then(items => {
-        const publishedPost = items.find(item => !isPlaceholderPost(item)) ?? null;
+    setPost(null);
+    setFailed(false);
+    setLoading(true);
+    if (!slug) {
+      setLoading(false);
+      return () => controller.abort();
+    }
+
+    fetchPublishedPosts(query, controller.signal)
+      .then(({ posts }) => {
+        if (controller.signal.aborted) return;
+        const publishedPost = posts.find(item => postSlugFromPath(`/blog/${item.slug}`) === slug) ?? null;
         setPost(publishedPost);
         setFailed(false);
       })
-      .catch(error => {
-        if (error instanceof DOMException && error.name === "AbortError") return;
+      .catch(() => {
+        if (controller.signal.aborted) return;
+        setPost(null);
         setFailed(true);
       })
-      .finally(() => setLoading(false));
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
 
     return () => controller.abort();
   }, [slug]);
 
   useEffect(() => {
-    if (!post) return;
-    const priorTitle = document.title;
-    document.title = `${textFromHtml(post.title.rendered)} — Kostaraa Insights`;
-    return () => { document.title = priorTitle; };
-  }, [post]);
+    if (loading) return;
+    return applyBlogMetadata(post, failed);
+  }, [post, loading, failed]);
 
   const content = useMemo(() => post ? safePostHtml(post.content.rendered) : "", [post]);
   const media = post?._embedded?.["wp:featuredmedia"]?.[0];

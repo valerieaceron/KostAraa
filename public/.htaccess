@@ -2,10 +2,16 @@ Options -Indexes
 DirectoryIndex index.html
 <IfModule mod_rewrite.c>
 RewriteEngine On
+# Leave real files, directories, and server endpoints to their existing handlers.
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
-RewriteRule ^ index.html [L]
+# Only browser navigation to known React routes receives the app shell.
+# Unknown assets and API URLs must never receive HTML with a successful status.
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$
+RewriteRule ^blog/[^/]+/?$ /index.html [L]
+RewriteCond %{REQUEST_METHOD} ^(?:GET|HEAD)$
+RewriteRule ^(?:affiliate-application|forgot-password|reset-password|verify-email|about|blog|contact|login|onboarding|payment|pricing|privacy|signup|terms|workspace)/?$ /index.html [L]
 </IfModule>
 <IfModule mod_headers.c>
 Header always set X-Content-Type-Options "nosniff"
