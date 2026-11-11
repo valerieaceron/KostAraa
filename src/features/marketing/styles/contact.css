@@ -231,6 +231,29 @@
   font-weight: 600;
 }
 
+.contact-social {
+  margin-top: 30px;
+  border: 1px solid rgba(58, 116, 186, .14);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .78);
+  padding: 24px 26px;
+}
+
+.contact-social h2 {
+  margin: 0 0 5px;
+  color: #263d59;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -.02em;
+}
+
+.contact-social p {
+  margin: 0 0 17px;
+  color: var(--contact-body);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
 .contact-latest-news {
   padding-top: 78px;
 }
@@ -273,6 +296,10 @@
   .contact-success {
     min-height: 290px;
     padding: 40px 22px;
+  }
+
+  .contact-social {
+    padding: 22px;
   }
 
 }

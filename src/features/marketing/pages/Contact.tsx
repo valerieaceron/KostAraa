@@ -2,6 +2,7 @@ import { ContactForm } from "../components/ContactForm";
 import { LatestNews } from "../components/LatestNews";
 import { MarketingHeader } from "../components/MarketingHeader";
 import { MarketingFooter } from "../components/MarketingFooter";
+import { SocialLinks } from "../components/SocialLinks";
 import "../styles/marketing-page-hero.css";
 import "../styles/contact.css";
 
@@ -14,7 +15,7 @@ export default function Contact(){return <main className="contact-page contact-r
       <h1>Contact Us</h1>
     </div>
   </section>
-  <section className="contact-content"><ContactForm/></section>
+  <section className="contact-content"><ContactForm/><div className="contact-social"><h2>Follow Kostaraa</h2><p>Get product updates, practical business tips, and new guides from Kostaraa.</p><SocialLinks label="Follow Kostaraa"/></div></section>
   <LatestNews className="contact-latest-news"/>
   <MarketingFooter/>
 </main>}

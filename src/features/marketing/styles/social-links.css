@@ -1,0 +1,76 @@
+.social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.social-links a {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(58, 116, 186, .2);
+  border-radius: 999px;
+  background: #fff;
+  padding: 8px 13px;
+  color: #3a679b;
+  font-family: "Poppins", Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  transition: border-color .18s ease, background-color .18s ease, color .18s ease;
+}
+
+.social-links a:hover,
+.social-links a:focus-visible {
+  border-color: #3a74ba;
+  background: #edf5ff;
+  color: #245b93;
+  outline: 0;
+}
+
+.social-links svg {
+  width: 14px;
+  height: 14px;
+}
+
+.footer-social-links {
+  margin-top: 8px;
+}
+
+.footer-social-links a {
+  width: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  border-color: transparent;
+  background: transparent;
+  padding: 0;
+  color: #aebdce;
+}
+
+.footer-social-links a:hover,
+.footer-social-links a:focus-visible {
+  border-color: transparent;
+  background: transparent;
+  color: #c2cedb;
+}
+
+.footer-social-links svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.footer-social-links .social-facebook-icon path {
+  fill: currentColor;
+  stroke: none;
+}
+
+.footer-social-links .social-icon-fill {
+  fill: currentColor;
+  stroke: none;
+}
