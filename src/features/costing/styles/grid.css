@@ -307,3 +307,8 @@
 .grid-row-limit-note a{color:#704500;font-weight:700;text-decoration:underline;text-underline-offset:3px}
 .grid-row-limit-note a:hover{color:#412800}
 .grid-row-limit-note a:focus-visible{outline:2px solid #996000;outline-offset:3px;border-radius:2px}
+
+.grid-workbook tbody>tr>th .grid-remove-row{display:grid;place-items:center;width:28px;height:28px;margin:5px auto 0;padding:4px;color:#687991;cursor:pointer}
+.grid-workbook tbody>tr>th .grid-remove-row:hover{background:#feecec;color:#b42318}
+.grid-workbook tbody>tr>th .grid-remove-row:focus-visible{outline:2px solid #3472b9;outline-offset:1px}
+.grid-workbook tbody>tr>th .grid-remove-row:disabled{opacity:.4;cursor:wait}

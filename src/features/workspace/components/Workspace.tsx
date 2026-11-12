@@ -211,6 +211,7 @@ export function Workspace(){
       }catch(error:any){setSyncError(error.message||"Unable to delete the library item.");break}
     }
     if(deleted===targets.length&&deleted)notifySuccess("Products deleted",`${deleted} library item${deleted===1?"":"s"} deleted successfully.`);
+    return targets.slice(0,deleted).map((item:any)=>String(item.id));
   };
   const deleteItem=(id:string)=>deleteItems([id]);
   const updateItem=(id:string,updates:any)=>{persistItems(savedItems.map((item:any)=>item.id===id?{...item,...updates,updatedAt:new Date().toISOString()}:item));notifySuccess("Library item updated","Your changes were saved.")};

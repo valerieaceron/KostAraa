@@ -1,3 +1,4 @@
+import {confirmAction} from '../../../components/confirmation/confirmation';
 import {fileTransferUpgradeMessage, requestFileTransferUpgrade} from '../utils/file-transfer-access';
 import {notifySuccess} from '../utils/success-message';
 import {pricingHealth,needsPricingAttention} from "../utils/pricing-health";
@@ -286,18 +287,18 @@ export default function ProductsServices({ items, onViewEdit, onDuplicate, onArc
     action();
     setOpenMenuId(null);
   };
-  const confirmDelete = (item) => {
+  const confirmDelete = async (item) => {
     const name = displayProductName(item);
-    if (window.confirm(`Delete "${name}"? This cannot be undone.`)) onDelete(item.id);
+    if (await confirmAction(`Delete "${name}"? This cannot be undone.`, {title:'Delete product?', confirmLabel:'Delete product', danger:true})) onDelete(item.id);
   };
   const toggleFiltered = () => setSelectedIds((current) => {
     const next = new Set(current);
     visibleItems.forEach((item) => allFilteredSelected ? next.delete(String(item.id)) : next.add(String(item.id)));
     return next;
   });
-  const deleteSelected = () => {
+  const deleteSelected = async () => {
     const ids = [...selectedIds];
-    if (!ids.length || !window.confirm(`Delete ${ids.length} selected product${ids.length === 1 ? '' : 's'}? This cannot be undone.`)) return;
+    if (!ids.length || !await confirmAction(`Delete ${ids.length} selected product${ids.length === 1 ? '' : 's'}? This cannot be undone.`, {title:'Delete selected products?', confirmLabel:'Delete products', danger:true})) return;
     if (onDeleteItems) onDeleteItems(ids);
     else ids.forEach((id) => onDelete(id));
     setSelectedIds(new Set());

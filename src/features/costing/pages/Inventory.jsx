@@ -1,3 +1,4 @@
+import {confirmAction} from '../../../components/confirmation/confirmation';
 import {fileTransferUpgradeMessage, requestFileTransferUpgrade} from '../utils/file-transfer-access';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Copy, Download, FileUp, Info, MoreHorizontal, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
@@ -248,7 +249,7 @@ export default function Inventory({ inventory, setInventory, unitOptions = ALL_U
   const deleteIds = async (ids) => {
     if (importing) return;
     const values = [...ids]; if (!values.length) return;
-    if (!window.confirm(values.length === 1 ? 'Delete this material? This cannot be undone.' : `Delete ${values.length} materials? This cannot be undone.`)) return;
+    if (!await confirmAction(values.length === 1 ? 'Delete this material? This cannot be undone.' : `Delete ${values.length} materials? This cannot be undone.`, {title:'Delete materials?', confirmLabel:'Delete', danger:true})) return;
     setApiError('');
     try {
       if (!isOfflineUser()) await Promise.all(values.map((id) => apiJson(`/api/inventory/delete/${encodeURIComponent(id)}`, { method: 'DELETE' })));

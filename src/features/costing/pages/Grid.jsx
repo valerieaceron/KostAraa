@@ -1,3 +1,4 @@
+import {confirmAction} from '../../../components/confirmation/confirmation';
 import {fileTransferUpgradeMessage, requestFileTransferUpgrade} from '../utils/file-transfer-access';
 import {notifySuccess} from '../utils/success-message';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
@@ -534,7 +535,7 @@ export default function Grid({inventory, business, libraryItems = [], onSave, on
   });
   const toggleAll = () => setSelectedIds(allSelected ? new Set() : new Set(selectableRows.map(row => row.id)));
   const handleSelectionRow = (event, row) => {
-    if (event.target.closest('.grid-row-resizer')) return;
+    if (event.target.closest('.grid-row-resizer, .grid-remove-row')) return;
     if (!selectedIds.size || !hasInput(row)) return;
     event.preventDefault();
     event.stopPropagation();
@@ -547,7 +548,7 @@ export default function Grid({inventory, business, libraryItems = [], onSave, on
       return !row.savedItem || row.savedSignature !== gridSignature(row, calculations[index]);
     });
     if (!targets.length) { setNotice('Selected products are already synced with the Library.'); return; }
-    if (!window.confirm(`Save ${targets.length} selected product${targets.length === 1 ? '' : 's'} to the Product Library?`)) return;
+    if (!await confirmAction(`Save ${targets.length} selected product${targets.length === 1 ? '' : 's'} to the Product Library?`, {title:'Save selected products?', confirmLabel:'Save to Library'})) return;
     let saved = 0;
     for (const row of targets) {
       const index = rows.findIndex(entry => entry.id === row.id);
@@ -560,13 +561,46 @@ export default function Grid({inventory, business, libraryItems = [], onSave, on
     if (saved === targets.length) notifySuccess('Products saved', `${saved} products saved to Product Library.`);
     else setNotice(`${saved} of ${targets.length} selected products saved to the Library.`);
   };
+  const removeProductRow = async (row) => {
+    if (savingId || saveLock.current) return;
+    const savedId = row.savedItem?.id;
+    const name = row.name.trim() || 'this product row';
+    const warning = savedId != null
+      ? `Delete "${name}"? This also permanently removes the product from Product Library.`
+      : `Remove "${name}" from Grid? You can undo this change.`;
+    if ((savedId != null || hasInput(row)) && !await confirmAction(warning, {title:savedId != null ? 'Delete product?' : 'Remove product row?', confirmLabel:savedId != null ? 'Delete product' : 'Remove row', danger:true})) return;
+    if (savedId != null) {
+      saveLock.current = true;
+      setSavingId(row.id);
+      try {
+        const deleted = await onDeleteItems?.([String(savedId)]);
+        if (!deleted?.includes(String(savedId))) {
+          setErrors(current => ({...current, [row.id]: 'Unable to remove this product. Please try again.'}));
+          return;
+        }
+      } catch (error) {
+        setErrors(current => ({...current, [row.id]: error.message || 'Unable to remove this product.'}));
+        return;
+      } finally {saveLock.current = false;setSavingId(null);}
+    }
+    const remove = current => {
+      const remaining = current.filter(entry => entry.id !== row.id);
+      return remaining.length ? remaining : [createGridProduct()];
+    };
+    if (savedId != null) {setRows(remove);clearHistory();}
+    else changeRows(remove);
+    setSelectedIds(current => {const next = new Set(current);next.delete(row.id);return next;});
+    setEditingCell(null);
+    setActive({row:0, column:'name', component:0});
+    if (savedId == null) notifySuccess('Product row removed', 'The row was removed from Grid.');
+  };
   const bulkDelete = async () => {
     if (!selectedRows.length) return;
     const saved = selectedRows.filter(row => row.savedItem?.id != null);
     const drafts = selectedRows.filter(row => !row.savedItem);
     const detail = [saved.length ? `${saved.length} saved Library product${saved.length === 1 ? '' : 's'}` : '', drafts.length ? `${drafts.length} unsaved draft${drafts.length === 1 ? '' : 's'}` : ''].filter(Boolean).join(' and ');
     const warning = saved.length ? ' Saved products will be permanently removed from the Product Library.' : '';
-    if (!window.confirm(`Delete ${detail}?${warning}`)) return;
+    if (!await confirmAction(`Delete ${detail}?${warning}`, {title:'Delete selected rows?', confirmLabel:'Delete rows', danger:true})) return;
     if (saved.length) await onDeleteItems?.(saved.map(row => String(row.savedItem.id)));
     const selected = new Set(selectedRows.map(row => row.id));
     const removeSelected = current => {
@@ -826,7 +860,7 @@ export default function Grid({inventory, business, libraryItems = [], onSave, on
         <tbody>{displayedRows.map(({row,index,calculated}) => {
           const unchanged = row.savedItem && row.savedSignature === gridSignature(row, calculated);
           return <tr key={row.id} style={rowHeights[row.id]?{height:rowHeights[row.id]}:undefined} aria-selected={selectedIds.has(row.id)} className={`${errors[row.id] ? 'grid-row-invalid' : ''}${selectedIds.has(row.id) ? ' grid-row-selected' : ''}${selectedIds.size && hasInput(row) ? ' grid-selection-mode' : ''}`} onClickCapture={event => handleSelectionRow(event,row)}>
-            <th scope="row"><span>{index + 1}</span><button className="grid-row-resizer" type="button" role="separator" aria-orientation="horizontal" aria-label={`Resize product row ${index + 1}`} title="Drag to resize row. Double-click to reset." onPointerDown={event=>beginRowResize(event,row)} onDoubleClick={()=>setRowHeights(current=>{const next={...current};delete next[row.id];return next})}/></th>
+            <th scope="row"><span>{index + 1}</span><button className="grid-remove-row" type="button" disabled={Boolean(savingId)} aria-label={`Remove product row ${index + 1}${row.name ? `: ${row.name}` : ''}`} title={row.savedItem ? 'Delete product from Grid and Product Library' : 'Remove product row'} onClick={() => removeProductRow(row)}><Trash2 size={14} aria-hidden="true"/></button><button className="grid-row-resizer" type="button" role="separator" aria-orientation="horizontal" aria-label={`Resize product row ${index + 1}`} title="Drag to resize row. Double-click to reset." onPointerDown={event=>beginRowResize(event,row)} onDoubleClick={()=>setRowHeights(current=>{const next={...current};delete next[row.id];return next})}/></th>
             {visibleColumns.map(column => {
               const fillCapable = numericFields.includes(column.key);
               const fillSourcePosition = fillRange ? displayedRows.findIndex(entry=>entry.index===fillRange.source) : -1;

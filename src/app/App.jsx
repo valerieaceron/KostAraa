@@ -1,3 +1,4 @@
+import ConfirmationModal from "../components/confirmation/ConfirmationModal";
 import PasswordReset from "../features/auth/PasswordResetPage";
 import Login from "../features/auth/LoginPage";
 import Signup from "../features/auth/SignupPage";
@@ -44,5 +45,5 @@ export default function App() {
   const path = window.location.pathname.replace(/\/$/, "") || "/";
   const Page = path.startsWith("/blog/") ? BlogPost : routes[path] || Home;
 
-  return <Page />;
+  return <><ConfirmationModal/><Page /></>;
 }
