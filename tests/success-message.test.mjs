@@ -39,14 +39,14 @@ test('shared success notice resets timers for new actions, bounces out, and clea
   listeners.get('success')({detail:{title:'Material added',message:'Flour saved'}});
   let tree=render();
   assert.ok(find(tree,node=>node.type==='h2'&&node.children[0]==='Material added'));
-  assert.deepEqual([...timers.values()].map(timer=>timer.delay),[2000]);
-  runTimer(2000);tree=render();assert.match(tree.props.className,/is-closing/);
+  assert.deepEqual([...timers.values()].map(timer=>timer.delay),[3000]);
+  runTimer(3000);tree=render();assert.match(tree.props.className,/is-closing/);
   assert.deepEqual([...timers.values()].map(timer=>timer.delay),[300]);
   // A new successful action during bounce-out must cancel the old removal.
   listeners.get('success')({detail:{title:'Product saved',message:'Coffee saved'}});
   tree=render();assert.doesNotMatch(tree.props.className,/is-closing/);
-  assert.deepEqual([...timers.values()].map(timer=>timer.delay),[2000]);
-  runTimer(2000);render();runTimer(300);assert.equal(render(),null);
+  assert.deepEqual([...timers.values()].map(timer=>timer.delay),[3000]);
+  runTimer(3000);render();runTimer(300);assert.equal(render(),null);
   listeners.get('success')({detail:{title:'Done',message:'Saved'}});
   tree=render();find(tree,node=>node.props['aria-label']==='Dismiss success message').props.onClick();
   tree=render();assert.match(tree.props.className,/is-closing/);

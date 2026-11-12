@@ -312,7 +312,6 @@ export default function Inventory({ inventory, setInventory, unitOptions = ALL_U
         <button data-inventory-tour="add" className="primary" type="button" disabled={importing} onClick={openAdd}><Plus /> Add material</button>
       </div>
     </header>
-    {!canTransferFiles && <p className="inventory-alert info"><a href="/workspace?page=subscription&plan=annual">{fileTransferUpgradeMessage}</a></p>}
     {importMessage ? <p className="inventory-alert success">{importMessage}</p> : null}{importError ? <p className="inventory-alert error">{importError}</p> : null}{apiError ? <p className="inventory-alert error">{apiError}</p> : null}{loadingInventory ? <p className="inventory-alert info">Loading inventory…</p> : null}
     {measurementGuide ? <div data-inventory-tour="measurements">{measurementGuide}</div> : null}
     <section className="inventory-list-card">

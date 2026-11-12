@@ -15,7 +15,7 @@ export default function SuccessMessage() {
   }, []);
   useEffect(() => {
     if (!notice) return undefined;
-    const timeout = setTimeout(() => setClosing(true), 2000);
+    const timeout = setTimeout(() => setClosing(true), 3000);
     return () => clearTimeout(timeout);
   }, [notice]);
   useEffect(() => {
