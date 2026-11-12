@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Copy, GripVertical, Info, Package, Plus, RotateCcw, Save, Trash2 } from 'lucide-react';
 import ProductTour from './ProductTour';
+import {notifySuccess} from '../utils/success-message';
 import { Badge, Button, Modal, Select } from '../components/ui';
 import { calculateSellingPrice, formatCurrency, formatNumber } from '../utils/calculations';
 
@@ -242,6 +243,8 @@ export default function Calculator({ product, setProduct, results, inventory = [
     if (saving) return;
     setSaving(true);
     setSaveError('');
+    const savedName = product.productName?.trim() || 'Your item';
+    const wasEditing = Boolean(editingItem);
     try {
     await onSaveItem({
       ...meta,
@@ -264,6 +267,7 @@ export default function Calculator({ product, setProduct, results, inventory = [
       },
     }, statusOverride);
     setSaveOpen(false);
+    notifySuccess(wasEditing ? 'Library item updated' : 'Saved to Product Library', `${savedName} ${wasEditing ? 'was updated successfully.' : 'was saved successfully.'}`, 'You can find it in Product Library.');
     } catch (error) { setSaveError(error.message || 'Unable to save your calculation.'); }
     finally { setSaving(false); }
   };

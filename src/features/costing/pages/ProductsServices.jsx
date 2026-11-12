@@ -1,3 +1,5 @@
+import {fileTransferUpgradeMessage, requestFileTransferUpgrade} from '../utils/file-transfer-access';
+import {notifySuccess} from '../utils/success-message';
 import {pricingHealth,needsPricingAttention} from "../utils/pricing-health";
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
@@ -240,7 +242,7 @@ export function DetailModal({ item, onClose, onViewEdit, onDuplicate, onArchive 
   );
 }
 
-export default function ProductsServices({ items, onViewEdit, onDuplicate, onArchive, onDelete, onDeleteItems, onUpdateItem, setPage, pricingStatus = 'All products', onPricingStatusChange }) {
+export default function ProductsServices({ items, onViewEdit, onDuplicate, onArchive, onDelete, onDeleteItems, onUpdateItem, setPage, pricingStatus = 'All products', onPricingStatusChange, canTransferFiles = false }) {
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
@@ -301,6 +303,7 @@ export default function ProductsServices({ items, onViewEdit, onDuplicate, onArc
     setSelectedIds(new Set());
   };
   const exportLibrary = async () => {
+    if (!canTransferFiles) {requestFileTransferUpgrade();return;}
     const XLSX = await import('xlsx');
     const exportedAt = new Date();
     const rows = items.map((item, index) => ({
@@ -373,6 +376,7 @@ export default function ProductsServices({ items, onViewEdit, onDuplicate, onArc
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Library');
     XLSX.writeFile(workbook, 'bizcost-library.xlsx');
+    notifySuccess('Excel export ready', 'Your Product Library spreadsheet has been downloaded.');
   };
 
   return (
@@ -382,7 +386,7 @@ export default function ProductsServices({ items, onViewEdit, onDuplicate, onArc
           <h1 className="library-page-title mt-1 flex items-center gap-2 text-2xl font-black text-navy">Product Library <HelpTip label="About your Product Library">Compare each product’s cost, selling price, and saved margin. Kostaraa flags plans that may need another look.</HelpTip></h1>
         </div>
         <div className="library-page-actions flex flex-wrap gap-2">
-          <Button variant="ghost" onClick={exportLibrary} disabled={!items.length}><Download className="h-4 w-4" /> Download Excel</Button>
+          <Button variant="ghost" onClick={exportLibrary} title={!canTransferFiles ? fileTransferUpgradeMessage : undefined} disabled={canTransferFiles && !items.length}><Download className="h-4 w-4" /> Download Excel</Button>
           <Button onClick={() => setPage?.('calculator')}><Plus className="h-4 w-4" /> New Costing</Button>
         </div>
       </div>

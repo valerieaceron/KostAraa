@@ -1,3 +1,5 @@
+import {fileTransferUpgradeMessage, requestFileTransferUpgrade} from '../utils/file-transfer-access';
+import {notifySuccess} from '../utils/success-message';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Info, ArrowUpDown, Check, ChevronDown, ChevronUp, Columns3, Download, Filter, Plus, Redo2, Search, Save, Trash2, Undo2, X} from 'lucide-react';
 import {formatCurrency, formatNumber, getInventoryCostUnit} from '../utils/calculations';
@@ -65,7 +67,7 @@ function readSheet(key) {
   return {rows: [createGridProduct(), createGridProduct(), createGridProduct()], hidden, columnWidths};
 }
 
-export default function Grid({inventory, business, libraryItems = [], onSave, onDeleteItems, onInventoryChange, onViewEdit, onDuplicate, onArchive}) {
+export default function Grid({inventory, business, libraryItems = [], onSave, onDeleteItems, onInventoryChange, onViewEdit, onDuplicate, onArchive, canTransferFiles = false}) {
   const [storageKey] = useState(() => gridStorageKey(getSessionUser()));
   const [initial] = useState(() => readSheet(storageKey));
   const [rows, setRows] = useState(initial.rows);
@@ -461,6 +463,7 @@ export default function Grid({inventory, business, libraryItems = [], onSave, on
     setEditingCell(null);
   };
   const exportGrid = async () => {
+    if (!canTransferFiles) {requestFileTransferUpgrade();return;}
     const XLSX = await import('xlsx');
     const worksheetRows = rows.flatMap((row, rowIndex) => {
       if (!hasInput(row)) return [];
@@ -496,7 +499,7 @@ export default function Grid({inventory, business, libraryItems = [], onSave, on
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Costing Grid');
     XLSX.writeFile(workbook, 'kostaraa-costing-grid.xlsx');
-    setNotice('Downloaded the current worksheet as an Excel file.');
+    notifySuccess('Excel export ready', 'Your Grid worksheet has been downloaded.');
   };
   const save = async (row, calculated, showPreview = true) => {
     if (saveLock.current) return false;
@@ -554,7 +557,8 @@ export default function Grid({inventory, business, libraryItems = [], onSave, on
       }
     }
     setSelectedIds(new Set());
-    setNotice(`${saved} of ${targets.length} selected product${targets.length === 1 ? '' : 's'} saved to the Library.`);
+    if (saved === targets.length) notifySuccess('Products saved', `${saved} products saved to Product Library.`);
+    else setNotice(`${saved} of ${targets.length} selected products saved to the Library.`);
   };
   const bulkDelete = async () => {
     if (!selectedRows.length) return;
@@ -572,7 +576,7 @@ export default function Grid({inventory, business, libraryItems = [], onSave, on
     if (saved.length) { setRows(removeSelected); clearHistory(); }
     else changeRows(removeSelected);
     setSelectedIds(new Set());
-    setNotice(`${selectedRows.length} selected row${selectedRows.length === 1 ? '' : 's'} deleted.`);
+    if (!saved.length) notifySuccess('Grid rows deleted', `${selectedRows.length} draft rows deleted.`);
   };
 
   const clearCell = (rowIndex, key) => {
@@ -793,7 +797,7 @@ export default function Grid({inventory, business, libraryItems = [], onSave, on
         <button type="button" onClick={undoGrid} disabled={Boolean(savingId) || !undoStack.current.length} title="Undo (Ctrl/Cmd+Z)" aria-label="Undo last Grid change"><Undo2 size={15}/><span>Undo</span></button>
         <button type="button" onClick={redoGrid} disabled={Boolean(savingId) || !redoStack.current.length} title="Redo (Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y)" aria-label="Redo last Grid change"><Redo2 size={15}/><span>Redo</span></button>
       </div>
-      <button className="grid-secondary-action" onClick={exportGrid}><Download size={15}/> Download Excel</button>
+      <button className="grid-secondary-action" title={!canTransferFiles ? fileTransferUpgradeMessage : undefined} onClick={exportGrid}><Download size={15}/> Download Excel</button>
       <details className="grid-column-menu"><summary><Columns3 size={15}/> Customize</summary><div>{columns.filter(column => column.key !== 'name').map(column => <label key={column.key}><input type="checkbox" checked={!hidden.includes(column.key)} onChange={() => setHidden(current => current.includes(column.key) ? current.filter(key => key !== column.key) : [...current, column.key])}/>{column.label}</label>)}<footer><button onClick={() => applyView('pricing')}>Use Pricing Focus view</button><button onClick={resetSizes}>Reset row and column sizes</button></footer></div></details>
       {selectedIds.size ? <div className="grid-bulk-actions" role="group" aria-label="Actions for selected products"><span>{selectedIds.size} selected</span><button type="button" disabled={Boolean(savingId)} onClick={bulkSave}><Save size={14}/> Save selected</button><button className="danger" type="button" disabled={Boolean(savingId)} onClick={bulkDelete}><Trash2 size={14}/> Delete selected</button></div> : null}
       {storageError && <span className="grid-draft-status">Couldn’t save this worksheet on this device</span>}
@@ -852,9 +856,9 @@ export default function Grid({inventory, business, libraryItems = [], onSave, on
       changeRows(current => current.map(row => row.id !== setup.rowId ? row : {...row, materials: row.materials.map((material, index) => index !== setup.materialIndex ? material : {...material, materialId: saved.id, name: saved.material, usedUnit: getInventoryCostUnit(saved), kind: saved.item_type === 'packaging' ? 'packaging' : 'material'})}));
       setErrors(current => ({...current, [setup.rowId]: ''}));
       setSetup(null);
-      setNotice('Inventory saved and selected in your product. Check the next field to continue.');
+      notifySuccess('Inventory saved', 'Your material was saved and selected in this product.');
     }}/>}
-    {setup?.type === 'production' && <GridProductionDialog onClose={() => setSetup(null)} onSave={() => {setSetup(null);setNotice('Production saved. Grid costs have been recalculated. Check the next field to continue.');}}/>}
+    {setup?.type === 'production' && <GridProductionDialog onClose={() => setSetup(null)} onSave={() => {setSetup(null);notifySuccess('Production saved', 'Grid costs have been recalculated.');}}/>}
     {preview && <DetailModal item={preview} onClose={() => setPreview(null)} onViewEdit={onViewEdit} onDuplicate={onDuplicate} onArchive={async id => {await onArchive(id);setPreview(null);setRows(current=>current.map(row=>row.savedItem?.id===id?{...row,savedItem:null,savedSignature:null}:row));clearHistory();}}/>}
   </div>;
 }

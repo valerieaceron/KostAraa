@@ -1,3 +1,7 @@
+import {useFileTransferAccess} from "../../costing/utils/useFileTransferAccess";
+import FileTransferUpgrade from "../../costing/components/FileTransferUpgrade";
+import SuccessMessage from "../../costing/components/SuccessMessage";
+import {notifySuccess} from "../../costing/utils/success-message";
 import Grid from "../../costing/pages/Grid";
 import {useEffect,useMemo,useState} from "react";
 import {LayoutDashboard,Table2,Package,Calculator as CalculatorIcon,LibraryBig,LogOut,PanelLeftClose,PanelLeftOpen,Building2,UserRound,type LucideIcon} from "lucide-react";
@@ -112,6 +116,7 @@ export function Workspace(){
   const[profileMissing,setProfileMissing]=useState(false);
   const[editingItemId,setEditingItemId]=useState<string|null>(null);
   const[productLibraryFilter,setProductLibraryFilter]=useState("All products");
+  const canTransferFiles=useFileTransferAccess();
   const results=useMemo(()=>calculateProduct(product,inventory),[product,inventory]);
 
   const applyBusinessSettings=(profile:any)=>{
@@ -158,7 +163,9 @@ export function Workspace(){
       payload={...payload,...saved,createdAt:saved.createdAt||payload.createdAt||savedAt,updatedAt:saved.updatedAt||savedAt,serverDraftId:draftId,serverLibraryId:record.library_item_id||saved.serverLibraryId};
     }
     setSavedItems((current:any[])=>{const next=existing?current.map(item=>item.id===existing.id?payload:item):[payload,...current];saveSavedItems(next);return next});
-    if(!gridProduct){setProduct(blankCalculation());setEditingItemId(null)}return payload;
+    if(!gridProduct){setProduct(blankCalculation());setEditingItemId(null)}
+    if(gridProduct)notifySuccess(existing?"Library item updated":"Saved to Product Library",`${payload.productName||"Your item"} was saved successfully.`);
+    return payload;
   };
   const editItem=(item:any)=>{setProduct(withBusinessCosts(savedItemToProduct(item,inventory),business));setEditingItemId(item.id);setPage("calculator")};
   const duplicateItem=async(item:any)=>{
@@ -174,7 +181,7 @@ export function Workspace(){
         const source=savedItemToProduct(item,inventory);
         copy=buildSavedItem({...source,productName:`${item.productName} Copy`},calculateProduct(source,inventory),business,{itemType:item.itemType,category:item.category,status:"Draft",notes:item.notes});
       }
-      setSavedItems((current:any[])=>{const next=[copy,...current];saveSavedItems(next);return next});return copy;
+      setSavedItems((current:any[])=>{const next=[copy,...current];saveSavedItems(next);return next});notifySuccess("Product duplicated",`${copy.productName||"Your item"} was added to Product Library.`);return copy;
     }catch(error:any){setSyncError(error.message||"Unable to duplicate the library item.")}
   };
   const archiveItem=async(id:string)=>{
@@ -185,11 +192,13 @@ export function Workspace(){
         await apiJson(`/api/product-library/items/${encodeURIComponent(item.serverLibraryId)}/status`,{method:"PATCH",body:JSON.stringify({status:"archived"})});
       }
       setSavedItems((current:any[])=>{const next=current.map(entry=>entry.id===id?{...entry,status:"Archived",updatedAt:new Date().toISOString()}:entry);saveSavedItems(next);return next});
+      notifySuccess("Product archived",`${item?.productName||"Your item"} was archived successfully.`);
     }catch(error:any){setSyncError(error.message||"Unable to archive the library item.")}
   };
   const deleteItems=async(ids:string[])=>{
     setSyncError("");const idSet=new Set(ids.map(String));
     const targets=savedItems.filter((entry:any)=>idSet.has(String(entry.id)));
+    let deleted=0;
     for(const item of targets){
       try{
         if(!isOfflineUser()){
@@ -198,20 +207,22 @@ export function Workspace(){
         }
         setSavedItems((current:any[])=>{const next=current.filter(entry=>entry.id!==item.id);saveSavedItems(next);return next});
         if(editingItemId===item.id)setEditingItemId(null);
+        deleted++;
       }catch(error:any){setSyncError(error.message||"Unable to delete the library item.");break}
     }
+    if(deleted===targets.length&&deleted)notifySuccess("Products deleted",`${deleted} library item${deleted===1?"":"s"} deleted successfully.`);
   };
   const deleteItem=(id:string)=>deleteItems([id]);
-  const updateItem=(id:string,updates:any)=>persistItems(savedItems.map((item:any)=>item.id===id?{...item,...updates,updatedAt:new Date().toISOString()}:item));
+  const updateItem=(id:string,updates:any)=>{persistItems(savedItems.map((item:any)=>item.id===id?{...item,...updates,updatedAt:new Date().toISOString()}:item));notifySuccess("Library item updated","Your changes were saved.")};
   const resetCalculator=()=>{setProduct(blankCalculation());setEditingItemId(null)};
   const navigatePage=(nextPage:string)=>{setReturnToCalculator(false);setPage(nextPage)};
   const guideContext={page,inventoryCount:inventory.length,savedProductCount:savedItems.filter((item:any)=>item.status!=="Archived").length,productionReady:Boolean((Number(business.labor?.workingDays)||0)*(Number(business.labor?.outputPerDay)||0))};
   if(!ready)return <div className="ws-loading">Opening Kostaraa…</div>;
   const pages:any={
-    grid:<Grid onInventoryChange={setInventory} inventory={inventory} business={business} libraryItems={savedItems} onSave={(draft:any,metadata:any)=>saveLibraryItem(metadata,undefined,draft)} onDeleteItems={deleteItems} onViewEdit={editItem} onDuplicate={duplicateItem} onArchive={archiveItem}/>,
+    grid:<Grid canTransferFiles={canTransferFiles} onInventoryChange={setInventory} inventory={inventory} business={business} libraryItems={savedItems} onSave={(draft:any,metadata:any)=>saveLibraryItem(metadata,undefined,draft)} onDeleteItems={deleteItems} onViewEdit={editItem} onDuplicate={duplicateItem} onArchive={archiveItem}/>,
     dashboard:<BusinessDashboard profileMissing={profileMissing} onSetupProfile={()=>{setBusinessSection("identity");setProfileEditRequest(value=>value+1);navigatePage("account")}} business={business} savedItems={savedItems} onViewEdit={editItem} onDuplicate={duplicateItem} onArchive={archiveItem} setPage={setPage}/>,
-    products:<ProductsServices items={savedItems} onViewEdit={editItem} onDuplicate={duplicateItem} onArchive={archiveItem} onDelete={deleteItem} onDeleteItems={deleteItems} onUpdateItem={updateItem} setPage={setPage} pricingStatus={productLibraryFilter} onPricingStatusChange={setProductLibraryFilter}/>,
-    inventory:<AdaptiveInventory inventory={inventory} setInventory={setInventory}/>,
+    products:<ProductsServices canTransferFiles={canTransferFiles} items={savedItems} onViewEdit={editItem} onDuplicate={duplicateItem} onArchive={archiveItem} onDelete={deleteItem} onDeleteItems={deleteItems} onUpdateItem={updateItem} setPage={setPage} pricingStatus={productLibraryFilter} onPricingStatusChange={setProductLibraryFilter}/>,
+    inventory:<AdaptiveInventory canTransferFiles={canTransferFiles} inventory={inventory} setInventory={setInventory}/>,
     calculator:<CalculatorProfileCosts business={business} onOpenSettings={()=>{setReturnToCalculator(true);setBusinessSection("overhead");setProfileFocusField("");setProfileEditRequest(value=>value+1);setPage("account")}}><Calculator savedProductCount={savedItems.length} product={product} setProduct={setProduct} results={results} inventory={inventory} business={business} onSaveItem={saveLibraryItem} onDuplicateCurrent={()=>duplicateItem(buildSavedItem(product,results,business,{itemType:"Product",category:"Other",status:"Draft"}))} onReset={resetCalculator} editingItem={savedItems.find((item:any)=>item.id===editingItemId)}/></CalculatorProfileCosts>,
     wallet:<AffiliatesPage key="wallet" mode="wallet" onNavigate={navigatePage}/>,
     "affiliate-records":<AffiliatesPage key="affiliate-records" mode="records" onNavigate={navigatePage}/>,
@@ -219,5 +230,5 @@ export function Workspace(){
     subscription:<Subscription onNavigate={navigatePage}/>,
     account:<div className="business-settings-page"><BusinessProfile focusSection={businessSection} focusField={profileFocusField} editRequest={profileEditRequest} onEditRequestHandled={()=>setProfileEditRequest(0)} returnToCalculator={returnToCalculator} onReturnToCalculator={()=>{setReturnToCalculator(false);setProfileFocusField("");setProfileEditRequest(0);setPage("calculator")}}/></div>,
   };
-  return <KostaraaLayout page={page} setPage={navigatePage} businessSection={businessSection} setBusinessSection={setBusinessSection} onLogout={logout} businessProfileId={businessProfileId} onEditProfile={(field?:string)=>{setProfileFocusField(field||"");setProfileEditRequest(value=>value+1)}} guideContext={guideContext}>{upgradeNotice&&<p className="simple-note" role="status">{upgradeNotice} <button onClick={()=>{navigatePage("subscription");setUpgradeNotice("")}}>View Annual plan</button> <button aria-label="Dismiss upgrade notice" onClick={()=>setUpgradeNotice("")}>Dismiss</button></p>}{syncError&&<p className="simple-note" role="alert">{syncError}</p>}{pages[page]}</KostaraaLayout>
+  return <KostaraaLayout page={page} setPage={navigatePage} businessSection={businessSection} setBusinessSection={setBusinessSection} onLogout={logout} businessProfileId={businessProfileId} onEditProfile={(field?:string)=>{setProfileFocusField(field||"");setProfileEditRequest(value=>value+1)}} guideContext={guideContext}><SuccessMessage/><FileTransferUpgrade/>{upgradeNotice&&<p className="simple-note" role="status">{upgradeNotice} <button onClick={()=>{navigatePage("subscription");setUpgradeNotice("")}}>View Annual plan</button> <button aria-label="Dismiss upgrade notice" onClick={()=>setUpgradeNotice("")}>Dismiss</button></p>}{syncError&&<p className="simple-note" role="alert">{syncError}</p>}{pages[page]}</KostaraaLayout>
 }

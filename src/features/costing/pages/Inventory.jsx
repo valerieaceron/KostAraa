@@ -1,9 +1,12 @@
+import {fileTransferUpgradeMessage, requestFileTransferUpgrade} from '../utils/file-transfer-access';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Copy, Download, FileUp, Info, MoreHorizontal, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
 import { formatCurrency, getInventoryCostUnit, getInventoryUnitCost } from '../utils/calculations';
 import { apiJson, getAllApiItems, getApiItem, getCreatedInventoryItem, isOfflineUser } from '../utils/api';
 import { titleCaseName } from '../utils/display-text';
 import { inventoryPurchaseErrors } from '../utils/inventory-validation';
+import InventoryTour from './InventoryTour';
+import {notifySuccess} from '../utils/success-message';
 import '../styles/inventory.css';
 
 const ALL_UNITS = ['mg', 'g', 'kg', 'oz', 'lb', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'fl oz', 'mm', 'cm', 'm', 'inch', 'ft', 'yard', 'pcs', 'dozen', 'pack', 'box'];
@@ -148,7 +151,7 @@ export function MaterialDialog({ draft, errors, mode, saving, saveError, allowed
   </div>;
 }
 
-export default function Inventory({ inventory, setInventory, unitOptions = ALL_UNITS, measurementGuide = null }) {
+export default function Inventory({ inventory, setInventory, unitOptions = ALL_UNITS, measurementGuide = null, canTransferFiles = false }) {
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [page, setPage] = useState(1);
@@ -163,6 +166,7 @@ export default function Inventory({ inventory, setInventory, unitOptions = ALL_U
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState('');
   const [loadingInventory, setLoadingInventory] = useState(false);
+  const tourRoot = useRef(null);
   const fileInputRef = useRef(null);
   const selectAllRef = useRef(null);
   const allowedUnits = useMemo(() => [...new Set([...unitOptions, ...(draft.baseUnit ? [draft.baseUnit] : [])])], [unitOptions, draft.baseUnit]);
@@ -229,6 +233,7 @@ export default function Inventory({ inventory, setInventory, unitOptions = ALL_U
     const existing = dialog?.mode === 'edit' ? inventory.find((item) => String(item.id) === String(dialog.id)) : null;
     const material = { ...(existing || {}), id: existing?.id || crypto.randomUUID(), material: draft.material.trim(), category: draft.category, item_type: categoryToType(draft.category), itemCost: Number(draft.itemCost), qty: Number(draft.qty), baseUnit: draft.baseUnit, gramsPerCup: Number(draft.gramsPerCup) || 0, piecesPerUnit: Number(draft.piecesPerUnit) || 0 };
     const announceFirstMaterial = (saved) => {
+      notifySuccess(existing ? 'Material updated' : 'Material added', `${saved.material} was saved to Inventory.`);
       if (!existing && inventory.length === 0) window.dispatchEvent(new CustomEvent('kostaraa:araa-guide', { detail: { type: 'first-inventory', name: saved.material } }));
     };
     if (isOfflineUser()) { setInventory(existing ? inventory.map((item) => item.id === existing.id ? material : item) : [material, ...inventory]); setDialog(null); announceFirstMaterial(material); return; }
@@ -248,19 +253,23 @@ export default function Inventory({ inventory, setInventory, unitOptions = ALL_U
     try {
       if (!isOfflineUser()) await Promise.all(values.map((id) => apiJson(`/api/inventory/delete/${encodeURIComponent(id)}`, { method: 'DELETE' })));
       const idSet = new Set(values.map(String)); setInventory(inventory.filter((item) => !idSet.has(String(item.id)))); setSelected(new Set()); setDialog(null);
+      notifySuccess("Materials deleted", `${values.length} material${values.length === 1 ? '' : 's'} deleted successfully.`);
     } catch (error) { setApiError(error instanceof Error ? error.message : 'Unable to delete the selected material.'); }
   };
 
   const toggleFiltered = () => setSelected((current) => { const next = new Set(current); filteredInventory.forEach((item) => allFilteredSelected ? next.delete(String(item.id)) : next.add(String(item.id))); return next; });
 
   const exportInventory = async () => {
+    if (!canTransferFiles) {requestFileTransferUpgrade();return;}
     const XLSX = await import('xlsx');
     const rows = filteredInventory.map((item) => ({ Material: item.material || '', Category: itemCategory(item), 'Purchase Amount': Number(item.itemCost) || 0, 'Purchase Quantity': Number(item.qty) || 0, 'Base Unit': item.baseUnit || '', 'Grams Per Cup': Number(item.gramsPerCup) || '', 'Pieces Per Pack': Number(item.piecesPerUnit) || '', 'Unit Cost': unitCostLabel(item) }));
     const worksheet = XLSX.utils.json_to_sheet(rows); worksheet['!cols'] = [{ wch: 32 }, { wch: 16 }, { wch: 18 }, { wch: 18 }, { wch: 12 }, { wch: 16 }, { wch: 18 }, { wch: 18 }];
     const workbook = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(workbook, worksheet, 'Inventory'); XLSX.writeFile(workbook, 'kostaraa-inventory.xlsx');
+    notifySuccess('Excel export ready', 'Your Inventory spreadsheet has been downloaded.');
   };
 
   const importInventory = async (event) => {
+    if (!canTransferFiles) {event.target.value = '';requestFileTransferUpgrade();return;}
     const file = event.target.files?.[0]; event.target.value = ''; if (!file) return;
     setImportMessage(''); setImportError(''); setImporting(true);
     const savedItems = [];
@@ -278,7 +287,7 @@ export default function Inventory({ inventory, setInventory, unitOptions = ALL_U
         const data = await apiJson('/api/inventory/add', { method: 'POST', body: JSON.stringify(inventoryApiPayload(material)) });
         savedItems.push(normalizeApiInventoryItem(getCreatedInventoryItem(data, material)));
       }
-      setInventory([...savedItems, ...inventory]); setImportMessage(`${savedItems.length} material${savedItems.length === 1 ? '' : 's'} imported successfully.`);
+      setInventory([...savedItems, ...inventory]); notifySuccess('Inventory imported', `${savedItems.length} material${savedItems.length === 1 ? '' : 's'} imported successfully.`);
       if (inventory.length === 0 && savedItems.length) window.dispatchEvent(new CustomEvent('kostaraa:araa-guide', { detail: { type: 'first-inventory', name: savedItems[0].material } }));
     } catch (error) {
       if (savedItems.length) { setInventory([...savedItems, ...inventory]); setImportMessage(`${savedItems.length} material${savedItems.length === 1 ? '' : 's'} imported before the upload stopped. Remaining rows were not imported.`); }
@@ -286,29 +295,31 @@ export default function Inventory({ inventory, setInventory, unitOptions = ALL_U
     } finally { setImporting(false); }
   };
 
-  return <section className="inventory-page">
+  return <section ref={tourRoot} className="inventory-page">
     <header className="inventory-page-header">
       <div>
         <h1>Inventory</h1>
       </div>
       <div className="inventory-page-actions">
-        <button type="button" onClick={exportInventory}>
+        <InventoryTour canTransferFiles={canTransferFiles} root={tourRoot} hasMeasurementGuide={Boolean(measurementGuide)} paused={Boolean(dialog || importing)}/>
+        <button data-inventory-tour="download" type="button" title={!canTransferFiles ? fileTransferUpgradeMessage : undefined} onClick={exportInventory}>
           <Download /> Download Excel
         </button>
-        <button type="button" disabled={importing} onClick={() => fileInputRef.current?.click()}>
+        <button data-inventory-tour="upload" type="button" title={!canTransferFiles ? fileTransferUpgradeMessage : undefined} disabled={importing} onClick={() => {if (!canTransferFiles) requestFileTransferUpgrade();else fileInputRef.current?.click();}}>
           <FileUp /> {importing ? 'Importing…' : 'Upload Excel'}
         </button>
-        <input ref={fileInputRef} hidden type="file" accept=".xlsx,.xls" onChange={importInventory} />
-        <button className="primary" type="button" disabled={importing} onClick={openAdd}><Plus /> Add material</button>
+        <input ref={fileInputRef} disabled={!canTransferFiles} hidden type="file" accept=".xlsx,.xls" onChange={importInventory} />
+        <button data-inventory-tour="add" className="primary" type="button" disabled={importing} onClick={openAdd}><Plus /> Add material</button>
       </div>
     </header>
+    {!canTransferFiles && <p className="inventory-alert info"><a href="/workspace?page=subscription&plan=annual">{fileTransferUpgradeMessage}</a></p>}
     {importMessage ? <p className="inventory-alert success">{importMessage}</p> : null}{importError ? <p className="inventory-alert error">{importError}</p> : null}{apiError ? <p className="inventory-alert error">{apiError}</p> : null}{loadingInventory ? <p className="inventory-alert info">Loading inventory…</p> : null}
-    {measurementGuide}
+    {measurementGuide ? <div data-inventory-tour="measurements">{measurementGuide}</div> : null}
     <section className="inventory-list-card">
-      <header className="inventory-list-toolbar"><label className="inventory-category-filter"><select aria-label="Filter inventory by category" value={categoryFilter} onChange={(event) => { setCategoryFilter(event.target.value); setPage(1); }}><option value="all">All categories</option>{ITEM_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}</select></label><label className="inventory-search"><Search /><input aria-label="Search materials or packaging" placeholder="Search inventory…" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} /></label></header>
+      <header data-inventory-tour="search" className="inventory-list-toolbar"><label className="inventory-category-filter"><select aria-label="Filter inventory by category" value={categoryFilter} onChange={(event) => { setCategoryFilter(event.target.value); setPage(1); }}><option value="all">All categories</option>{ITEM_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}</select></label><label className="inventory-search"><Search /><input aria-label="Search materials or packaging" placeholder="Search inventory…" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} /></label></header>
       <div className="inventory-list-heading"><span aria-hidden="true" /><span>Material</span><span>Unit Cost</span><span aria-hidden="true" /></div>
-      <div className={`inventory-selection-bar${selected.size ? ' has-selection' : ''}`}><label className="inventory-select-all"><input ref={selectAllRef} aria-label={allFilteredSelected ? 'Deselect all filtered items' : 'Select all filtered items'} type="checkbox" checked={allFilteredSelected} onChange={toggleFiltered} /><b>{selected.size ? `${selected.size} selected` : 'Select all'}</b></label><span className="inventory-selection-spacer" />{selected.size ? <button className="inventory-delete-selection" type="button" onClick={() => deleteIds(selected)}><Trash2 aria-hidden="true" /> Delete</button> : null}</div>
-      <div className={`inventory-list${selected.size ? ' has-selection' : ''}`}>{pageItems.map((item, index) => <article key={item.id}><label className="inventory-row-selector"><span aria-hidden="true">{(safePage - 1) * PAGE_SIZE + index + 1}</span><input aria-label={`Select ${item.material}`} type="checkbox" checked={selected.has(String(item.id))} onChange={() => setSelected((current) => { const next = new Set(current); const id = String(item.id); next.has(id) ? next.delete(id) : next.add(id); return next; })} /></label><button className="inventory-material" type="button" onClick={() => openEdit(item)}><span><b>{titleCaseName(item.material, 'Unnamed Material')}</b></span></button><p><b>{formatCurrency(getInventoryUnitCost(item))}</b><span>per {getInventoryCostUnit(item)}</span></p><InventoryActions item={item} openUp={index >= pageItems.length - 2} onEdit={() => openEdit(item)} onDuplicate={() => openDuplicate(item)} onDelete={() => deleteIds(new Set([String(item.id)]))} /></article>)}{!pageItems.length ? <div className="inventory-empty"><b>No materials found</b><span>{search || categoryFilter !== 'all' ? 'Try a different search or category.' : 'Add your first material or packaging item.'}</span><button type="button" onClick={openAdd}>+ Add material</button></div> : null}</div>
+      <div data-inventory-tour="selection" className={`inventory-selection-bar${selected.size ? ' has-selection' : ''}`}><label className="inventory-select-all"><input ref={selectAllRef} aria-label={allFilteredSelected ? 'Deselect all filtered items' : 'Select all filtered items'} type="checkbox" checked={allFilteredSelected} onChange={toggleFiltered} /><b>{selected.size ? `${selected.size} selected` : 'Select all'}</b></label><span className="inventory-selection-spacer" />{selected.size ? <button className="inventory-delete-selection" type="button" onClick={() => deleteIds(selected)}><Trash2 aria-hidden="true" /> Delete</button> : null}</div>
+      <div data-inventory-tour="list" className={`inventory-list${selected.size ? ' has-selection' : ''}`}>{pageItems.map((item, index) => <article key={item.id}><label className="inventory-row-selector"><span aria-hidden="true">{(safePage - 1) * PAGE_SIZE + index + 1}</span><input aria-label={`Select ${item.material}`} type="checkbox" checked={selected.has(String(item.id))} onChange={() => setSelected((current) => { const next = new Set(current); const id = String(item.id); next.has(id) ? next.delete(id) : next.add(id); return next; })} /></label><button className="inventory-material" type="button" onClick={() => openEdit(item)}><span><b>{titleCaseName(item.material, 'Unnamed Material')}</b></span></button><p><b>{formatCurrency(getInventoryUnitCost(item))}</b><span>per {getInventoryCostUnit(item)}</span></p><InventoryActions item={item} openUp={index >= pageItems.length - 2} onEdit={() => openEdit(item)} onDuplicate={() => openDuplicate(item)} onDelete={() => deleteIds(new Set([String(item.id)]))} /></article>)}{!pageItems.length ? <div className="inventory-empty"><b>No materials found</b><span>{search || categoryFilter !== 'all' ? 'Try a different search or category.' : 'Add your first material or packaging item.'}</span><button type="button" onClick={openAdd}>+ Add material</button></div> : null}</div>
       <footer className="inventory-pagination"><span>Showing <b>{first}–{last}</b> of <b>{filteredInventory.length}</b></span><div><button type="button" disabled={safePage === 1} onClick={() => setPage((value) => Math.max(1, value - 1))}>← Previous</button><small>Page {safePage} of {pageCount}</small><button type="button" disabled={safePage === pageCount} onClick={() => setPage((value) => Math.min(pageCount, value + 1))}>Next →</button></div></footer>
     </section>
     {dialog ? <MaterialDialog draft={draft} errors={draftErrors} mode={dialog.mode} saving={saving} saveError={saveError} allowedUnits={allowedUnits} onChange={(field, value) => setDraft((current) => ({ ...current, [field]: value }))} onClose={closeDialog} onDelete={() => deleteIds(new Set([String(dialog.id)]))} onSave={saveMaterial} /> : null}
