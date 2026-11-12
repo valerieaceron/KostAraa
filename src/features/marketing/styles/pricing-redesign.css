@@ -38,6 +38,30 @@
   box-shadow: 0 4px 16px rgba(35, 76, 124, .06);
 }
 
+.pricing-page .superhuman-cards article#business-plus-plan {
+  scroll-margin-top: 96px;
+}
+
+.pricing-page .superhuman-cards article#business-plus-plan:target > .button {
+  animation: pricing-business-plus-cta-shake .72s ease-in-out .2s 2;
+}
+
+@keyframes pricing-business-plus-cta-shake {
+  0%, 100% { transform: translateX(0); }
+  18% { transform: translateX(-7px) rotate(-.7deg); }
+  36% { transform: translateX(7px) rotate(.7deg); }
+  54% { transform: translateX(-4px) rotate(-.4deg); }
+  72% { transform: translateX(4px) rotate(.4deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pricing-page .superhuman-cards article#business-plus-plan:target > .button {
+    animation: none;
+    outline: 3px solid #8db8e8;
+    outline-offset: 3px;
+  }
+}
+
 .pricing-page .superhuman-cards article.setup-service {
   border-color: #cfdbe8;
   background: #fbfcfe;
@@ -108,6 +132,12 @@
 .superhuman-cards .price-box span {
   border: 0;
   padding: 2px 0;
+}
+
+.superhuman-cards .price-box .intro-price-note {
+  margin-top: 4px;
+  color: #2f639f;
+  font-weight: 600;
 }
 
 .plan-storage {

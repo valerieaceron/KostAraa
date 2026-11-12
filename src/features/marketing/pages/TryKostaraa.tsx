@@ -14,9 +14,18 @@ import {
 } from "lucide-react";
 import { MarketingHeader } from "../components/MarketingHeader";
 import { MarketingFooter } from "../components/MarketingFooter";
+import { IntroOfferModal } from "../components/IntroOfferModal";
+import {
+  INTRODUCTORY_USERS,
+  INTRODUCTORY_USER_LIMIT,
+  introductoryOfferFull,
+  introductoryProgress,
+  introductorySpotsRemaining,
+} from "../lib/introOffer";
 import "../styles/marketing-page-hero.css";
 import "../styles/try-kostaraa.css";
 import "../styles/try-kostaraa-refinements.css";
+import "../styles/try-kostaraa-offer.css";
 
 const features = [
   [BriefcaseBusiness, "Business Setup", "Record your operations, expenses, manpower, production capacity, and target customers."],
@@ -39,7 +48,6 @@ const workflowSteps = [
 
 const starter = ["10 inventory records", "3 saved products and services", "Profit insights and price comparison", "Araa assistance"];
 const businessPlus = ["100 inventory records", "100 saved products and services", "Deeper pricing and break-even planning", "Ad-free workspace and cloud backup"];
-
 function HoverPreview({ src, label }: { src: string; label: string }) {
   const play = (video: HTMLVideoElement) => { void video.play(); };
   const reset = (video: HTMLVideoElement) => { video.pause(); video.currentTime = 0; };
@@ -52,6 +60,7 @@ function HoverPreview({ src, label }: { src: string; label: string }) {
 export default function TryKostaraa() {
   return <main className="product-landing marketing-gradient-page">
     <MarketingHeader overlay/>
+    <IntroOfferModal pageKey="try-kostaraa" ctaHref="#business-plus-plan" ctaLabel="View Business Plus"/>
 
     <section className="product-hero" aria-labelledby="product-hero-title">
       <div className="product-hero-visual" aria-label="Kostaraa business dashboard preview">
@@ -85,7 +94,14 @@ export default function TryKostaraa() {
       <div className="product-section-heading"><h2 id="product-pricing-title">Start free. Upgrade when your business needs more.</h2><p>Explore the core workflow with Starter, then move to Business Plus for higher limits and deeper planning.</p></div>
       <div className="product-plan-grid">
         <article><span>Starter</span><h3>Free</h3><p>The essentials for building your first costings.</p><ul>{starter.map(item=><li key={item}>{item}</li>)}</ul><a href="/signup">Start free <ArrowRight aria-hidden="true"/></a></article>
-        <article className="recommended"><div className="product-plan-badge">Best for active businesses</div><span>Business Plus</span><h3>₱899 <small>/ year</small></h3><p>More room to plan, compare, and grow your product catalog.</p><ul>{businessPlus.map(item=><li key={item}>{item}</li>)}</ul><a href="/pricing">Explore Business Plus <ArrowRight aria-hidden="true"/></a></article>
+        <article className="recommended" id="business-plus-plan"><div className="product-plan-badge">Introductory price</div><span>Business Plus</span><h3>₱899 <small>/ year</small></h3><p>More room to plan, compare, and grow your product catalog.</p>
+          <div className={`product-offer-countdown${introductoryOfferFull?" is-full":""}`}>
+            <div><strong>{INTRODUCTORY_USERS} Kostaraa users joined</strong><span>{introductoryOfferFull?"Offer full":`${introductorySpotsRemaining} spots remaining`}</span></div>
+            <div className="product-offer-progress" role="progressbar" aria-label="Business Plus introductory offer availability" aria-valuemin={0} aria-valuemax={INTRODUCTORY_USER_LIMIT} aria-valuenow={INTRODUCTORY_USERS}><i style={{width:`${introductoryProgress}%`}}/></div>
+            <small>Introductory price is limited to the first {INTRODUCTORY_USER_LIMIT} users.</small>
+          </div>
+          <ul>{businessPlus.map(item=><li key={item}>{item}</li>)}</ul>{introductoryOfferFull?<span className="product-plan-closed" aria-disabled="true">Intro offer full</span>:<a href="/pricing">Explore Business Plus <ArrowRight aria-hidden="true"/></a>}
+        </article>
       </div>
       <a className="product-compare-link" href="/pricing">Compare all plan features <ArrowRight aria-hidden="true"/></a>
     </section>
