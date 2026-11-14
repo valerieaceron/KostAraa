@@ -1,0 +1,25 @@
+/* Only review column geometry and review-specific content extend library-*. */
+.kws-content .sales-reviews-list {
+ --library-columns: 28px minmax(150px,1.15fr) minmax(100px,.8fr) 90px minmax(160px,1.3fr) minmax(100px,.8fr) minmax(100px,.8fr) 48px;
+ --library-compact-columns: 28px minmax(130px,1fr) 100px 85px minmax(120px,1fr) 95px 100px 48px;
+}
+.kws-content .sales-reviews-list .library-list-heading > span:nth-child(7){display:block}
+.sales-review-meta{display:block;margin-top:4px;color:#687991;font-size:12px;font-weight:400}
+.sales-review-rating{color:#a66a12;font-size:15px;letter-spacing:1px;white-space:nowrap}
+.sales-review-excerpt{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:13px;color:#40536f;overflow-wrap:anywhere}
+.sales-review-date{font-size:12px;color:#687991}
+.sales-inventory .status-published{background:#e4f6ef;color:#137358}.sales-inventory .status-pending-approval{background:#fff1dd;color:#a75c08}.sales-inventory .status-rejected{background:#eef2f7;color:#52657e}
+.sales-review-detail-heading{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.sales-review-full-text{margin:20px 0;padding:0 0 20px;border-bottom:1px solid #e6ecf4;color:#40536f;font-size:14px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}
+.sales-review-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:0}.sales-review-facts dt{color:#687991;font-size:12px;margin-bottom:4px}.sales-review-facts dd{margin:0;font-size:14px;overflow-wrap:anywhere}
+@media(max-width:700px){
+ .kws-content .sales-reviews-list .sales-review-product{grid-column:2;grid-row:1}
+ .kws-content .sales-reviews-list .sales-review-customer{grid-column:2;grid-row:2}
+ .kws-content .sales-reviews-list .sales-review-rating-cell{grid-column:2;grid-row:3}
+ .kws-content .sales-reviews-list .sales-review-excerpt{grid-column:2;grid-row:4}
+ .kws-content .sales-reviews-list .sales-review-status{grid-column:2;grid-row:5}
+ .kws-content .sales-reviews-list .sales-review-date{grid-column:2;grid-row:6}
+ .kws-content .sales-reviews-list .library-row-selector,.kws-content .sales-reviews-list .library-row-actions{grid-row:1/7}
+ .sales-review-facts{grid-template-columns:1fr}
+ .sales-dialog:has(.sales-review-facts) .sales-dialog-footer{flex-wrap:wrap}
+}

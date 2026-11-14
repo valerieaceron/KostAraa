@@ -21,3 +21,9 @@
 - Use 14px/400 for body copy, 12px/400 for supporting copy, 14px/600 for buttons, and 11px/600 for short eyebrow or table labels.
 - Use 600 for item names, labels, and actions; reserve 700 for page, section, modal, and empty-state headings.
 - Do not use font weights above 700 in workspace interfaces.
+
+## Workspace table architecture
+
+- Read `ARCHITECT.md` before adding or changing a workspace table.
+- All upcoming workspace tables must reuse Product Library's actual `library-*` classes, DOM structure, and shared `Card`, `Button`, and `Input` components.
+- Adapt columns and feature actions; do not create a parallel stylesheet to imitate the table. Inherit its typography and responsive behavior from `product-library-refine.css`.

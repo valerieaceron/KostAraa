@@ -51,3 +51,8 @@ route in `src/app/App.jsx`, and add the route to
 
 Global styles are registered in `src/styles/index.css`. Preserve its import
 order until the older cascade layers have been consolidated.
+
+## Shared workspace table UI
+
+See [ARCHITECT.md](../ARCHITECT.md) for the required Product Library `library-*`
+pattern used by Products & Inventory and all upcoming workspace tables.

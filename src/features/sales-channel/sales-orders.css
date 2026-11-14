@@ -1,0 +1,64 @@
+/* Orders adapts columns only; table surfaces and controls come from library-*. */
+.kws-content .sales-orders-list {
+  --library-columns: 28px minmax(140px, 1.1fr) minmax(130px, 1fr) minmax(85px, .7fr) minmax(130px, 1fr) minmax(120px, .9fr) minmax(100px, .8fr) 48px;
+  --library-compact-columns: 28px minmax(120px, 1fr) minmax(100px, 1fr) 85px 120px 110px 90px 48px;
+}
+.kws-content .sales-orders-list .library-list-heading > span:nth-child(7) { display: block; }
+.kws-content .sales-orders-list .sales-order-meta { display: block; margin-top: 4px; color: var(--library-muted); font-size: 12px; font-weight: 400; }
+.sales-orders-list .status { white-space: normal; }
+.sales-inventory .status-paid,.sales-inventory .status-completed,.sales-inventory .status-order-received { background: #e4f6ef; color: #137358; }
+.sales-inventory .status-pending-verification,.sales-inventory .status-for-payment-verification { background: #fff1dd; color: #a75c08; }
+.sales-inventory .status-payment-rejected,.sales-inventory .status-cancelled { background: #fff0f2; color: #b53443; }
+.sales-inventory .status-in-transit,.sales-inventory .status-waiting-for-courier { background: #edf4ff; color: #315fa8; }
+.sales-order-overview { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.sales-order-overview>div { display: grid; align-content: start; gap: 8px; padding: 14px; border: 1px solid #e1e8f2; border-radius: 10px; background: #f8fafd; }
+.sales-order-overview>div>span:first-child { color: #687991; font-size: 12px; }
+.sales-order-overview strong { font-size: 20px; font-weight: 500; }
+.sales-order-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 0 0 16px; }
+.sales-order-facts dt { color: #687991; font-size: 12px; margin-bottom: 4px; }
+.sales-order-facts dd { margin: 0; font-size: 14px; overflow-wrap: anywhere; }
+.sales-order-note { color: #687991; font-size: 12px; margin: 12px 0 16px; }
+.sales-order-action-form { display: flex; align-items: flex-end; gap: 12px; margin-top: 16px; }
+.sales-order-action-form label { flex: 1; min-width: 0; }
+.sales-order-lines { list-style: none; margin: 0; padding: 0; }
+.sales-order-lines li { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 12px 0; border-bottom: 1px solid #e6ecf4; }
+.sales-order-lines li>span { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sales-order-lines small { display: block; margin-top: 4px; }
+.sales-order-totals { display: grid; gap: 8px; margin: 16px 0 0; }
+.sales-order-totals>div { display: flex; justify-content: space-between; gap: 16px; font-size: 13px; }
+.sales-order-totals dt { color: #687991; }
+.sales-order-totals dd { margin: 0; font-variant-numeric: tabular-nums; }
+.sales-order-receipt { margin: 16px 0 0; padding: 14px; border: 1px solid #e1e8f2; border-radius: 10px; }
+.sales-order-receipt figcaption { font-size: 12px; color: #687991; margin-bottom: 10px; overflow-wrap: anywhere; }
+.sales-order-receipt a { color: #1765e8; font-size: 12px; }
+.sales-order-receipt img { display: block; width: 100%; max-height: 300px; object-fit: contain; margin-bottom: 8px; }
+@media(max-width: 700px) {
+  .kws-content .sales-orders-list .sales-order-name { grid-column: 2; grid-row: 1; }
+  .kws-content .sales-orders-list .sales-order-customer { grid-column: 2; grid-row: 2; }
+  .kws-content .sales-orders-list .library-price-metrics { grid-row: 3; }
+  .kws-content .sales-orders-list .sales-order-status { grid-column: 2; grid-row: 4; }
+  .kws-content .sales-orders-list .sales-order-payment { grid-column: 2; grid-row: 5; }
+  .kws-content .sales-orders-list .sales-order-fulfillment { grid-column: 2; grid-row: 6; }
+  .kws-content .sales-orders-list .library-row-selector,
+  .kws-content .sales-orders-list .library-row-actions { grid-row: 1 / 7; }
+  .sales-order-overview { grid-template-columns: 1fr; }
+  .sales-order-facts { grid-template-columns: 1fr; }
+  .sales-order-action-form { align-items: stretch; flex-direction: column; }
+}
+/* Compact inline status control, with the workspace confirmation before writes. */
+.sales-order-status-select {
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  padding: 7px 26px 7px 10px;
+  border: 1px solid #dbe4f0;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #40536f;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.sales-order-status-select:focus-visible { outline: 2px solid #3a74ba; outline-offset: 2px; }
+.sales-order-status-select:disabled { background-color: #f8fafd; color: #687991; cursor: default; }
+@media (max-width: 700px) { .sales-order-status-select { font-size: 16px; } }

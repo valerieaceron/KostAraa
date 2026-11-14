@@ -86,3 +86,20 @@ export function normalizeInventoryItem(item) {
 }
 
 export { API_BASE_URL };
+
+// Private file downloads use the same workspace session as JSON requests.
+export async function apiBlob(path, options = {}) {
+  const token = sessionStorage.getItem('kostaraa.token');
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
+    cache: 'no-store',
+    headers: {...(token ? {Authorization: `Bearer ${token}`} : {}), ...(options.headers || {})},
+  });
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    const error = new Error(response.status === 401 ? 'Your session expired. Please log in again.' : payload.message || 'Receipt image unavailable.');
+    error.status = response.status;
+    throw error;
+  }
+  return response.blob();
+}

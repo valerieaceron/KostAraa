@@ -1,10 +1,16 @@
+import useSalesChannelAccess,{isSalesChannelPage} from "../../sales-channel/useSalesChannelAccess";
+import SalesBestSellers from "../../sales-channel/SalesBestSellers";
+import SalesReviews from "../../sales-channel/SalesReviews";
+import SalesPromotions from "../../sales-channel/SalesPromotions";
+import SalesOrders from "../../sales-channel/SalesOrders";
+import SalesInventory from "../../sales-channel/SalesInventory";
 import {useFileTransferAccess} from "../../costing/utils/useFileTransferAccess";
 import FileTransferUpgrade from "../../costing/components/FileTransferUpgrade";
 import SuccessMessage from "../../costing/components/SuccessMessage";
 import {notifySuccess} from "../../costing/utils/success-message";
 import Grid from "../../costing/pages/Grid";
 import {useEffect,useMemo,useState} from "react";
-import {LayoutDashboard,Table2,Package,Calculator as CalculatorIcon,LibraryBig,LogOut,PanelLeftClose,PanelLeftOpen,Building2,UserRound,type LucideIcon} from "lucide-react";
+import {Trophy,MessageSquare,Ticket,ClipboardList,ChevronDown,Store,Boxes,LayoutDashboard,Table2,Package,Calculator as CalculatorIcon,LibraryBig,LogOut,PanelLeftClose,PanelLeftOpen,Building2,UserRound,type LucideIcon} from "lucide-react";
 import BetaSupportModal from "./BetaSupportModal";
 import Subscription from "./Subscription";
 import SidebarUpgrade from "./SidebarUpgrade";
@@ -38,6 +44,7 @@ const defaultOverhead={rent:0,utilities:0,miscellaneous:0};
 const navGroups:Array<{label:string;items:Array<{page:string;label:string;icon:LucideIcon;section?:string}>}>=[
   {label:"Overview",items:[{page:"dashboard",label:"Dashboard",icon:LayoutDashboard}]},
   {label:"Cost Management",items:[{page:"inventory",label:"Inventory",icon:Package},{page:"calculator",label:"Add New Product",icon:CalculatorIcon},{page:"products",label:"Product Library",icon:LibraryBig},{page:"grid",label:"Grid",icon:Table2}]},
+  {label:"Sales Channel",items:[{page:"sales-inventory",label:"Products & Inventory",icon:Boxes},{page:"sales-orders",label:"Orders",icon:ClipboardList},{page:"sales-promotions",label:"Promotions",icon:Ticket},{page:"sales-reviews",label:"Product Reviews",icon:MessageSquare},{page:"sales-best-sellers",label:"Leaderboards",icon:Trophy}]},
   {label:"Settings",items:[{page:"account",section:"identity",label:"Business",icon:Building2},{page:"subscription",label:"Account",icon:UserRound}]},
 ];
 function workspaceUser(){try{const user=JSON.parse(sessionStorage.getItem("kostaraa.user")||"{}");const fullName=String(user.name||user.fullName||user.username||user.email?.split("@")[0]||"User").trim();return{firstName:String(user.firstName||"").trim()||fullName.split(/\s+/)[0]||"User"}}catch{return{firstName:"User"}}}
@@ -70,10 +77,14 @@ function calculatorDraftPayload(product:any,results:any,business:any,metadata:an
 }
 
 
-function KostaraaLayout({page,setPage,businessSection,setBusinessSection,onLogout,children,businessProfileId,onEditProfile,guideContext}:{page:string;setPage:(page:string)=>void;businessSection:string;setBusinessSection:(section:string)=>void;onLogout:()=>void;children:any;businessProfileId:any;onEditProfile:(field?:string)=>void;guideContext:any}){
+function KostaraaLayout({salesAccess,page,setPage,businessSection,setBusinessSection,onLogout,children,businessProfileId,onEditProfile,guideContext}:{salesAccess:string;page:string;setPage:(page:string)=>void;businessSection:string;setBusinessSection:(section:string)=>void;onLogout:()=>void;children:any;businessProfileId:any;onEditProfile:(field?:string)=>void;guideContext:any}){
   const[completedSetup,setCompletedSetup]=useState<string[]>(()=>readBusinessSetup(localStorage,businessSetupKey()));
   useEffect(()=>{const update=()=>setCompletedSetup(readBusinessSetup(localStorage,businessSetupKey()));const progress=(event:Event)=>setCompletedSetup((event as CustomEvent).detail);const profileChanged=(event:Event)=>{const completed=profileBusinessSetup((event as CustomEvent).detail);setCompletedSetup(completed);try{localStorage.setItem(businessSetupKey(),JSON.stringify(completed))}catch{}};window.addEventListener("kostaraa:business-settings-changed",profileChanged);window.addEventListener("kostaraa:business-setup-progress",progress);window.addEventListener("storage",update);return()=>{window.removeEventListener("kostaraa:business-settings-changed",profileChanged);window.removeEventListener("kostaraa:business-setup-progress",progress);window.removeEventListener("storage",update)}},[]);
   const remainingSetup=businessSetupSteps.length-completedSetup.length;
+  const[salesCollapsed,setSalesCollapsed]=useState(()=>{try{return localStorage.getItem("kostaraa.sales-channel-collapsed")==="1"}catch{return false}});
+  const toggleSales=()=>setSalesCollapsed(current=>{try{localStorage.setItem("kostaraa.sales-channel-collapsed",current?"0":"1")}catch{}return !current});
+  const[costCollapsed,setCostCollapsed]=useState(()=>{try{return localStorage.getItem("kostaraa.cost-management-collapsed")==="1"}catch{return false}});
+  const toggleCost=()=>setCostCollapsed(current=>{try{localStorage.setItem("kostaraa.cost-management-collapsed",current?"0":"1")}catch{}return !current});
   const[mobileOpen,setMobileOpen]=useState(false);
   const[sidebarCollapsed,setSidebarCollapsed]=useState(()=>{try{return localStorage.getItem("kostaraa.sidebar-collapsed")==="1"}catch{return false}});
   const[gridSidebarExpanded,setGridSidebarExpanded]=useState(false);
@@ -92,17 +103,32 @@ function KostaraaLayout({page,setPage,businessSection,setBusinessSection,onLogou
   const toggleSidebar=()=>{if(page==="grid"){setGridSidebarExpanded(current=>!current);return}setSidebarCollapsed(current=>{const next=!current;try{localStorage.setItem("kostaraa.sidebar-collapsed",next?"1":"0")}catch{}return next})};
   useEffect(()=>{setGridSidebarExpanded(false)},[page]);
   const openSupport=()=>{window.dispatchEvent(new CustomEvent("kostaraa:feature-opened",{detail:"beta_support"}));setMobileOpen(false);setSupportOpen(true)};
-  const Menu=()=> <><button className="kws-brand" onClick={()=>go("dashboard")} aria-label="Go to Dashboard"><img className="kws-brand-full" src="/kostaraa-logo.webp" alt="Kostaraa"/><img className="kws-brand-icon" src="/brand/kostaraa-blue-icon.png" alt=""/></button><nav>{navGroups.map(group=><section className="kws-nav-group" key={group.label}><p className="kws-nav-label">{group.label}</p>{group.items.map(item=><button title={item.label} key={`${item.page}-${item.section||"main"}`} className={page===item.page&&(!item.section||businessSection===item.section)?"active":""} onClick={()=>go(item.page,item.section)}><item.icon aria-hidden="true" strokeWidth={1.75}/><div className="kws-module-label"><span>{item.label}</span>{item.page==="account"&&remainingSetup>0&&<b className="kws-setup-badge" aria-label={`${remainingSetup} unfinished setup steps`}>{remainingSetup}</b>}</div></button>)}</section>)}</nav><div className="kws-bottom-actions"><SidebarUpgrade/><AffiliateExpiryNotice/><button title="Getting Started" className="kws-tour" onClick={()=>{window.dispatchEvent(new CustomEvent("kostaraa:feature-opened",{detail:"getting_started"}));setMobileOpen(false);setFirstRun(false);setGuideOpen(true)}}><i>▶</i><span><b>Getting Started</b><small>Learn or revisit the app guide</small></span></button><button title="Support" className="kws-support" onClick={openSupport}><i>?</i><span><b>Support</b><small>Report an issue · 0.2.26</small></span></button><button title="Log out" className="kws-logout" onClick={onLogout}><LogOut aria-hidden="true"/><span>Log out</span></button></div></>;
+  const Menu=()=> <><button className="kws-brand" onClick={()=>go("dashboard")} aria-label="Go to Dashboard"><img className="kws-brand-full" src="/kostaraa-logo.webp" alt="Kostaraa"/><img className="kws-brand-icon" src="/brand/kostaraa-blue-icon.png" alt=""/></button><nav>{navGroups.map(group=>{
+    const isSales=group.label==="Sales Channel";
+    if(isSales&&salesAccess!=="allowed")return null;
+    const isCost=group.label==="Cost Management";
+    const collapsible=isSales||isCost;
+    const collapsed=isSales?salesCollapsed:isCost?costCollapsed:false;
+    const GroupIcon=isSales?Store:CalculatorIcon;
+    return <section className="kws-nav-group" key={group.label} aria-label={group.label}>
+      {collapsible?<button type="button" className="kws-nav-group-toggle" title={`${collapsed?"Expand":"Collapse"} ${group.label}`} aria-expanded={!collapsed} onClick={isSales?toggleSales:toggleCost}><GroupIcon aria-hidden="true"/><span>{group.label}</span><ChevronDown className="kws-nav-group-chevron" aria-hidden="true" style={{transform:collapsed?"rotate(-90deg)":undefined}}/></button>:<p className="kws-nav-label">{group.label}</p>}
+      {!collapsed&&group.items.map(item=>{
+        const active=page===item.page&&(!item.section||businessSection===item.section);
+        return <button title={item.label} key={`${item.page}-${item.section||"main"}`} className={`${collapsible?"kws-nav-child ":""}${active?"active":""}`} aria-current={active?"page":undefined} onClick={()=>go(item.page,item.section)}><item.icon aria-hidden="true" strokeWidth={1.75}/><div className="kws-module-label"><span>{item.label}</span>{item.page==="account"&&remainingSetup>0&&<b className="kws-setup-badge" aria-label={`${remainingSetup} unfinished setup steps`}>{remainingSetup}</b>}</div></button>;
+      })}
+    </section>;
+  })}</nav><div className="kws-bottom-actions"><SidebarUpgrade/><AffiliateExpiryNotice/><button title="Getting Started" className="kws-tour" onClick={()=>{window.dispatchEvent(new CustomEvent("kostaraa:feature-opened",{detail:"getting_started"}));setMobileOpen(false);setFirstRun(false);setGuideOpen(true)}}><i>▶</i><span><b>Getting Started</b><small>Learn or revisit the app guide</small></span></button><button title="Support" className="kws-support" onClick={openSupport}><i>?</i><span><b>Support</b><small>Report an issue · 0.2.26</small></span></button><button title="Log out" className="kws-logout" onClick={onLogout}><LogOut aria-hidden="true"/><span>Log out</span></button></div></>;
   return <div className={`kws-shell dotted-canvas${sidebarIsCollapsed?" sidebar-collapsed":""}${page==="grid"?" grid-workspace":""}`}><aside className="kws-sidebar"><button className="kws-sidebar-toggle" type="button" onClick={toggleSidebar} aria-label={sidebarIsCollapsed?"Expand sidebar":"Collapse sidebar"} title={sidebarIsCollapsed?"Expand sidebar":"Collapse sidebar"}>{sidebarIsCollapsed?<PanelLeftOpen aria-hidden="true"/>:<PanelLeftClose aria-hidden="true"/>}</button><Menu/></aside><header className="kws-topbar"><p className="kws-tagline">Cost Better.Price Smarter.</p><AccountMenu firstName={user.firstName} onSettings={()=>go("subscription")} onLogout={onLogout}/></header><header className="kws-mobile-head"><button onClick={()=>setMobileOpen(true)}>☰</button><button className="kws-mobile-logo" onClick={()=>go("dashboard")} aria-label="Go to Dashboard"><img src="/kostaraa-logo.webp" alt="Kostaraa"/></button><button onClick={onLogout}>Log out</button></header>{mobileOpen&&<div className="kws-mobile-menu"><button className="kws-scrim" aria-label="Close menu" onClick={()=>setMobileOpen(false)}/><aside><button className="kws-close" onClick={()=>setMobileOpen(false)}>×</button><Menu/></aside></div>}<main className="kws-content">{profilePrompt&&!guideOpen&&<ProfileSetupPrompt onEdit={editProfile} onDismiss={dismissProfilePrompt}/>}<div inert={guideOpen?true:undefined}>{children}</div></main>{guideOpen&&<GettingStartedGuide onClose={()=>exitGuide()} onComplete={()=>exitGuide(true)} onGo={go}/>} {supportOpen&&<BetaSupportModal businessProfileId={businessProfileId} page={page} businessSection={businessSection} onClose={()=>setSupportOpen(false)}/>}<AraaChat workspace context={guideContext} onNavigate={go}/></div>
 }
 
 export function Workspace(){
+  const {access:salesAccess,retry:retrySalesAccess}=useSalesChannelAccess();
   const[ready,setReady]=useState(false);
   const initial=useMemo(()=>loadState(),[]);
   const initialBusiness=useMemo(()=>{let profile:any=null;try{profile=JSON.parse(localStorage.getItem("kostaraa.businessProfile")||"null")}catch{}return {...initial.business,...businessSettingsCosts(profile)}},[initial]);
   const[upgradeNotice,setUpgradeNotice]=useState("");
   useEffect(()=>{const show=(event:any)=>setUpgradeNotice(event.detail);window.addEventListener("kostaraa:upgrade-needed",show);return()=>window.removeEventListener("kostaraa:upgrade-needed",show)},[]);
-  const[page,setPage]=useState(new URLSearchParams(location.search).get("page")==="wallet"?"wallet":new URLSearchParams(location.search).get("page")==="affiliate-records"?"affiliate-records":new URLSearchParams(location.search).get("page")==="affiliate-apply"?"affiliate-apply":new URLSearchParams(location.search).get("page")==="subscription"?"subscription":new URLSearchParams(location.search).get("page")==="account"?"account":new URLSearchParams(location.search).get("start")==="product"?"calculator":"dashboard");
+  const[page,setPage]=useState(new URLSearchParams(location.search).get("page")==="sales-best-sellers"?"sales-best-sellers":new URLSearchParams(location.search).get("page")==="sales-reviews"?"sales-reviews":new URLSearchParams(location.search).get("page")==="sales-promotions"?"sales-promotions":new URLSearchParams(location.search).get("page")==="sales-orders"?"sales-orders":new URLSearchParams(location.search).get("page")==="sales-inventory"?"sales-inventory":new URLSearchParams(location.search).get("page")==="wallet"?"wallet":new URLSearchParams(location.search).get("page")==="affiliate-records"?"affiliate-records":new URLSearchParams(location.search).get("page")==="affiliate-apply"?"affiliate-apply":new URLSearchParams(location.search).get("page")==="subscription"?"subscription":new URLSearchParams(location.search).get("page")==="account"?"account":new URLSearchParams(location.search).get("start")==="product"?"calculator":"dashboard");
   const[businessSection,setBusinessSection]=useState("identity");
   const[profileEditRequest,setProfileEditRequest]=useState(0);
   const[profileFocusField,setProfileFocusField]=useState("");
@@ -220,6 +246,11 @@ export function Workspace(){
   const guideContext={page,inventoryCount:inventory.length,savedProductCount:savedItems.filter((item:any)=>item.status!=="Archived").length,productionReady:Boolean((Number(business.labor?.workingDays)||0)*(Number(business.labor?.outputPerDay)||0))};
   if(!ready)return <div className="ws-loading">Opening Kostaraa…</div>;
   const pages:any={
+    "sales-inventory":<SalesInventory/>,
+    "sales-orders":<SalesOrders canTransferFiles={canTransferFiles}/>,
+    "sales-promotions":<SalesPromotions/>,
+    "sales-reviews":<SalesReviews/>,
+    "sales-best-sellers":<SalesBestSellers/>,
     grid:<Grid canTransferFiles={canTransferFiles} onInventoryChange={setInventory} inventory={inventory} business={business} libraryItems={savedItems} onSave={(draft:any,metadata:any)=>saveLibraryItem(metadata,undefined,draft)} onDeleteItems={deleteItems} onViewEdit={editItem} onDuplicate={duplicateItem} onArchive={archiveItem}/>,
     dashboard:<BusinessDashboard profileMissing={profileMissing} onSetupProfile={()=>{setBusinessSection("identity");setProfileEditRequest(value=>value+1);navigatePage("account")}} business={business} savedItems={savedItems} onViewEdit={editItem} onDuplicate={duplicateItem} onArchive={archiveItem} setPage={setPage}/>,
     products:<ProductsServices canTransferFiles={canTransferFiles} items={savedItems} onViewEdit={editItem} onDuplicate={duplicateItem} onArchive={archiveItem} onDelete={deleteItem} onDeleteItems={deleteItems} onUpdateItem={updateItem} setPage={setPage} pricingStatus={productLibraryFilter} onPricingStatusChange={setProductLibraryFilter}/>,
@@ -231,5 +262,5 @@ export function Workspace(){
     subscription:<Subscription onNavigate={navigatePage}/>,
     account:<div className="business-settings-page"><BusinessProfile focusSection={businessSection} focusField={profileFocusField} editRequest={profileEditRequest} onEditRequestHandled={()=>setProfileEditRequest(0)} returnToCalculator={returnToCalculator} onReturnToCalculator={()=>{setReturnToCalculator(false);setProfileFocusField("");setProfileEditRequest(0);setPage("calculator")}}/></div>,
   };
-  return <KostaraaLayout page={page} setPage={navigatePage} businessSection={businessSection} setBusinessSection={setBusinessSection} onLogout={logout} businessProfileId={businessProfileId} onEditProfile={(field?:string)=>{setProfileFocusField(field||"");setProfileEditRequest(value=>value+1)}} guideContext={guideContext}><SuccessMessage/><FileTransferUpgrade/>{upgradeNotice&&<p className="simple-note" role="status">{upgradeNotice} <button onClick={()=>{navigatePage("subscription");setUpgradeNotice("")}}>View Annual plan</button> <button aria-label="Dismiss upgrade notice" onClick={()=>setUpgradeNotice("")}>Dismiss</button></p>}{syncError&&<p className="simple-note" role="alert">{syncError}</p>}{pages[page]}</KostaraaLayout>
+  return <KostaraaLayout salesAccess={salesAccess} page={page} setPage={navigatePage} businessSection={businessSection} setBusinessSection={setBusinessSection} onLogout={logout} businessProfileId={businessProfileId} onEditProfile={(field?:string)=>{setProfileFocusField(field||"");setProfileEditRequest(value=>value+1)}} guideContext={guideContext}><SuccessMessage/><FileTransferUpgrade/>{upgradeNotice&&<p className="simple-note" role="status">{upgradeNotice} <button onClick={()=>{navigatePage("subscription");setUpgradeNotice("")}}>View Annual plan</button> <button aria-label="Dismiss upgrade notice" onClick={()=>setUpgradeNotice("")}>Dismiss</button></p>}{syncError&&<p className="simple-note" role="alert">{syncError}</p>}{isSalesChannelPage(page)&&salesAccess!=="allowed"?<section className="ws-card"><h1>{salesAccess==="loading"?"Checking access…":salesAccess==="denied"?"Sales Channel unavailable":"Unable to verify access"}</h1><p role={salesAccess==="error"?"alert":"status"}>{salesAccess==="loading"?"Verifying your account access.":salesAccess==="denied"?"Sales Channel is not enabled for this account.":"Please retry. Sales Channel access requires the updated API."}</p>{salesAccess==="error"&&<button type="button" onClick={retrySalesAccess}>Retry</button>}<button type="button" onClick={()=>navigatePage("dashboard")}>Go to Dashboard</button></section>:pages[page]}</KostaraaLayout>
 }

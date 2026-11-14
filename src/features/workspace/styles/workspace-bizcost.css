@@ -92,3 +92,32 @@
   4%,8%{transform:translateX(2px) rotate(8deg)}
 }
 @media(prefers-reduced-motion:reduce){.kws-module-label>.kws-setup-badge{animation:none}}
+
+/* Collapsible parent groups and indented child modules share desktop/mobile markup. */
+.kws-sidebar nav button.kws-nav-group-toggle,
+.kws-mobile-menu nav button.kws-nav-group-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 8px 0 4px;
+  color: #687991;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+}
+.kws-nav-group-toggle > span { flex: 1; text-align: left; }
+.kws-nav-group-toggle .kws-nav-group-chevron { width: 14px; height: 14px; }
+.kws-sidebar .kws-nav-group > button.kws-nav-child,
+.kws-mobile-menu .kws-nav-group > button.kws-nav-child {
+  width: calc(100% - 20px);
+  margin-left: 20px;
+}
+.kws-shell.sidebar-collapsed .kws-sidebar .kws-nav-group > button.kws-nav-child {
+  width: 52px;
+  margin-left: 0;
+}
+.kws-shell.sidebar-collapsed .kws-sidebar .kws-nav-group-toggle > span,
+.kws-shell.sidebar-collapsed .kws-sidebar .kws-nav-group-toggle .kws-nav-group-chevron {
+  display: none;
+}
