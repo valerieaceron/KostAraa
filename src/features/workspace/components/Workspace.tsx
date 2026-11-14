@@ -1,31 +1,17 @@
 import useSalesChannelAccess,{isSalesChannelPage} from "../../sales-channel/useSalesChannelAccess";
-import SalesBestSellers from "../../sales-channel/SalesBestSellers";
-import SalesReviews from "../../sales-channel/SalesReviews";
-import SalesPromotions from "../../sales-channel/SalesPromotions";
-import SalesOrders from "../../sales-channel/SalesOrders";
-import SalesInventory from "../../sales-channel/SalesInventory";
 import {useFileTransferAccess} from "../../costing/utils/useFileTransferAccess";
 import FileTransferUpgrade from "../../costing/components/FileTransferUpgrade";
 import SuccessMessage from "../../costing/components/SuccessMessage";
 import {notifySuccess} from "../../costing/utils/success-message";
-import Grid from "../../costing/pages/Grid";
-import {useEffect,useMemo,useState} from "react";
+import {lazy,Suspense,useEffect,useMemo,useState} from "react";
 import {Trophy,MessageSquare,Ticket,ClipboardList,ChevronDown,Store,Boxes,LayoutDashboard,Table2,Package,Calculator as CalculatorIcon,LibraryBig,LogOut,PanelLeftClose,PanelLeftOpen,Building2,UserRound,type LucideIcon} from "lucide-react";
 import BetaSupportModal from "./BetaSupportModal";
-import Subscription from "./Subscription";
 import SidebarUpgrade from "./SidebarUpgrade";
-import AffiliatesPage from "./AffiliatesPage";
-import AffiliateApplication from "./AffiliateApplication";
 import AffiliateExpiryNotice from "./AffiliateExpiryNotice";
 import {clearSharedSession} from "../../auth/session-sharing";
 import {AccountMenu} from "./AccountMenu";
 import {AraaChat} from "../../../components/araa-chat/AraaChat";
 import {useUsageAnalytics} from "../useUsageAnalytics";
-import BusinessDashboard from "./BusinessDashboard";
-import ProductsServices from "../../costing/pages/ProductsServices";
-import AdaptiveInventory from "./AdaptiveInventory";
-import Calculator from "../../costing/pages/Calculator";
-import BusinessProfile from "./BusinessProfile";
 import CalculatorProfileCosts from "./CalculatorProfileCosts";
 import {businessSettingsCosts,withSynchronizedOperationCost} from "../business-profile-costs";
 import {blankProduct} from "../../costing/data/demoData";
@@ -37,6 +23,21 @@ import {GettingStartedGuide,ProfileSetupPrompt} from "./GettingStartedGuide";
 import {currentGuideKey,guideEntry,readGuideProgress,writeGuideProgress} from "../getting-started";
 
 import {businessSetupSteps,businessSetupKey,readBusinessSetup,profileBusinessSetup,syncBusinessSetupProfile} from "../business-setup";
+
+const SalesBestSellers = lazy(() => import("../../sales-channel/SalesBestSellers"));
+const SalesReviews = lazy(() => import("../../sales-channel/SalesReviews"));
+const SalesPromotions = lazy(() => import("../../sales-channel/SalesPromotions"));
+const SalesOrders = lazy(() => import("../../sales-channel/SalesOrders"));
+const SalesInventory = lazy(() => import("../../sales-channel/SalesInventory"));
+const Grid = lazy(() => import("../../costing/pages/Grid"));
+const Subscription = lazy(() => import("./Subscription"));
+const AffiliatesPage = lazy(() => import("./AffiliatesPage"));
+const AffiliateApplication = lazy(() => import("./AffiliateApplication"));
+const BusinessDashboard = lazy(() => import("./BusinessDashboard"));
+const ProductsServices = lazy(() => import("../../costing/pages/ProductsServices"));
+const AdaptiveInventory = lazy(() => import("./AdaptiveInventory"));
+const Calculator = lazy(() => import("../../costing/pages/Calculator"));
+const BusinessProfile = lazy(() => import("./BusinessProfile"));
 
 const defaultLabor={staffCount:0,monthlyCost:0,workingDays:0,outputPerDay:0};
 const defaultOverhead={rent:0,utilities:0,miscellaneous:0};
@@ -262,5 +263,5 @@ export function Workspace(){
     subscription:<Subscription onNavigate={navigatePage}/>,
     account:<div className="business-settings-page"><BusinessProfile focusSection={businessSection} focusField={profileFocusField} editRequest={profileEditRequest} onEditRequestHandled={()=>setProfileEditRequest(0)} returnToCalculator={returnToCalculator} onReturnToCalculator={()=>{setReturnToCalculator(false);setProfileFocusField("");setProfileEditRequest(0);setPage("calculator")}}/></div>,
   };
-  return <KostaraaLayout salesAccess={salesAccess} page={page} setPage={navigatePage} businessSection={businessSection} setBusinessSection={setBusinessSection} onLogout={logout} businessProfileId={businessProfileId} onEditProfile={(field?:string)=>{setProfileFocusField(field||"");setProfileEditRequest(value=>value+1)}} guideContext={guideContext}><SuccessMessage/><FileTransferUpgrade/>{upgradeNotice&&<p className="simple-note" role="status">{upgradeNotice} <button onClick={()=>{navigatePage("subscription");setUpgradeNotice("")}}>View Annual plan</button> <button aria-label="Dismiss upgrade notice" onClick={()=>setUpgradeNotice("")}>Dismiss</button></p>}{syncError&&<p className="simple-note" role="alert">{syncError}</p>}{isSalesChannelPage(page)&&salesAccess!=="allowed"?<section className="ws-card"><h1>{salesAccess==="loading"?"Checking access…":salesAccess==="denied"?"Sales Channel unavailable":"Unable to verify access"}</h1><p role={salesAccess==="error"?"alert":"status"}>{salesAccess==="loading"?"Verifying your account access.":salesAccess==="denied"?"Sales Channel is not enabled for this account.":"Please retry. Sales Channel access requires the updated API."}</p>{salesAccess==="error"&&<button type="button" onClick={retrySalesAccess}>Retry</button>}<button type="button" onClick={()=>navigatePage("dashboard")}>Go to Dashboard</button></section>:pages[page]}</KostaraaLayout>
+  return <KostaraaLayout salesAccess={salesAccess} page={page} setPage={navigatePage} businessSection={businessSection} setBusinessSection={setBusinessSection} onLogout={logout} businessProfileId={businessProfileId} onEditProfile={(field?:string)=>{setProfileFocusField(field||"");setProfileEditRequest(value=>value+1)}} guideContext={guideContext}><SuccessMessage/><FileTransferUpgrade/>{upgradeNotice&&<p className="simple-note" role="status">{upgradeNotice} <button onClick={()=>{navigatePage("subscription");setUpgradeNotice("")}}>View Annual plan</button> <button aria-label="Dismiss upgrade notice" onClick={()=>setUpgradeNotice("")}>Dismiss</button></p>}{syncError&&<p className="simple-note" role="alert">{syncError}</p>}<Suspense fallback={<div className="ws-loading" role="status">Opening module…</div>}>{isSalesChannelPage(page)&&salesAccess!=="allowed"?<section className="ws-card"><h1>{salesAccess==="loading"?"Checking access…":salesAccess==="denied"?"Sales Channel unavailable":"Unable to verify access"}</h1><p role={salesAccess==="error"?"alert":"status"}>{salesAccess==="loading"?"Verifying your account access.":salesAccess==="denied"?"Sales Channel is not enabled for this account.":"Please retry. Sales Channel access requires the updated API."}</p>{salesAccess==="error"&&<button type="button" onClick={retrySalesAccess}>Retry</button>}<button type="button" onClick={()=>navigatePage("dashboard")}>Go to Dashboard</button></section>:pages[page]}</Suspense></KostaraaLayout>
 }

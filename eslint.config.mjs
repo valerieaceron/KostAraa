@@ -2,6 +2,8 @@ import { defineConfig, globalIgnores } from "eslint/config";
 
 const browserGlobals = {
   Blob: "readonly",
+  CustomEvent: "readonly",
+  HTMLInputElement: "readonly",
   FileReader: "readonly",
   FormData: "readonly",
   URL: "readonly",

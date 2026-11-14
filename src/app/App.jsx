@@ -1,24 +1,26 @@
+import {lazy,Suspense} from "react";
 import ConfirmationModal from "../components/confirmation/ConfirmationModal";
-import PasswordReset from "../features/auth/PasswordResetPage";
-import Login from "../features/auth/LoginPage";
-import Signup from "../features/auth/SignupPage";
-import About from "../features/marketing/pages/About";
-import Blog from "../features/marketing/pages/Blog";
-import BlogPost from "../features/marketing/pages/BlogPost";
-import Contact from "../features/marketing/pages/Contact";
 import Home from "../features/marketing/pages/Home";
-import SignupPayment from "../features/marketing/pages/SignupPaymentPage";
-import Pricing from "../features/marketing/pages/Pricing";
-import Privacy from "../features/marketing/pages/Privacy";
-import SiteDirectory from "../features/marketing/pages/SiteDirectory";
-import Terms from "../features/marketing/pages/Terms";
-import TryKostaraa from "../features/marketing/pages/TryKostaraa";
-import Onboarding from "../features/onboarding/OnboardingPage";
-import Workspace from "../features/workspace/WorkspacePage";
 
-import VerifyEmail from "../features/auth/VerifyEmailPage";
 
-import AffiliateApplicationForm from "../features/workspace/components/AffiliateApplicationForm";
+
+const PasswordReset = lazy(() => import("../features/auth/PasswordResetPage"));
+const Login = lazy(() => import("../features/auth/LoginPage"));
+const Signup = lazy(() => import("../features/auth/SignupPage"));
+const About = lazy(() => import("../features/marketing/pages/About"));
+const Blog = lazy(() => import("../features/marketing/pages/Blog"));
+const BlogPost = lazy(() => import("../features/marketing/pages/BlogPost"));
+const Contact = lazy(() => import("../features/marketing/pages/Contact"));
+const SignupPayment = lazy(() => import("../features/marketing/pages/SignupPaymentPage"));
+const Pricing = lazy(() => import("../features/marketing/pages/Pricing"));
+const Privacy = lazy(() => import("../features/marketing/pages/Privacy"));
+const SiteDirectory = lazy(() => import("../features/marketing/pages/SiteDirectory"));
+const Terms = lazy(() => import("../features/marketing/pages/Terms"));
+const TryKostaraa = lazy(() => import("../features/marketing/pages/TryKostaraa"));
+const Onboarding = lazy(() => import("../features/onboarding/OnboardingPage"));
+const Workspace = lazy(() => import("../features/workspace/WorkspacePage"));
+const VerifyEmail = lazy(() => import("../features/auth/VerifyEmailPage"));
+const AffiliateApplicationForm = lazy(() => import("../features/workspace/components/AffiliateApplicationForm"));
 
 const routes = {
   "/affiliate-application": AffiliateApplicationForm,
@@ -45,5 +47,5 @@ export default function App() {
   const path = window.location.pathname.replace(/\/$/, "") || "/";
   const Page = path.startsWith("/blog/") ? BlogPost : routes[path] || Home;
 
-  return <><ConfirmationModal/><Page /></>;
+  return <><ConfirmationModal/><Suspense fallback={<div className="min-h-screen grid place-items-center text-sm text-slate-500" role="status">Loading page…</div>}><Page /></Suspense></>;
 }

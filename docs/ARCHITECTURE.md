@@ -56,3 +56,9 @@ order until the older cascade layers have been consolidated.
 
 See [ARCHITECT.md](../ARCHITECT.md) for the required Product Library `library-*`
 pattern used by Products & Inventory and all upcoming workspace tables.
+
+## Frontend loading boundaries
+
+`src/app/App.jsx` loads non-home routes with `React.lazy` and a `Suspense` loading state. `src/features/workspace/components/Workspace.tsx` applies the same pattern to workspace modules, keeping the sidebar and account shell mounted while the selected module loads. Add new screens at these boundaries instead of eagerly importing them into the application entry point. Keep the existing conditional access gate around Sales Channel modules.
+
+Excel support remains dynamically imported by the actions that use it. Vite's default code splitting is sufficient for the current bundles; keep the normal chunk-size warning enabled rather than raising its limit to conceal oversized bundles.
