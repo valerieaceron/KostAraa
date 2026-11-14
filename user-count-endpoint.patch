@@ -1,0 +1,24 @@
+--- a/kostaraa-server/config/routes.js
++++ b/kostaraa-server/config/routes.js
+@@ -16,6 +16,21 @@
+ const salesChannelCustomersController = require('../controllers/sales_channel_customers');
+ const usageAnalyticsController = require('../controllers/usage_analytics');
+ const contactController = require('../controllers/contact');
++
++router.get('/public/user-count', async (req, res) => {
++  res.set('Cache-Control', 'no-store');
++  try {
++    const rows = await require('../helpers/query').run(
++      require('./database'),
++      "SELECT COUNT(*) AS total FROM users WHERE LOWER(TRIM(COALESCE(user_type, ''))) <> 'admin user'"
++    );
++    const count = Number(rows[0]?.total);
++    if (!Number.isSafeInteger(count) || count < 0) throw new Error('Invalid user count');
++    res.json({type: 'success', result: {count}});
++  } catch {
++    res.status(503).json({type: 'error', message: 'User count is unavailable.'});
++  }
++});
+ 
+ router.get('/plans', require('../controllers/plans').list);
+ router.post('/plans/select-free', checkGeneralAuth, require('../controllers/plans').selectFree);
