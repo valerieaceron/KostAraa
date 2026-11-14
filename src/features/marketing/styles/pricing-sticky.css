@@ -14,7 +14,7 @@
 
 .pricing-tier-grid{
   display:grid;
-  grid-template-columns:37.5% 31.25% 31.25%;
+  grid-template-columns:34% repeat(3,22%);
   width:min(calc(100% - 56px),1164px);
   min-height:126px;
   margin:0 auto;
@@ -86,8 +86,8 @@
   table-layout:fixed;
 }
 
-.pricing-page .comparison-wrap .comparison-feature-column{width:37.5%}
-.pricing-page .comparison-wrap .comparison-plan-column{width:31.25%}
+.pricing-page .comparison-wrap .comparison-feature-column{width:34%}
+.pricing-page .comparison-wrap .comparison-plan-column{width:22%}
 .pricing-tier-sticky+.comparison-wrap{border-top:0;border-radius:0}
 
 .pricing-why{
@@ -198,3 +198,14 @@
 .pricing-page .superhuman-cards{margin-top:48px}
 @media(max-width:1000px){.pricing-page .superhuman-cards{margin-top:42px}}
 @media(max-width:600px){.pricing-page .pricing-hero{padding-bottom:18px}.pricing-page .superhuman-cards{margin-top:40px;gap:42px}}
+
+/* Keep four comparison columns legible and aligned with their plan headings. */
+.pricing-tier-summary { grid-template-columns: 1fr; grid-template-areas: "name" "price" "action"; }
+.pricing-tier-name { flex-wrap: wrap; }
+.pricing-page .comparison-wrap td { overflow-wrap: anywhere; }
+@media (max-width: 760px) {
+  .pricing-tier-sticky { display: none; }
+  .pricing-page .comparison-wrap { overflow-x: auto; }
+  .pricing-page .comparison-wrap table { min-width: 720px; }
+  .pricing-page .comparison-table-head { position: static; width: auto; height: auto; overflow: visible; clip: auto; clip-path: none; white-space: normal; }
+}

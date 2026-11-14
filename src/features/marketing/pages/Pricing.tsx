@@ -10,31 +10,40 @@ import "../styles/pricing-sticky.css";
 
 const rows=[
   ["Costing and pricing"],
-  ["Product and service costing","✓","✓"],
-  ["Materials and packaging costs","✓","✓"],
-  ["Labor and operating-cost allocation","✓","✓"],
-  ["Marketing, markup and tax calculations","✓","✓"],
-  ["Suggested and break-even prices","×","✓"],
-  ["Target-price testing","✓","✓"],
-  ["Profit and margin insights","✓","✓"],
+  ["Product and service costing","✓","✓","✓"],
+  ["Materials and packaging costs","✓","✓","✓"],
+  ["Labor and operating-cost allocation","✓","✓","✓"],
+  ["Marketing, markup and tax calculations","✓","✓","✓"],
+  ["Suggested and break-even prices","×","✓","✓"],
+  ["Target-price testing","✓","✓","✓"],
+  ["Profit and margin insights","✓","✓","✓"],
   ["Planning and insights"],
-  ["Cost-distribution insights","✓","✓"],
-  ["Monthly sales-goal planning","×","✓"],
-  ["Break-even projections","×","✓"],
-  ["Competitor analysis","Coming soon","Coming soon"],
+  ["Cost-distribution insights","✓","✓","✓"],
+  ["Monthly sales-goal planning","×","✓","✓"],
+  ["Break-even projections","×","✓","✓"],
+  ["Competitor analysis","Coming soon","Coming soon","Coming soon"],
   ["Records and access"],
-  ["Inventory records","Up to 10","Up to 100"],
-  ["Saved products and services","Up to 3","Up to 100"],
-  ["Online workspace access","✓","✓"],
-  ["Data storage","✓","✓"],
-  ["Inventory import and export","×","✓"],
-  ["Product Library Excel export","×","✓"],
-  ["Cloud backup and recovery","×","✓"],
-  ["Multi-device access","✓","✓"],
+  ["Inventory records","Up to 10","Up to 100","Unlimited"],
+  ["Saved products and services","Up to 3","Up to 100","Unlimited"],
+  ["Online workspace access","✓","✓","✓"],
+  ["Data storage","✓","✓","✓"],
+  ["Inventory import and export","×","✓","✓"],
+  ["Product Library Excel export","×","✓","✓"],
+  ["Cloud backup and recovery","×","✓","✓"],
+  ["Multi-device access","✓","✓","✓"],
   ["Workspace experience"],
-  ["Guided Getting Started tour","✓","✓"],
-  ["Araa workspace assistance","✓","✓"],
-  ["In-app issue reporting","✓","✓"],
+  ["Guided Getting Started tour","✓","✓","✓"],
+  ["Araa workspace assistance","✓","✓","✓"],
+  ["In-app issue reporting","✓","✓","✓"],
+  ["Enterprise setup and potential integrations"],
+  ["Guided setup and product data migration","×","×","Scoped to your needs"],
+  ["Online store integration","×","×","Available on consultation"],
+  ["Customer and order management","×","×","Available on consultation"],
+  ["Product catalog and stock synchronization","×","×","Available on consultation"],
+  ["Custom checkout and payment receipt workflows","×","×","Available on consultation"],
+  ["Delivery, order tracking and promotions","×","×","Available on consultation"],
+  ["Finance and accounting integrations","×","×","Subject to compatibility"],
+  ["Custom API integrations","×","×","Subject to compatibility"],
 ];
 
 const starterBenefits=[
@@ -93,14 +102,24 @@ export default function Pricing(){
           <div className="plan-benefits"><b>{paid?"Everything in Starter, plus:":"The essentials to get started"}</b><ul>{benefits.map(benefit=><li key={benefit}><Check aria-hidden="true"/><span>{benefit}</span></li>)}</ul></div>
         </article>;
       })}<article className="setup-service">
-        <div className="plan-heading"><small className="plan-tier">Business Plus add-on</small><span className="plan-badge">One-time</span></div>
-        <div className="plan-name"><h2>Personal Setup Service</h2></div>
-        <p className="plan-audience">Available with Business Plus. Share your business details, and we’ll set up your workspace for you.</p>
-        <div className="price-box"><strong>₱499.00</strong><small>One-time payment · Business Plus required</small></div>
+        <div className="plan-heading"><small className="plan-tier">Enterprise</small><span className="plan-badge">Tailored</span></div>
+        <div className="plan-name"><h2>Enterprise Solution</h2></div>
+        <p className="plan-audience">A connected workspace, tailored to how your business sells and operates.</p>
+        <div className="price-box"><strong>Custom pricing</strong><small>Features and integrations are agreed during consultation.</small></div>
         <a className="button ghost" href="/contact">Contact us<ArrowRight aria-hidden="true"/></a>
-        <div className="plan-benefits"><b>We set it up for you:</b><ul><li><Check aria-hidden="true"/><span>Review your business details</span></li><li><Check aria-hidden="true"/><span>Add your Business Settings and starting inventory</span></li><li><Check aria-hidden="true"/><span>Set up your first product costing</span></li><li><Check aria-hidden="true"/><span>Give you one guided walkthrough</span></li></ul></div>
+        <div className="plan-benefits">
+          <b>Tailored Workspace Setup:</b>
+          <ul>
+            <li><Check aria-hidden="true"/><span>Unlimited inventory and product records</span></li>
+            <li><Check aria-hidden="true"/><span>Your online store connected to Kostaraa</span></li>
+            <li><Check aria-hidden="true"/><span>Centralized customer and order management</span></li>
+            <li><Check aria-hidden="true"/><span>Product catalog and stock synchronization</span></li>
+            <li><Check aria-hidden="true"/><span>Custom checkout, delivery, and promotion workflows</span></li>
+            <li><Check aria-hidden="true"/><span>Guided setup and product data migration</span></li>
+          </ul>
+        </div>
       </article></div>}
-      <div className="comparison-title"><h2>Compare Starter and Business Plus</h2><p>Both plans include online access to Kostaraa’s costing, planning, and guidance tools. Business Plus adds higher limits, an ad-free workspace, secure backup, and multi-device access.</p></div>
+      <div className="comparison-title"><h2>Compare plans</h2><p>Start with the essentials, grow with Business Plus, or tailor a connected workspace with Enterprise. Enterprise features and integrations are agreed during consultation and depend on your requirements and platform compatibility.</p></div>
       {!loading&&!error&&plans.length>0&&<div className="pricing-tier-sticky" aria-label="Kostaraa plans">
         <div className="pricing-tier-grid">
           <div className="pricing-tier-intro"><b>Compare plans</b><span>See what each tier includes</span></div>
@@ -109,10 +128,15 @@ export default function Pricing(){
             <div className="pricing-tier-price"><strong>{planPrice(plan)}</strong><small>{paid?`/ ${planTerm(plan)}`:"Free forever"}</small></div>
             <a href={planHref(plan)} className={`button${paid?"":" ghost"}`}>{planCta(plan)}<ArrowRight aria-hidden="true"/></a>
           </div>})}
+          <div className="pricing-tier-summary enterprise-tier-summary">
+            <div className="pricing-tier-name"><b>Enterprise</b></div>
+            <div className="pricing-tier-price"><strong>Custom</strong></div>
+            <a href="/contact" className="button ghost">Contact us<ArrowRight aria-hidden="true"/></a>
+          </div>
         </div>
       </div>}
-      <div className="comparison-wrap"><table><colgroup><col className="comparison-feature-column"/><col className="comparison-plan-column"/><col className="comparison-plan-column"/></colgroup><thead className="comparison-table-head"><tr><th scope="col">Features</th><th scope="col">Starter</th><th scope="col">Business Plus</th></tr></thead><tbody>{rows.map(row=>row.length===1
-        ? <tr className="comparison-group" key={row[0]}><th colSpan={3}>{row[0]}</th></tr>
+      <div className="comparison-wrap"><table><colgroup><col className="comparison-feature-column"/><col className="comparison-plan-column"/><col className="comparison-plan-column"/><col className="comparison-plan-column"/></colgroup><thead className="comparison-table-head"><tr><th scope="col">Features</th><th scope="col">Starter</th><th scope="col">Business Plus</th><th scope="col">Enterprise</th></tr></thead><tbody>{rows.map(row=>row.length===1
+        ? <tr className="comparison-group" key={row[0]}><th colSpan={4}>{row[0]}</th></tr>
         : <tr key={row[0]}>{row.map((cell,index)=><td key={index} className={cell==="×"?"no":cell==="✓"?"yes":""}>{cell}</td>)}</tr>
       )}</tbody></table></div>
     </section>

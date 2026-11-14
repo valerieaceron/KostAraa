@@ -1,12 +1,6 @@
 import {useEffect, useRef, useState} from "react";
 import {ArrowRight, Check, X} from "lucide-react";
-import {
-  INTRODUCTORY_USERS,
-  INTRODUCTORY_USER_LIMIT,
-  introductoryOfferFull,
-  introductoryProgress,
-  introductorySpotsRemaining,
-} from "../lib/introOffer";
+import {INTRODUCTORY_USER_LIMIT, useIntroOffer} from "../lib/introOffer";
 import "../styles/intro-offer-modal.css";
 
 type IntroOfferModalProps = {
@@ -16,6 +10,7 @@ type IntroOfferModalProps = {
 };
 
 export function IntroOfferModal({pageKey, ctaHref, ctaLabel}: IntroOfferModalProps) {
+  const {users, full: introductoryOfferFull, progress: introductoryProgress} = useIntroOffer();
   const [open, setOpen] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const storageKey = `kostaraa.intro-offer.seen.${pageKey}`;
@@ -61,37 +56,31 @@ export function IntroOfferModal({pageKey, ctaHref, ctaLabel}: IntroOfferModalPro
   }}>
     <section className="intro-offer-modal" role="dialog" aria-modal="true" aria-labelledby="intro-offer-title" aria-describedby="intro-offer-description">
       <button ref={closeButtonRef} className="intro-offer-close" type="button" onClick={close} aria-label="Close introductory offer"><X aria-hidden="true"/></button>
-      <div className="intro-offer-art">
-        <div className="intro-offer-art-copy">
-          <strong>Build with more room to grow.</strong>
-          <ul>
-            <li><Check aria-hidden="true"/>100 inventory records</li>
-            <li><Check aria-hidden="true"/>Deeper pricing insights</li>
-            <li><Check aria-hidden="true"/>Ad-free workspace</li>
-          </ul>
-        </div>
-        <i className="intro-offer-shape"/><i className="intro-offer-shape"/><i className="intro-offer-shape"/>
-      </div>
       <div className="intro-offer-content">
         <div className="intro-offer-heading">
-          <h2 id="intro-offer-title">{introductoryOfferFull?"The introductory offer is full.":`${introductorySpotsRemaining} spots left at ₱899/year.`}</h2>
-          <p id="intro-offer-description">Join the first {INTRODUCTORY_USER_LIMIT} Kostaraa users and unlock more room to cost, plan, and grow.</p>
-        </div>
-
-        <div className="intro-offer-capacity" tabIndex={0} aria-label={`${INTRODUCTORY_USERS} users joined. ${introductorySpotsRemaining} introductory spots left.`}>
-          <div className="intro-offer-capacity-summary" aria-hidden="true">
-            <span><strong>{introductorySpotsRemaining}</strong> spots left</span>
+          <div className="intro-offer-title-row">
+            <h2 id="intro-offer-title">Business Plus</h2>
+            <span className="intro-offer-badge">Introductory</span>
           </div>
-          <div className="intro-offer-capacity-track" role="progressbar" aria-label="Registered Kostaraa users" aria-valuemin={0} aria-valuemax={INTRODUCTORY_USER_LIMIT} aria-valuenow={INTRODUCTORY_USERS}>
-            <span className="intro-offer-capacity-fill" style={{width:`${introductoryProgress}%`}}><i><b>{INTRODUCTORY_USERS}</b><small>joined</small></i></span>
-          </div>
-          <div className="intro-offer-capacity-scale" aria-hidden="true"><span>0</span><span>{INTRODUCTORY_USER_LIMIT} users</span></div>
+          <p id="intro-offer-description">Your next step toward clearer pricing and a more organized business.</p>
         </div>
-
+        <div className="intro-offer-price"><strong>₱899</strong><span> / year</span><p>Annual subscription</p></div>
+        <ul className="intro-offer-benefits">
+          <li><Check aria-hidden="true"/>100 inventory records</li>
+          <li><Check aria-hidden="true"/>100 saved products and services</li>
+          <li><Check aria-hidden="true"/>Early access to Competitor Analysis (coming soon)</li>
+        </ul>
+        {users !== null && <div className="intro-offer-capacity">
+          <div className="intro-offer-capacity-track" role="progressbar" aria-label="Registered customers" aria-valuemin={0} aria-valuemax={INTRODUCTORY_USER_LIMIT} aria-valuenow={Math.min(users, INTRODUCTORY_USER_LIMIT)}>
+            <span className="intro-offer-capacity-fill" style={{width:`${introductoryProgress}%`}}/>
+          </div>
+          <p>{introductoryOfferFull ? "The introductory offer is full." : `${users} of ${INTRODUCTORY_USER_LIMIT} users joined`}</p>
+        </div>}
         <div className="intro-offer-action-row">
           {introductoryOfferFull
             ? <span className="intro-offer-sold-out" aria-disabled="true">Offer full</span>
             : <a href={ctaHref} onClick={close}>{ctaLabel}<ArrowRight aria-hidden="true"/></a>}
+          <button className="intro-offer-later" type="button" onClick={close}>Maybe later</button>
         </div>
       </div>
     </section>

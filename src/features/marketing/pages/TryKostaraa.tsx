@@ -15,13 +15,7 @@ import {
 import { MarketingHeader } from "../components/MarketingHeader";
 import { MarketingFooter } from "../components/MarketingFooter";
 import { IntroOfferModal } from "../components/IntroOfferModal";
-import {
-  INTRODUCTORY_USERS,
-  INTRODUCTORY_USER_LIMIT,
-  introductoryOfferFull,
-  introductoryProgress,
-  introductorySpotsRemaining,
-} from "../lib/introOffer";
+import {INTRODUCTORY_USER_LIMIT, useIntroOffer} from "../lib/introOffer";
 import "../styles/marketing-page-hero.css";
 import "../styles/try-kostaraa.css";
 import "../styles/try-kostaraa-refinements.css";
@@ -58,6 +52,7 @@ function HoverPreview({ src, label }: { src: string; label: string }) {
 }
 
 export default function TryKostaraa() {
+  const {users, full: introductoryOfferFull, progress: introductoryProgress, remaining: introductorySpotsRemaining} = useIntroOffer();
   return <main className="product-landing marketing-gradient-page">
     <MarketingHeader overlay/>
     <IntroOfferModal pageKey="try-kostaraa" ctaHref="#business-plus-plan" ctaLabel="View Business Plus"/>
@@ -95,11 +90,11 @@ export default function TryKostaraa() {
       <div className="product-plan-grid">
         <article><span>Starter</span><h3>Free</h3><p>The essentials for building your first costings.</p><ul>{starter.map(item=><li key={item}>{item}</li>)}</ul><a href="/signup">Start free <ArrowRight aria-hidden="true"/></a></article>
         <article className="recommended" id="business-plus-plan"><div className="product-plan-badge">Introductory price</div><span>Business Plus</span><h3>₱899 <small>/ year</small></h3><p>More room to plan, compare, and grow your product catalog.</p>
-          <div className={`product-offer-countdown${introductoryOfferFull?" is-full":""}`}>
-            <div><strong>{INTRODUCTORY_USERS} Kostaraa users joined</strong><span>{introductoryOfferFull?"Offer full":`${introductorySpotsRemaining} spots remaining`}</span></div>
-            <div className="product-offer-progress" role="progressbar" aria-label="Business Plus introductory offer availability" aria-valuemin={0} aria-valuemax={INTRODUCTORY_USER_LIMIT} aria-valuenow={INTRODUCTORY_USERS}><i style={{width:`${introductoryProgress}%`}}/></div>
+          {users !== null && <div className={`product-offer-countdown${introductoryOfferFull?" is-full":""}`}>
+            <div><strong>{users} of {INTRODUCTORY_USER_LIMIT} users joined</strong><span>{introductoryOfferFull?"Offer full":`${introductorySpotsRemaining} spots remaining`}</span></div>
+            <div className="product-offer-progress" role="progressbar" aria-label="Business Plus introductory offer availability" aria-valuemin={0} aria-valuemax={INTRODUCTORY_USER_LIMIT} aria-valuenow={Math.min(users, INTRODUCTORY_USER_LIMIT)}><i style={{width:`${introductoryProgress}%`}}/></div>
             <small>Introductory price is limited to the first {INTRODUCTORY_USER_LIMIT} users.</small>
-          </div>
+          </div>}
           <ul>{businessPlus.map(item=><li key={item}>{item}</li>)}</ul>{introductoryOfferFull?<span className="product-plan-closed" aria-disabled="true">Intro offer full</span>:<a href="/pricing">Explore Business Plus <ArrowRight aria-hidden="true"/></a>}
         </article>
       </div>
